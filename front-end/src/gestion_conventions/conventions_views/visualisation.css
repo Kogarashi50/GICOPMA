@@ -1,0 +1,18 @@
+/* Add to your CSS file */
+.dl-compact dt {
+    margin-bottom: 0.2rem;
+    /* Adjust font weight or color if desired */
+  }
+  .dl-compact dd {
+    margin-bottom: 0.5rem; /* Space below each item */
+    margin-left: 0; /* Override default dl margin if needed */
+  }
+  .text-truncate-multiline { /* Optional for long text fields */
+      display: -webkit-box;
+      -webkit-line-clamp: 3; /* Show 3 lines */
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.4; /* Adjust line height */
+      max-height: calc(1.4em * 3); /* Calculate max height based on line height and clamp */
+  }

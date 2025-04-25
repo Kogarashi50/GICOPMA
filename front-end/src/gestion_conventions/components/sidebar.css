@@ -1,0 +1,155 @@
+/* src/gestion_conventions/components/sidebar.css */
+
+/* --- Styles before selector remain the same --- */
+
+/* Global reset (optional) */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* --- Base Sidebar Styles --- */
+.sidebar { list-style: none; padding: 0; margin: 0; margin-left: 10px; width: 17vw; min-width: 200px; background-color: #3c3c3c; overflow-y: auto; height: 100vh; position: relative; overflow-x: hidden; padding-right: 0; font-family: 'Nunito', sans-serif; transition: width 0.3s ease-in-out; }
+.sidebar::-webkit-scrollbar { display: none; }
+.sidebar { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* Wrapper */
+.sidebar .sidebar-menu-list { list-style: none;padding:0px ;  padding-block-end: 40px;margin: 0; position: relative; z-index: 5; }
+
+/* List items */
+.sidebar li { list-style-type: none; position: relative; }
+
+/* Base Link styles */
+.sidebar li a { display: flex; align-items: center; gap: 8px; padding: 7px 12px; color: rgba(255, 255, 255, 0.8); text-decoration: none; position: relative; z-index: 10; white-space: nowrap; overflow: hidden; transition: color 0.3s, padding 0.3s ease-in-out, justify-content 0.3s ease-in-out, background-color 0.2s ease; font-weight: bold; font-size: 14px; border-radius: 3px; margin: 1px 5px; }
+.sidebar li a:hover { color: #fff; }
+
+/* Icon base styles */
+.sidebar li a .fa-fw, .sidebar li a .svg-inline--fa { margin-right: 8px; color: rgba(255, 255, 255, 0.7); min-width: 1.25em; transition: margin 0.3s ease-in-out, font-size 0.3s ease-in-out, color 0.3s; flex-shrink: 0; text-align: center; position: relative; z-index: 11; }
+
+/* HR Styling */
+.sidebar-hr { padding-inline: 25px; padding-bottom: 0px;  }
+.sidebar-hr hr { border: none; border-top: 1px solid rgba(255, 255, 255, 0.507); }
+
+/* Label Span Styles */
+.sidebar .sidebar-item-label { opacity: 1; visibility: visible; transition: opacity 0.2s ease-in-out 0.1s, visibility 0.2s ease-in-out 0.1s; flex-grow: 1; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 11; }
+
+/* Arrow */
+.sidebar .expand-arrow { font-size: 0.7em; margin-left: 8px; color: rgba(255, 255, 255, 0.6); transition: transform 0.3s ease, color 0.3s ease; }
+.sidebar li.expanded > a .expand-arrow { transform: rotate(180deg); }
+
+/* --- Active Item Styles --- */
+.sidebar li.active > a { color: #3c3c3c; font-weight: bold; font-size: 17px; background-color: transparent !important; }
+.sidebar li.active > a:hover { background-color: transparent !important; }
+.sidebar li.active a .svg-inline--fa { color: #3c3c3c; }
+.sidebar li.active a .expand-arrow { color: #444; }
+
+
+/* --- Active State Selector (Original Structure) --- */
+.sidebar .selector-active {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: 0; /* JS */
+  height: 40px; /* JS */
+  background-color: #fff;   /* Main white background */
+  border-top-left-radius: 50px;
+  border-bottom-left-radius: 50px;
+  border-top-right-radius: 0; /* Flat right default */
+  border-bottom-right-radius: 0; /* Flat right default */
+  /* MODIFIED Transition: ONLY animate border-radius, top, height, opacity */
+  transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+              height 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+              opacity 0.3s ease-out,
+              border-radius 0.2s ease-in-out; /* Animate radius change */
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Selector curve elements */
+.sidebar .selector-active .top,
+.sidebar .selector-active .bottom {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  background-color: #fff; /* Keep original white background */
+  right: 0;
+  overflow: hidden;
+  /* MODIFIED Transition: REMOVED opacity/visibility transitions */
+  transition: none;
+  /* Default visible */
+  display: block;
+}
+.sidebar .selector-active .top { top: -25px; }
+.sidebar .selector-active .bottom { bottom: -25px; }
+
+/* The visible curve pseudo-element */
+.sidebar .selector-active .top:before,
+.sidebar .selector-active .bottom:before {
+  content: '';
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #3c3c3c; /* Dark circle */
+  /* MODIFIED Transition: REMOVED opacity/visibility transitions */
+  transition: none;
+  /* Default visible */
+  display: block;
+}
+.sidebar .selector-active .top:before { left: -25px; top: -25px; }
+.sidebar .selector-active .bottom:before { bottom: -25px; left: -25px; }
+
+
+/* --- PILL SHAPE Override --- */
+.sidebar .selector-active.pill-shape {
+  /* Apply border-radius (will animate via base transition) */
+  border-top-right-radius: 50px;
+  border-bottom-right-radius: 50px;
+  
+}
+
+/* MODIFIED: Instantly HIDE curve elements when pill shape active */
+.sidebar .selector-active.pill-shape .top,
+.sidebar .selector-active.pill-shape .bottom {
+   display: none;
+}
+/* --- End Selector Styles --- */
+
+
+/* --- Rest of CSS remains the same --- */
+
+/* Heading */
+.sidebar .sidebar-section-heading { padding: 0px 0px 3px 0px; font-size: 11px; font-weight: bold; color: rgba(130, 130, 130, 0.865); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0px; cursor: default; list-style: none; white-space: nowrap; overflow: hidden; opacity: 1; visibility: visible; transition: opacity 0.2s ease-in-out 0.1s, visibility 0.2s ease-in-out 0.1s, padding 0.3s ease-in-out; }
+.sidebar .sidebar-section-heading span { display: block; }
+
+/* Brand/Logo */
+.sidebar li.brand-item a { height: auto; margin: 0; padding: 15px 12px; display: flex; align-items: center; justify-content: flex-start; border-radius: 0; }
+.sidebar li.brand-item a:hover { background-color: transparent; }
+.sidebar .mainItem { display: flex; align-items: center; gap: 12px; }
+.sidebar .Navlogo { border-radius: 50px; transition: margin 0.3s ease-in-out, width 0.3s ease-in-out, height 0.3s ease-in-out; background-color: #fff; flex-shrink: 0; }
+.sidebar .brand-text { color: #fff; font-weight: bold; font-size: 16px; line-height: 1.2; text-align: left; }
+.sidebar .brand-text small { font-size: 8px !important; font-weight: normal; color: rgba(255, 255, 255, 0.7); display: block; line-height: 1.1; }
+
+/* Collapsed Styles */
+.sidebar.is-collapsed { width: 70px; min-width: 70px; margin-left: 0; }
+.sidebar.is-collapsed li a { justify-content: center; padding: 12px 0; gap: 0; margin: 2px 5px; border-radius: 3px; }
+.sidebar.is-collapsed li a .fa-fw, .sidebar.is-collapsed li a .svg-inline--fa { margin-right: 0; font-size: 1.3em; color: rgba(255, 255, 255, 0.8); }
+.sidebar.is-collapsed .sidebar-item-label, .sidebar.is-collapsed .expand-arrow { display: none; }
+.sidebar.is-collapsed .sidebar-section-heading { padding: 0; margin: 0; height: 0; overflow: hidden; }
+.sidebar.is-collapsed .sidebar-hr { display: none; }
+/* Collapsed Brand */
+.sidebar.is-collapsed li.brand-item a { padding: 5px 0; justify-content: center; display: flex; height: 60px; }
+.sidebar.is-collapsed li.brand-item a .mainItem { justify-content: center; text-align: center; width: 100%; gap: 0; }
+.sidebar.is-collapsed li.brand-item a img.Navlogo { width: 40px; height: 40px; margin-right: 0; padding: 3px; }
+.sidebar.is-collapsed li.brand-item a .brand-text { display: none; }
+/* Collapsed Selector/Active */
+.sidebar.is-collapsed .selector-active { display: none !important; }
+.sidebar.is-collapsed li.active a { background-color: rgba(255, 255, 255, 0.15); color: #fff; font-size: 14px; }
+.sidebar.is-collapsed li.active a .svg-inline--fa { color: #fff; }
+.sidebar.is-collapsed li:first-child.active a { background-color: transparent; }
+
+/* Subtitle Styles */
+.sidebar ul.sidebar-submenu { list-style: none; padding: 0; margin: 0; padding-left: 15px; }
+.sidebar li.sidebar-subtitle > a { padding-left: 25px; font-size: 13px; font-weight: normal; color: rgba(255, 255, 255, 0.7); margin-left: 10px; margin-top: 0; margin-bottom: 0; }
+.sidebar li.sidebar-subtitle > a:hover { color: #fff; }
+.sidebar li.sidebar-subtitle.active > a { color: #3c3c3c; font-weight: 600; background-color: transparent; }
+.sidebar li.sidebar-subtitle.active a .svg-inline--fa { color: #3c3c3c; }
+.sidebar.is-collapsed li.sidebar-subtitle { display: none; }

@@ -1,0 +1,184 @@
+/* Header.css */
+
+/* Basic Header Styles (keep or adapt yours) */
+.main-content-header {
+  display: flex;
+  justify-content: flex-end; /* Align items to the right */
+
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Space between profile section and logout icon */
+}
+
+.icon-placeholder {
+  cursor: pointer;
+  font-size: 1.6rem; /* Adjust icon size */
+  color: #495057;
+  transition: color 0.2s ease-in-out;
+  display: flex; /* Helps alignment */
+  align-items: center; /* Helps alignment */
+  justify-content: center; /* Helps alignment */
+  padding: 5px; /* Add some padding for easier clicking */
+  border-radius: 4px; /* Optional: round corners */
+}
+
+.icon-placeholder:hover,
+.icon-placeholder:focus {
+  color: #3c3c3c85;
+}
+.icon-placeholder:focus {
+   outline: 2px solid #3c3c3c42; /* Focus indicator */
+   outline-offset: 2px;
+}
+
+.header-icon {
+  display: block;
+}
+
+
+/* --- User Profile Section --- */
+.user-profile-section {
+  position: relative; /* Needed for absolute positioning of the popup */
+}
+
+/* Style the trigger icon container if needed */
+.user-icon-container {
+  /* Inherits from .icon-placeholder */
+}
+
+
+/* --- User Info Popup --- */
+.user-info-popup {
+  position: absolute;
+  top: calc(100% + 8px); /* Position below the icon + 8px gap */
+  right: 0; /* Align popup to the right edge of the icon section */
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 10px 0; /* Padding top/bottom, no side padding needed if items have it */
+  min-width: 180px; /* Minimum width */
+  z-index: 1000; /* Ensure it's above other content */
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  font-size: 0.9rem;
+}
+
+.user-info-item {
+    padding: 8px 15px; /* Padding for each item */
+    white-space: nowrap; /* Prevent text wrapping */
+    color: #333;
+}
+
+.user-info-name {
+  font-weight: 600; /* Make name slightly bolder */
+}
+
+.user-info-role {
+  font-size: 0.8rem; /* Make role slightly smaller */
+  color: #666;
+  border-top: 1px solid #eee; /* Optional separator */
+  margin-top: 5px; /* Optional space above separator */
+  padding-top: 8px; /* Space below separator */
+}
+
+/* --- Logout Icon --- */
+.logout-icon-container {
+   /* Inherits from .icon-placeholder */
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px); /* Position below the trigger icon + gap */
+  right: 0; /* Align to the right */
+  background-color: white;
+  border: 1px solid #e3e6f0; /* Lighter border */
+  border-radius: 0.35rem; /* Standard Bootstrap radius */
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Standard shadow */
+  min-width: 220px; /* Adjust width as needed */
+  z-index: 1050; /* Ensure it's above other content */
+  padding-top: 0.5rem; /* Space above first item */
+  padding-bottom: 0.5rem; /* Space below last item */
+  list-style: none; /* Remove default list styles if applied */
+  font-size: 0.9rem;
+}
+
+/* Styling for the user info section at the top */
+.user-dropdown .user-info-section {
+  padding: 0.5rem 1.25rem; /* Padding around user info */
+  margin-bottom: 0.5rem; /* Space before separator */
+}
+
+.user-dropdown .user-name {
+  font-weight: 600;
+  color: #5a5c69; /* Darker gray */
+  margin-bottom: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Prevent long names breaking layout */
+}
+
+.user-dropdown .user-role {
+  font-size: 0.8rem;
+  color: #858796; /* Lighter gray */
+}
+
+/* The separator line */
+.user-dropdown .dropdown-separator {
+  height: 1px;
+  margin: 0.5rem 0; /* Space above and below */
+  overflow: hidden;
+  background-color: #eaecf4; /* Light gray separator */
+  border: 0;
+}
+
+/* Styling for the unordered list containing actions */
+.user-dropdown ul {
+  list-style: none; /* Remove bullets */
+  padding: 0;
+  margin: 0;
+}
+
+/* Styling for each list item (action) */
+.user-dropdown li {
+  display: block; /* Ensure items take full width */
+  padding: 0.5rem 1.25rem; /* Padding inside list items */
+  cursor: pointer;
+  color: #5a5c69;
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+  white-space: nowrap;
+}
+
+/* Hover effect for list items */
+.user-dropdown li:hover {
+  background-color: #f8f9fc; /* Light background on hover */
+  color: #3a3b45;
+}
+
+/* Styling for icons within list items */
+.user-dropdown .dropdown-icon {
+  margin-right: 0.75rem; /* Space between icon and text */
+  width: 1.1em; /* Fixed width for alignment */
+  text-align: center;
+  color: #b7b9cc; /* Muted icon color */
+}
+
+/* Styling for the Link component within list items */
+.user-dropdown .dropdown-link {
+  color: inherit; /* Inherit color from parent li */
+  text-decoration: none; /* Remove underline from link */
+  display: inline-block; /* Or block if you want link to fill li */
+}
+
+/* Optional: Specific styling for logout icon if needed */
+.user-dropdown .logout-icon {
+  color: #e74a3b; /* Example: Red color for logout icon */
+}
+
+/* Optional: Adjust hover color for logout icon */
+.user-dropdown li:hover .logout-icon {
+    color: #c73a2b; /* Darker red on hover */
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Chantier</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ asset('css/index.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/create.css') }}">
+    <style>
+        .error-message {
+            color: red;
+        }
+        .has-error input, .has-error textarea {
+            border-color: red;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    @include('sidebar')
+    <div class="container">
+        <h1>Create New Chantier</h1>
+        <form action="{{ route('chantiers.store') }}" method="POST">
+            @csrf
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" name="description" class="form-control @error('description') is-invalid @enderror" required value="{{ old('description') }}">
+                @error('description')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
+            </div>
+            <div class="form-group">
+                <label for="code_chantier">Code Chantier</label>
+                <input type="text" name="code_chantier" class="form-control @error('code_chantier') is-invalid @enderror" required value="{{ old('code_chantier') }}">
+                @error('code_chantier')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
+            </div>
+            <div class="form-group">
+                <label for="id_domaine">Domaine</label>
+                <select name="id_domaine" class="form-control @error('id_domaine') is-invalid @enderror" required>
+                    <option value="">Select Domaine</option>
+                    @foreach($domaines as $domaine)
+                        <option value="{{ $domaine->Code_Domaine }}" {{ old('id_domaine') == $domaine->Code_Domaine ? 'selected' : '' }}>
+                            {{ $domaine->Description }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('domaine')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,395 @@
+.app-login-background {
+    background-image: url('../../public/bg3.jpg'); /* Change to your image file name */
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    position: relative; 
+    z-index: 0;
+}
+/* ================================================
+   Login Component Styles (Base + Responsive)
+   - Based on user-provided styles
+   - Includes responsive overrides
+================================================ */
+
+/* --- Font Imports (Assuming you have these linked in HTML or imported elsewhere) --- */
+/* @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Nunito:wght@700&display=swap'); */
+
+/* --- Base Body Style (from provided code) --- */
+/* Applying background directly to body might affect other pages.
+   Consider applying it to the specific login route container if needed.
+   For now, we assume it's intended globally or handled by routing. */
+   body {
+    /* background-image: #3C3C3C; /* This should be background-color */
+    background-color: #3C3C3C;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    /* overflow: hidden; /* Be careful with this - might prevent scrolling if content overflows */
+    font-family: 'Poppins', sans-serif;
+  }
+
+  /* --- Login Zone Base Styles --- */
+  .loginZone {
+    display: flex; /* Ensure flex is explicitly set */
+    justify-content: flex-end; /* Keep the original alignment */
+    width: 75%; /* Default width from component */
+    margin: 5rem auto; /* Default margin */
+    background: #3C3C3C;
+    height: 500px;
+    min-height: 500px; /* Use min-height instead if needed */
+    box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.11);
+    transition: all 0.3s ease-in-out;
+    border-radius: 40px;
+    overflow: hidden; /* Important to contain rounded corners */
+  }
+  
+  /* --- Logo Zone Base Styles --- */
+  .logoZone {
+    display: flex; /* Ensure flex properties work */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 45%; /* Original width */
+    padding: 2.5rem; /* Use rem for scalable padding */
+    box-sizing: border-box;
+    text-align: center;
+  }
+  
+  .logoZone h1 {
+    font-weight: bolder;
+    font-size: 24px; /* Consider using rem or em */
+    color: rgb(255, 255, 255);
+    margin-bottom: 1.5rem; /* Add space below heading */
+  }
+  
+  .logoZone img {
+    width: 230px; /* Original size */
+    max-width: 100%; /* Prevent overflow */
+    height: auto;
+  }
+  
+  
+  /* --- Form Zone Base Styles --- */
+  .formZone {
+    display: flex; /* Ensure flex properties work */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 60%; /* Original width */
+    background: rgba(255, 255, 255, 0.98);
+    padding: 2rem; /* Consistent padding */
+    box-sizing: border-box;
+    border-radius: 0 40px 40px 0; /* Apply rounding only to right side */
+    /* Inherits overall border-radius from .loginZone */
+  }
+  
+  .formZone h1 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: bolder;
+    font-size: 28px; /* Consider rem/em */
+    color: black;
+    margin-bottom: 1.5rem; /* Space below heading */
+  }
+  
+  /* --- Inner Form Containers Base --- */
+  /* These fixed widths WILL cause problems, we override them below */
+  .formZone > .container {
+    width: 70%; /* Original */
+    /* height: 58%; REMOVED - Let content dictate height */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center labels/inputs within this container */
+    margin-bottom: 1rem; /* Space before remember/forgot section */
+  }
+  
+  .formZone > .container-2 {
+    width: 60%; /* Original */
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Align items vertically */
+    margin-bottom: 1.5rem; /* Space before submit button */
+  }
+  
+  /* --- Form Elements Base Styles --- */
+  .label {
+    align-self: flex-start; /* Align labels left */
+    padding: 0; /* Remove padding */
+    margin-bottom: 0.5rem; /* Space below label */
+    font-size: 13px;
+    font-weight: bold;
+    color: #3C3C3C;
+  }
+  
+  .input {
+    box-shadow: 0px 0px 2px #3c3c3c5d;
+    border-radius: 20px;
+    width: 100%; /* Inputs should take full width of their container */
+    height: 40px;
+    padding: 10px 20px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    border: none;
+    background: #F1F0F0;
+    margin-bottom: 1rem; /* Consistent space below inputs */
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    box-sizing: border-box;
+  }
+  .input:last-of-type {
+      margin-bottom: 0; /* Remove margin from last input in group */
+  }
+  
+  .input:focus, .input:hover {
+    outline: none;
+    box-shadow: 0px 0px 8px rgba(60, 60, 60, 0.5);
+    transform: scale(1.02);
+  }
+  
+  .submit {
+    border-radius: 50px;
+    background: #3C3C3C;
+    border: none;
+    color: #ffffff;
+    letter-spacing: 1px;
+    padding: 8px 60px; /* Original padding */
+    box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.11);
+    font-size: 11px;
+    margin-top: 10px; /* Use margin-top instead */
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .submit:hover:not(:disabled) {
+    background: #5A5A5A;
+    transform: scale(1.05);
+  }
+  .submit:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+  }
+  
+  /* --- Custom Radio Button --- */
+  .container-2 .d-flex { /* Target the container for radio+label */
+      align-items: center;
+  }
+  
+  input[type="radio"].input { /* More specific selector */
+    width: 14px !important; /* Override general input width */
+    height: 14px !important; /* Override general input height */
+    margin-right: 8px !important; /* More space */
+    margin-bottom: 0 !important; /* Remove margin bottom */
+    padding: 0 !important; /* Remove padding */
+    box-shadow: none !important; /* Remove input shadow */
+    appearance: none;
+    background: #F1F0F0; /* Match input background */
+    border: 1.5px solid #3C3C3C;
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+    vertical-align: middle; /* Align with label text */
+    flex-shrink: 0; /* Prevent shrinking */
+    transition: background-color 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+  }
+  input[type="radio"].input:focus, input[type="radio"].input:hover {
+      transform: scale(1.1); /* Scale radio on hover/focus */
+      box-shadow: none; /* Don't use input focus shadow */
+  }
+  
+  input[type="radio"].input:checked {
+    background-color: #3C3C3C;
+    border-color: #3C3C3C;
+  }
+  
+  input[type="radio"].input:checked::before {
+    content: "";
+    width: 6px; /* Adjusted dot size */
+    height: 6px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: background-color 0.3s ease;
+  }
+  
+  .radioLabel {
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
+    font-size: 11px;
+    color: #3C3C3C;
+    vertical-align: middle; /* Align with custom radio */
+  }
+  
+  .passLabel {
+    font-size: 11px;
+    /* padding-left: 5px; Removed */
+    color: grey;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .passLabel:hover {
+      color: #3c3c3c;
+      text-decoration: underline;
+  }
+  
+  /* --- Error Message Styling --- */
+  /* Target the div via its container and inline style signature */
+  .formZone .container > div[style*="color: red"] {
+      width: 100% !important;
+      text-align: center !important;
+      font-size: 11px !important; /* Your specified size */
+      margin-top: 0.5rem !important; /* Pull up slightly */
+      margin-bottom: 0.5rem !important; /* Space below error */
+      padding: 0 0.5rem;
+      box-sizing: border-box;
+      word-wrap: break-word;
+      font-weight: 500;
+  }
+  
+  
+  /* ================================================
+     Responsive Overrides
+  ================================================ */
+  
+  /* --- Medium Screens (Tablets, Larger Phones) --- */
+  @media (max-width: 992px) {
+      .loginZone {
+          width: 90% !important; /* Make wider than desktop w-75 */
+          margin: 3rem auto !important; /* Adjust margin */
+      }
+       .formZone > .container {
+          width: 80% !important; /* Allow inner container more space */
+      }
+       .formZone > .container-2 {
+          width: 75% !important; /* Allow inner container more space */
+      }
+  }
+  
+  /* --- Small Screens (Phones) --- */
+  @media (max-width: 768px) {
+  
+      /* Allow body scroll if needed */
+      body {
+          /* overflow: auto !important; */ /* Uncomment if scrolling is needed */
+      }
+  
+      /* Stack logo and form vertically */
+      .loginZone {
+          flex-direction: column !important;
+          width: 95% !important;
+          max-width: 450px; /* Max width for phones */
+          margin: 2rem auto !important; /* Center and add vertical margin */
+          min-height: unset !important; /* Remove min-height */
+          height: auto !important; /* Let content dictate height */
+          border-radius: 30px; /* Slightly smaller radius */
+      }
+  
+      /* Logo area takes full width on top */
+      .logoZone {
+          width: 100% !important;
+          padding: 2rem 1.5rem !important;
+          border-bottom: 1px solid #555; /* Separator */
+          border-radius: 30px 30px 0 0 !important; /* Adjust rounding */
+          order: 1; /* Explicitly first */
+      }
+      .logoZone h1 {
+          font-size: 20px; /* Adjust size */
+      }
+      .logoZone img {
+          width: 160px !important; /* Smaller logo */
+      }
+  
+  
+      /* Form area takes full width below */
+      .formZone {
+          width: 100% !important;
+          padding: 1.8rem 1.5rem !important; /* Adjust padding */
+          border-radius: 0 0 30px 30px !important; /* Adjust rounding */
+          order: 2; /* Explicitly second */
+      }
+       .formZone h1 {
+          font-size: 24px; /* Adjust size */
+          margin-bottom: 1.5rem;
+      }
+  
+      /* CRITICAL: Override inner container fixed widths */
+      .formZone > .container {
+          width: 100% !important; /* Use full width */
+          padding: 0 0.5rem; /* Add slight horizontal padding */
+          box-sizing: border-box;
+          margin-bottom: 0.8rem; /* Adjust spacing */
+      }
+  
+      .formZone > .container-2 {
+          width: 100% !important; /* Use full width */
+          padding: 0 0.5rem; /* Add slight horizontal padding */
+          box-sizing: border-box;
+          flex-direction: column; /* Stack vertically */
+          align-items: flex-start; /* Align left */
+          gap: 0.75rem; /* Space between stacked items */
+          margin-bottom: 1.2rem; /* Adjust spacing */
+      }
+  
+      /* Ensure remember me doesn't get pushed */
+       .container-2 .d-flex {
+          width: 100%; /* Allow it to take space if needed */
+      }
+  
+      .label {
+          font-size: 12px;
+          margin-bottom: 0.3rem;
+      }
+  
+      .input {
+         height: 38px; /* Slightly smaller */
+         padding: 8px 15px;
+         font-size: 12px;
+         margin-bottom: 0.8rem; /* Adjust spacing */
+      }
+       input[type="radio"].input {
+         width: 13px !important;
+         height: 13px !important;
+      }
+       input[type="radio"].input:checked::before {
+         width: 5px;
+         height: 5px;
+      }
+  
+  
+      .submit {
+          width: 100%; /* Full width button */
+          padding: 10px 20px; /* Adjust padding */
+          font-size: 12px; /* Adjust font size */
+          margin-top: 0.5rem;
+      }
+  
+       .passLabel, .radioLabel {
+          font-size: 10px; /* Smaller text */
+       }
+  }
+  
+  /* --- Extra Small Screens (Optional Fine-tuning) --- */
+  @media (max-width: 480px) {
+      .loginZone {
+          width: 100% !important; /* Edge-to-edge */
+          margin: 0 !important;
+          border-radius: 0 !important; /* Remove rounding */
+          box-shadow: none !important;
+          border: none !important;
+      }
+  
+      .logoZone, .formZone {
+           padding: 1.5rem 1rem !important; /* Reduce padding further */
+           border-radius: 0 !important;
+           border-bottom-color: #444;
+      }
+  
+       .logoZone h1 { font-size: 18px; }
+       .logoZone img { width: 140px !important; }
+       .formZone h1 { font-size: 22px; }
+  }

@@ -1,0 +1,575 @@
+body {
+  background-image:#3C3C3C;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  overflow: hidden;
+  font-family: 'Poppins', sans-serif;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*///////////////////////////////////////////////////////*/
+.titre{
+  font-family: 'Poppins', sans-serif;
+}
+:root {
+  --main-bg: #3c3c3c; /* Lighter grey for main background */
+  --card-bg: white;
+  --text-dark: #333;
+  --text-light: #f0f0f0;
+  --text-muted: #6c757d;
+  --border-color: #e0e0e0;
+  --yellow-card: #ffc107;
+  --red-card: #dc3545;
+  --blue-card: #0d6efd; /* Adjusted blue slightly */
+  --sidebar-width: 20%;
+  --card-border-radius: 15px;
+  --indicator-height: 45px; /* Should match sidebar item interactive height */
+  --indicator-width: 98%; /* How far the white shape extends */
+}
+.app-login-background {
+  background-image: url('../public/bg2.jpg'); /* Change to your image file name */
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative; 
+  z-index: 0;
+}
+body {
+ 
+ 
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--main-bg);
+  color: var(--text-dark);
+}
+
+.app-container {
+  min-height: 100vh;
+ 
+  width: 100%;
+  background-color: #3C3C3C;
+}
+
+/* --- General Card Styling --- */
+.card {
+  background-color: var(--card-bg);
+  border-radius: var(--card-border-radius);
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+}
+.card-title {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-weight: 600;
+    font-size: 1.2em;
+    
+}
+.main-content{
+  font-size: 15px;
+}
+
+
+
+
+
+/* --- Main Content Area --- */
+
+.main-content-header {
+  padding: 15px 15px;
+  display: flex;
+  justify-content: flex-end; /* Push icons to the right */
+  align-items: center;
+
+  /* Rounded top-left corner */
+  border-top-left-radius: 25px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Space between icons */
+}
+
+.icon-placeholder { /* Simple placeholder */
+  font-size: 1.5em;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.header-icon {
+  font-size: 1.4rem;
+  color: #3C3C3C;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.header-icon:hover {
+  color: #1e1d1d;
+}
+
+.main-content-body {
+  padding: 30px; /* Padding for the content area below header */
+}
+
+/* --- Specific Sections --- */
+.stats-section {
+  padding-inline: 200px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  padding: 20px;
+  border-radius: var(--card-border-radius);
+  color: white;
+
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.stat-card-yellow { background-color: var(--yellow-card); color: var(--text-dark);}
+.stat-card-red { background-color: var(--red-card); }
+.stat-card-blue { background-color: var(--blue-card); }
+
+.stat-card-title {
+  font-size: 1.0em;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+.stat-card-value {
+  font-size: 2.2em;
+  font-weight: 700;
+}
+
+.projects-section {
+   
+    margin-bottom: 30px;
+}
+
+
+.project-card .placeholder-content { /* Style placeholders */
+    min-height: 100px;
+    background-color: #eee;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    font-style: italic;
+}
+
+
+.conventions-section .placeholder-content { /* Style placeholders */
+    background-color: #eee;
+    border-radius: 8px;
+    color: #aaa;
+    font-style: italic;
+}
+
+.conventions-controls {
+    margin-bottom: 20px;
+}
+.search-bar-placeholder {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+.search-input-group-container{
+  background: white;
+  border-radius: 30px;
+  padding-inline: 10px;
+  padding-block: 5px;
+  border:1px rgba(0, 0, 0, 0.126) solid;
+  
+}
+.searchInput{
+  border-radius:0px 30px 30px 0px !important;
+}
+.main-content {
+  flex-grow: 1; 
+  flex-shrink: 0;
+  width: 83vw; /* Default full width */
+
+  padding:20px;
+  border-radius: 40px;
+  overflow: hidden; 
+  margin: 10px;  
+  margin-left:0px;
+height: calc(100vh - 20px);
+  background-color: white;
+}
+
+/* Wrapper for routed content */
+.routed-content-wrapper {
+  overflow-y: auto; /* Allow vertical scroll ONLY for the content */
+  overflow-x: hidden;
+  padding: 1.5rem; /* Add padding around the content */
+  /* flex-grow: 1; is set inline via Bootstrap class */
+}
+
+/* --- Convention Table Specific adjustments --- */
+
+
+/* Make the card containing the table flexible */
+.conventions-table-container .card {
+    margin-bottom: 0; /* Remove default bottom margin inside the flex container */
+    border: none;
+    box-shadow: 0px 0px 0px 0px transparent;
+}
+.cardSearch{
+  background: #F6F6F6;
+  border: none;
+  border-radius: 20px;
+  padding: 13px;
+}
+.createBtn{
+  background: #3C3C3C;
+  border-radius: 50px;
+  padding-inline: 20px;
+  padding-block: 5px;
+  color:white;
+  font-weight: 600;
+}
+
+.cardTab{
+  background: transparent;
+  border: none;
+}
+.conventions-table-container .table-responsive {
+    /* flex-grow: 1; is set inline via Bootstrap class */
+    overflow-y: auto; /* Enable vertical scroll */
+    overflow-x: auto; /* Keep horizontal scroll */
+    /* Consider a max-height if flex-grow isn't enough, but usually is */
+    /* max-height: calc(100vh - 250px); Example calculation */
+}
+
+/* Ensure table doesn't force width */
+.conventions-table-container .table {
+   margin-bottom: 0;
+}
+
+/* Adjust pagination margin */
+.conventions-table-container nav[aria-label="Table pagination"] {
+    margin-top: 1rem; /* Use Bootstrap spacing unit */
+    /* flex-shrink: 0; is set inline via Bootstrap class */
+}
+
+/* Add sticky header for table */
+.table thead.sticky-top,.tableList {
+    position: sticky;
+    top: 0; /* Stick to the top of the scrollable container (.table-responsive) */
+    z-index: 10; /* Ensure it's above table body */
+    /* Background needed to prevent seeing through */
+}
+/* Add this to your CSS file (e.g., App.css or a component-specific CSS) */
+
+.search-input-group-container {
+  max-width: 450px; /* Adjust this value as needed */
+  
+  @media (max-width: 768px) {
+    max-width: 90%;
+  }
+  @media (max-width: 576px) {
+    max-width: 100%;
+  }
+ 
+}
+
+.tableList td,.tableList th{
+  border:none;
+
+ 
+}
+.tableList tr td:first-child, .tableList th:first-child {
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+}
+
+.tableList tr td:last-child, .tableList th:last-child {
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+/* Apply border-radius and clipping to the container or table */
+.table-responsive { /* Or your .card element */
+  border-radius: 8px; /* Adjust as needed */
+  overflow: hidden; /* Important to clip the corners of the table inside */
+}
+
+/* Style the table itself if needed */
+.tableList {
+  border-collapse: separate; /* Needed for cell spacing if adding borders to cells */
+  border-spacing: 0;       /* Remove spacing */
+}
+
+
+.tableList thead th { 
+  background-color: #f5f5f5 ;
+  color: #3C3C3C ; 
+  text-transform: capitalize ;
+
+
+
+}
+
+.tableList tbody tr:nth-child(odd) td { 
+  background-color: #ffffff !important; 
+}
+
+/* Even row cells */
+.tableList tbody tr:nth-child(even) td {
+  background-color: #f5f5f5 !important;
+}
+
+
+.tableList.table-hover tbody tr:hover td {
+    background-color: #e2e6ea !important; /* Example hover color */
+}
+.custom-shadow{
+  box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.15); /* Moderate size shadow */
+
+}
+
+/* Add this to your global CSS file */
+/* Add this to your global CSS file (e.g., App.css or index.css) */
+
+
+
+
+/* Other styles like .form-control-rounded, etc. */
+.more-rounded-modal-content {
+  border-radius: 1.5rem !important; 
+ 
+  border: none !important;
+
+  /* Apply shadow */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+
+  overflow: hidden !important;
+}
+
+/* Style the body *within* the rounded modal */
+.more-rounded-modal-content .modal-body {
+  background-color: #f8f9fa; 
+}
+
+                             
+.more-rounded-modal-content .convention-visualisation-container .card-title {
+ color: #2e2e2e; /* Custom title color */
+ font-weight: 600;
+}
+
+/*////////////////////////////////*/
+
+.form-control-rounded {
+    border-radius: 1.5rem !important;
+    background-color: #f8f9fa !important; 
+    border-color: #dee2e6 !important; 
+}
+.form-control-rounded:focus {
+    background-color: #fff !important;
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+.form-button-rounded {
+    border-radius: 1.5rem !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    font-weight: 500;
+}
+
+
+/*/////////////////////////////////*/
+.divFile{
+  border-radius: 50px;
+  background: #252525;
+  width: 60px;
+  height: 60px;
+  padding: 10px;
+  justify-self: center;
+
+}
+.divFile:hover{
+  cursor: pointer;
+  transform: scale(1.02); 
+}
+
+/*////////////////////////*/
+.convention-form-container{
+  background-color: #fff;
+                border-radius: 20px; 
+                box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+                height: 100%;
+                overflow-y: auto;
+        
+                
+  
+}
+
+.dl-compact dt {
+    font-weight: 600;
+    padding-right: 0.5em; }
+
+.dl-compact dd {
+    word-break: break-word; 
+}
+
+.text-truncate-multiline {
+    display: -webkit-box;
+  
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4; 
+    max-height: calc(1.4em * 3);
+}
+.partenaireShow{
+  background: #f8f9fa ;
+  border: 1px rgba(0, 0, 0, 0.075) solid;
+  border-radius: 7px;
+  padding: 3px;
+  margin: 3px;
+}
+.dynamic-table-container nav[aria-label="Table pagination"] {
+  border-top: 1px solid #e9ecef; /* Example: Add top border */
+}
+/* --- Styling for Custom Minimal Pagination --- */
+
+/* Target the specific pagination container's UL */
+.custom-minimal-pagination .pagination {
+  margin-bottom: 0;
+  padding: 0;
+  /* Add gap directly to the flex container if needed, overrides margin below */
+  /* display: flex; */
+  /* gap: 0.25rem; */
+}
+
+/* Hide First/Last page buttons */
+.custom-minimal-pagination .page-item.first-page,
+.custom-minimal-pagination .page-item.last-page {
+  display: none !important;
+}
+
+/* Base style for ALL buttons (arrows and numbers) inside page items */
+.custom-minimal-pagination .page-item .page-link {
+  display: inline-flex; /* Helps with alignment */
+  justify-content: center;
+  align-items: center;
+  background-color: transparent !important;
+  border: none !important;
+  color: #495057 !important; /* Default text color (dark grey) */
+  box-shadow: none !important;
+  padding: 0.25rem 0.5rem !important; /* Base padding */
+  margin: 0 2px; /* Horizontal spacing between items */
+  min-width: 30px;
+  text-align: center;
+  font-weight: 600; /* Base font weight */
+  font-size: 0.9em; /* Base font size */
+  line-height: 1.5; /* Ensure text fits vertically */
+  border-radius: 0.25rem;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+}
+
+/* Specific style for the PREV/NEXT arrow buttons */
+.custom-minimal-pagination .page-item.prev-page .page-link,
+.custom-minimal-pagination .page-item.next-page .page-link {
+  font-weight: bold; /* Bolder arrows */
+  font-size: 0.9em; /* Slightly larger arrows */
+   /* Adjust padding slightly if needed for visual balance */
+   padding-left: 0.4rem;
+   padding-right: 0.4rem;
+   margin-top:3px;
+}
+
+/* Specific style for the NUMBER buttons */
+.custom-minimal-pagination .page-item.page-number-item .page-link {
+  font-weight: 600; /* Weight for numbers */
+  font-size: 0.9em; /* Font size for numbers */
+}
+
+
+/* Hover effect for non-disabled, non-active buttons */
+.custom-minimal-pagination .page-item:not(.active):not(.disabled) .page-link:hover {
+  color: #ffc107 !important;       /* Blue hover text */
+  background-color: #ececec !important; /* Light grey background hover */
+}
+
+/* Active page number style */
+.custom-minimal-pagination .page-item.active .page-link {
+  color: #ffc107 !important; /* Yellow for active page number */
+  font-weight: 700;        /* Make active number bolder */
+  background-color: transparent !important; /* No background */
+  /* Optional active indicator */
+  /* border-bottom: 2px solid #ffc107; */
+  /* padding-bottom: calc(0.25rem - 2px); */ /* Adjust padding if using border */
+}
+
+/* Disabled state for ANY page item button */
+.custom-minimal-pagination .page-item.disabled .page-link {
+  color: #adb5bd !important; /* Light grey disabled color */
+  background-color: transparent !important;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* Style for ellipsis SPAN (if used) */
+.custom-minimal-pagination .page-item.disabled span.page-link.ellipsis {
+    color: #adb5bd !important; /* Match disabled color */
+    cursor: default;
+    opacity: 1; /* Don't fade ellipsis */
+    font-weight: 600; /* Match number weight */
+    background-color: transparent !important; /* Ensure no background */
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove focus outline for all pagination buttons */
+.custom-minimal-pagination .page-item .page-link:focus {
+    box-shadow: none !important;
+    outline: 0;
+    text-decoration: none !important; /* Remove potential focus underline */
+}
+.app-login-background {
+  background-image: url('../public/bg2.jpg'); /* Change to your image file name */
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative; 
+  z-index: 0;
+}
+.modal-custom-large{
+  max-width: 90%
+}
+@media (min-width: 1200px) {
+  .modal-custom-large .modal-dialog {
+     max-width: 90%; /* Or your desired fixed width like 1400px */
+  }
+}
