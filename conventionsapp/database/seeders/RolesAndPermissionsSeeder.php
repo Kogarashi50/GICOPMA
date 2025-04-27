@@ -80,6 +80,7 @@ class RolesAndPermissionsSeeder extends Seeder
             // --- Admin Area Permissions ---
             'manage users', // Full CRUD for Users
             'manage roles', // Full CRUD for Roles/Permissions
+            'view history',
         ];
 
         // --- Create Permissions ---

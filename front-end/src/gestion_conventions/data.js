@@ -75,6 +75,8 @@ const PERMISSIONS = {
     // --- Admin ---
     MANAGE_USERS: 'manage users',
     MANAGE_ROLES: 'manage roles',
+    VIEW_HISTORY: 'view history',
+
 };
 // ---
 
@@ -137,6 +139,8 @@ const menuItems = [
   { id: 103, type: 'heading', label: "PARAMÉTRAGE", path: '#' },
   { id: 14, icon: faUsersCog, label: "Utilisateurs", path: "/users", type: 'item', requiredPermission: PERMISSIONS.MANAGE_USERS },
   { id: 98, icon: faUserTag, label: "Rôles & Permissions", path: "/roles", type: 'item', requiredPermission: PERMISSIONS.MANAGE_ROLES },
+  { id: 97, icon: faUserTag, label: "Historique d'activité", path: "/historique", type: 'item', requiredPermission: PERMISSIONS.VIEW_HISTORY },
+
 
 ];
 

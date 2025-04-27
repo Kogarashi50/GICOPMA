@@ -89,6 +89,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/password', [UserController::class, 'updatePassword']) // <<<--- INCLUDED from Api 1
         ->name('api.user.password.update');
 
+    //---- logs history---/
+    Route::middleware('permission:view history')->group(function(){
+        Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('api.activity_log.index');
+        Route::get('/activity-log/event-types', [ActivityLogController::class, 'getEventTypes'])->name('api.activity_log.event_types');
+        Route::get('/activity-log/{id}', [ActivityLogController::class, 'show'])->where('id', '[0-9]+')->name('api.activity_log.show');
+    });
     // --- Dashboard ---
     Route::prefix('dashboard')->middleware('permission:view dashboard')->group(function () {
         Route::get('/', [DashboardController::class, 'index']);
@@ -241,16 +247,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // --- Document View ---
     Route::get('/document/{document}', [DocumentController::class, 'show']); // Add appropriate permission
 
-    // --- Activity Log Routes --- <<<--- ADDED from Api 2
-    // Route::middleware('permission:view activity log')->group(function () { // Consider adding permission
-        Route::get('/activity-log', [ActivityLogController::class, 'index'])
-             ->name('api.activity_log.index');
-        Route::get('/activity-log/event-types', [ActivityLogController::class, 'getEventTypes'])
-             ->name('api.activity_log.event_types');
-        Route::get('/activity-log/{id}', [ActivityLogController::class, 'show'])
-             ->where('id', '[0-9]+')
-             ->name('api.activity_log.show');
-    // });
+
 
 }); // End auth:sanctum group
 
