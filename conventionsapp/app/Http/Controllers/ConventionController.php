@@ -302,26 +302,112 @@ class ConventionController extends Controller
         try {
             $convention->load([
                 'documents', 'programme', 'projet', 'avenants',
-                'convParts' => function ($query) { $query->with('partenaire:Id,Description,Description_Arr,Code')->withSum('versements as Montant_Verse', 'montant_verse'); }
+                'convParts' => function ($query) {
+                    // Keep the select for now, it SHOULD be efficient and correct
+                    $query->with('partenaire:Id,Description,Description_Arr,Code')
+                          ->withSum('versements as Montant_Verse', 'montant_verse');
+                }
             ]);
+
+            // --- Debugging point 1: Directly check the loaded Eloquent relationship ---
+            $problematicConvPart = $convention->convParts->firstWhere('Id_Partenaire', 23);
+            if ($problematicConvPart && $problematicConvPart->partenaire) {
+                Log::debug("[DEBUG ID: {$conventionId}] Eloquent Partner ID 23 Data BEFORE toArray:", [
+                    'ID' => $problematicConvPart->partenaire->Id,
+                    'Description' => $problematicConvPart->partenaire->Description, // Check this value directly
+                    'Description_Arr' => $problematicConvPart->partenaire->Description_Arr,
+                    'Code' => $problematicConvPart->partenaire->Code,
+                    'Exists?' => $problematicConvPart->partenaire->exists, // Should be true
+                    'Model Class' => get_class($problematicConvPart->partenaire)
+                ]);
+            } else {
+                 Log::debug("[DEBUG ID: {$conventionId}] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.");
+            }
+            // --- End Debugging Point 1 ---
+
+
             $responseData = $convention->toArray();
-            // Map partners
+
+            // --- Debugging point 2: Check the data AFTER conversion to array ---
+             if (isset($responseData['conv_parts'])) {
+                 foreach ($responseData['conv_parts'] as $convPartArray) {
+                     if (($convPartArray['Id_Partenaire'] ?? null) == 23) {
+                         Log::debug("[DEBUG ID: {$conventionId}] Partner ID 23 Array Data AFTER toArray:", $convPartArray['partenaire'] ?? ['PARTENAIRE_KEY_MISSING']);
+                         break;
+                     }
+                 }
+             }
+            // --- End Debugging Point 2 ---
+
+
             if (isset($responseData['conv_parts']) && is_array($responseData['conv_parts'])) {
-                $responseData['partner_commitments'] = array_map(function ($c) { $p=$c['partenaire'] ?? null; $l=$p['Description_Arr'] ?? ($p['Description'] ?? "ID:{$c['Id_Partenaire']}"); if($p&&$p['Code']){$l="{$p['Code']} - {$l}";} return ['Id_CP'=>$c['Id_CP']??null, 'Id_Partenaire'=>$c['Id_Partenaire']??null, 'label'=>$l, 'Montant_Convenu'=>$c['Montant_Convenu']??null, 'Montant_Verse'=>$c['Montant_Verse']??'0.00', 'is_signatory'=>(bool)($c['is_signatory']??false), 'date_signature'=>$c['date_signature']??null, 'details_signature'=>$c['details_signature']??null]; }, $responseData['conv_parts']);
+                $responseData['partner_commitments'] = array_map(function ($c) {
+                    $p = $c['partenaire'] ?? null;
+                    $partnerLabel = ''; // Initialize label variable
+
+                    if ($p) {
+                        $partnerIdForLog = $p['Id'] ?? $c['Id_Partenaire'] ?? 'UNKNOWN';
+                        // Using !empty which treats null, '', 0, false etc. as empty
+                        // Prioritize Description_Arr
+                        if (!empty($p['Description_Arr'])) {
+                            $partnerLabel = $p['Description_Arr'];
+                             Log::debug("[MAP DEBUG Partner {$partnerIdForLog}] Using Description_Arr: '{$partnerLabel}'");
+                        }
+                        // Fallback to Description
+                        elseif (!empty($p['Description'])) {
+                            $partnerLabel = $p['Description'];
+                             Log::debug("[MAP DEBUG Partner {$partnerIdForLog}] Using Description: '{$partnerLabel}'"); // <<< THIS IS THE KEY LOG FOR ID 23
+                        }
+                        // Fallback to ID if both are 'empty'
+                        else {
+                            $partnerLabel = "ID:{$partnerIdForLog}";
+                             Log::debug("[MAP DEBUG Partner {$partnerIdForLog}] Using Fallback ID: '{$partnerLabel}'");
+                        }
+
+                        // Prepend Code if available
+                        if (!empty($p['Code'])) {
+                            $partnerLabel = "{$p['Code']} - {$partnerLabel}";
+                        }
+
+                    } else {
+                        // Handle case where partner data is missing entirely in the array
+                        $partnerIdForLog = $c['Id_Partenaire'] ?? 'UNKNOWN';
+                        $partnerLabel = "ID:{$partnerIdForLog}";
+                         Log::warning("[MAP DEBUG Partner {$partnerIdForLog}] Partenaire data missing in array map. Using fallback label: '{$partnerLabel}'");
+                    }
+
+
+                    return [
+                        'Id_CP'           => $c['Id_CP'] ?? null,
+                        'Id_Partenaire'   => $c['Id_Partenaire'] ?? null,
+                        'label'           => $partnerLabel, // Use the calculated label
+                        'Montant_Convenu' => $c['Montant_Convenu'] ?? null,
+                        'Montant_Verse'   => $c['Montant_Verse'] ?? '0.00',
+                        'is_signatory'    => (bool)($c['is_signatory'] ?? false),
+                        'date_signature'  => $c['date_signature'] ?? null,
+                        'details_signature' => $c['details_signature'] ?? null
+                    ];
+                }, $responseData['conv_parts']);
                 unset($responseData['conv_parts']);
-            } else { $responseData['partner_commitments'] = []; }
-            // Map documents
-             if (isset($responseData['documents']) && is_array($responseData['documents'])) {
-                $appBaseUrl = rtrim(config('app.url', 'http://localhost'), '/');
-                $responseData['documents'] = array_map(function ($d) use ($appBaseUrl) { $d['url'] = $d['file_path'] ? "{$appBaseUrl}/" . ltrim($d['file_path'], '/') : null; return $d; }, $responseData['documents']);
-             } else { $responseData['documents'] = []; }
+            } else {
+                $responseData['partner_commitments'] = [];
+            }
+
+            // Map documents (keep existing logic)
+            if (isset($responseData['documents']) && is_array($responseData['documents'])) {
+               $appBaseUrl = rtrim(config('app.url', 'http://localhost'), '/');
+               $responseData['documents'] = array_map(function ($d) use ($appBaseUrl) { $d['url'] = $d['file_path'] ? "{$appBaseUrl}/" . ltrim($d['file_path'], '/') : null; return $d; }, $responseData['documents']);
+            } else { $responseData['documents'] = []; }
+
             Log::info("API: Succès récupération détails Convention ID: {$conventionId}");
             return response()->json(['convention' => $responseData], 200);
+
         } catch (ModelNotFoundException $e) {
              Log::warning("API: Convention ID {$conventionId} non trouvée (show).");
              return response()->json(['message' => 'Convention non trouvée.'], 404);
         } catch (\Exception $e) {
-            Log::error("API: Erreur récupération détaillée Convention ID {$conventionId}:", ['message' => $e->getMessage()]);
+            // Log the full exception including stack trace
+            Log::error("API: Erreur récupération détaillée Convention ID {$conventionId}: " . $e->getMessage(), ['exception' => $e]);
             return response()->json(['message' => 'Erreur serveur lors de la récupération des détails.'], 500);
         }
     }
