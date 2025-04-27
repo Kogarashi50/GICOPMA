@@ -435,7 +435,7 @@ const DynamicTable = ({
                                     <li className={`page-item next-page ${!table.getCanNextPage() ? 'disabled' : ''}`}> <button className="page-link page-arrow" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} aria-label="Suivant" title="Suivant"><FontAwesomeIcon icon={faChevronRight} /></button> </li>
                                 </ul>
                                  )}
-                                <div className="d-flex align-items-center gap-1">
+                                <div className="d-flex align-items-center gap-1" >
                                     <span className='small text-muted'>Lignes:</span>
                                     <Form.Select size="sm" value={table.getState().pagination.pageSize} onChange={e => table.setPageSize(Number(e.target.value))} style={{ width: 'auto'}} aria-label="Items per page" >
                                         {[5, 10, 20, 50, 100].map(pageSize => ( <option key={pageSize} value={pageSize}>{pageSize}</option> ))}

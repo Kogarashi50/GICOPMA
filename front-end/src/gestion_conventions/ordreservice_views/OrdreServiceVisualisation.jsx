@@ -8,60 +8,55 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faFilePdf, faFileWord, faFileImage, faFileExcel, faFileAlt, faFileArchive,
     faExternalLinkAlt, faTimes, faInfoCircle, faCalendarAlt, faHashtag,
-    faFileSignature, faStopCircle, faPlayCircle, faPaperclip, faFileContract // Added icons
+    faFileSignature, faStopCircle, faPlayCircle, faPaperclip, faFileContract,
+    faUserTie // Added icon for Fonctionnaire
 } from '@fortawesome/free-solid-svg-icons';
-import '../marches_views/marche.css'
+import '../marches_views/marche.css'; // Assuming this provides the 'holder' class or other styles
+
 // --- Helper Functions ---
 
 // Formats date string (e.g., YYYY-MM-DD HH:MM:SS) to DD/MM/YYYY
 const formatDate = (dateString) => {
     if (!dateString) return '-';
     try {
-        // Take only the date part before potential space
         const datePart = dateString.split(' ')[0];
-        // Basic check for YYYY-MM-DD format
         if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
             throw new Error("Invalid date format expected YYYY-MM-DD");
         }
-        // Split and reassemble for DD/MM/YYYY display
         const [year, month, day] = datePart.split('-');
         return `${day}/${month}/${year}`;
     } catch (e) {
         console.error("Date format error:", dateString, e);
-        return dateString; // Return original string on error
+        return dateString;
     }
 };
 
 // Determines FontAwesome icon based on filename or type
 const getFileIcon = (filenameOrMimeType) => {
-    if (!filenameOrMimeType) return faFileAlt; // Default icon
+    if (!filenameOrMimeType) return faFileAlt;
     const lowerCase = String(filenameOrMimeType).toLowerCase();
     if (lowerCase.includes('pdf')) return faFilePdf;
-    if (lowerCase.includes('doc')) return faFileWord; // Catches .doc, .docx
-    if (lowerCase.includes('xls')) return faFileExcel; // Catches .xls, .xlsx
-    if (['zip', 'rar', '7z'].some(ext => lowerCase.endsWith(ext))) return faFileArchive; // Archive icon
-    // Image check (more comprehensive)
+    if (lowerCase.includes('doc')) return faFileWord;
+    if (lowerCase.includes('xls')) return faFileExcel;
+    if (['zip', 'rar', '7z'].some(ext => lowerCase.endsWith(ext))) return faFileArchive;
     if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].some(ext => lowerCase.endsWith(ext)) || lowerCase.startsWith('image/')) return faFileImage;
-    return faFileAlt; // Default fallback
+    return faFileAlt;
 };
 
 // Constructs the public URL for accessing stored files
-// Adjust baseURL calculation if your /storage route is different
 const getPublicFileUrl = (baseApiUrl, relativePath) => {
-    if (!relativePath || !baseApiUrl) return null; // Return null if no path or base URL
+    if (!relativePath || !baseApiUrl) return null;
     try {
         const url = new URL(baseApiUrl);
         let baseUrl = url.origin;
-        // Attempt to remove '/api' if present in the pathname
         if (url.pathname.includes('/api')) {
             baseUrl += url.pathname.substring(0, url.pathname.indexOf('/api'));
         }
-        baseUrl = baseUrl.replace(/\/$/, ''); // Remove any trailing slash
-        // Assumes files are served from a '/storage/' route linked to storage/app/public
+        baseUrl = baseUrl.replace(/\/$/, '');
         return `${baseUrl}/storage/${relativePath.replace(/^\//, '')}`;
     } catch (e) {
         console.error("Error constructing public URL:", e);
-        return null; // Return null on error
+        return null;
     }
 };
 
@@ -73,7 +68,6 @@ const getTypeDisplay = (typeValue) => {
         case 'arret':
             return { label: 'Ordre d\'Arrêt', icon: faStopCircle, color: 'danger' };
         default:
-            // Fallback for unknown types
             return { label: typeValue || 'Indéfini', icon: faFileSignature, color: 'secondary' };
     }
 };
@@ -93,45 +87,41 @@ const OrdreServiceVisualisation = ({ itemId, onClose, baseApiUrl }) => {
     useEffect(() => {
         let isMounted = true; // Flag to prevent state updates if component unmounts during fetch
 
-        // Validate the input ID
         if (!itemId) {
             setError("ID de l'Ordre de Service manquant.");
             setLoading(false);
-            return; // Stop execution if no ID
+            return;
         }
 
-        // Reset state before fetching
         setLoading(true);
         setError(null);
         setOrdreData(null);
         console.log(`OrdreServiceVisualisation: Fetching details for ID: ${itemId}`);
 
-        // Perform the API call
-        axios.get(`${baseApiUrl}/ordres-service/${itemId}`)
+        // *** IMPORTANT: Adjust the API endpoint if your backend needs to load the fonctionnaire relationship ***
+        // If the backend doesn't automatically include it, you might need a query param like '?include=fonctionnaire'
+        // Or ensure the backend controller always loads it for the 'show' method.
+        const apiUrl = `${baseApiUrl}/ordres-service/${itemId}`; // Add query params if needed '?include=fonctionnaire'
+
+        axios.get(apiUrl, { withCredentials: true }) // Added withCredentials
             .then(response => {
-                // Only update state if the component is still mounted
                 if (!isMounted) return;
 
-                // Extract data, assuming nested structure 'ordre_service'
                 const fetchedData = response.data?.ordre_service || response.data || null;
 
                 if (fetchedData) {
-                    // Successfully fetched data
                     setOrdreData(fetchedData);
                     console.log("Fetched OrdreService details:", fetchedData);
+                    // Log if fonctionnaire data is present
+                    console.log("Fonctionnaire data in response:", fetchedData.fonctionnaire);
                 } else {
-                    // API responded but no data found for the ID
                     setError("Données de l'ordre de service non trouvées pour cet ID.");
                     console.warn(`No data found for OrdreService ID: ${itemId}`);
                 }
             })
             .catch(err => {
-                // Only update state if the component is still mounted
                 if (!isMounted) return;
-
-                // Handle API call errors (network, server error, etc.)
                 console.error(`Error fetching Ordre Service details (ID: ${itemId}):`, err.response || err);
-                // Set a user-friendly error message
                 if (err.response && err.response.status === 404) {
                     setError("Ordre de Service non trouvé (ID: " + itemId + ").");
                 } else {
@@ -139,13 +129,11 @@ const OrdreServiceVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                 }
             })
             .finally(() => {
-                // Stop loading indicator regardless of outcome, if component still mounted
                 if (isMounted) setLoading(false);
             });
 
-        // Cleanup function to run when the component unmounts or ID changes
         return () => { isMounted = false; };
-    }, [itemId, baseApiUrl]); // Dependencies: Rerun effect if ID or base URL changes
+    }, [itemId, baseApiUrl]);
 
     // --- Conditional Rendering: Loading State ---
     if (loading) {
@@ -159,31 +147,31 @@ const OrdreServiceVisualisation = ({ itemId, onClose, baseApiUrl }) => {
 
     // --- Conditional Rendering: No Data Found ---
     if (!ordreData) {
-        // This case should ideally be covered by the 404 error handling, but include as a fallback
         return <Alert variant="warning" className="m-3">Aucune donnée disponible pour cet ordre de service.</Alert>;
     }
 
     // --- Data Destructuring (after checks) ---
-    const { type, numero, date_emission, description, fichier_joint, marche_public } = ordreData;
-    // Get display properties for the 'type'
+    const {
+        type, numero, date_emission, description, fichier_joint,
+        marche_public, // Assuming this object is included from backend
+        id_fonctionnaire, // The ID
+        fonctionnaire // <<< The loaded fonctionnaire object from backend (assuming Option A)
+    } = ordreData;
+
     const typeInfo = getTypeDisplay(type);
-    // Construct the URL for the attached file
     const fileUrl = getPublicFileUrl(baseApiUrl, fichier_joint);
-    // Extract filename from the path for display
     const fileName = fichier_joint ? fichier_joint.split('/').pop() : null;
+    const fonctionnaireName = fonctionnaire?.nom_complet || null; // Get name if object exists
 
     // --- Main Render ---
     return (
+        // Keep existing holder class and padding
         <div className='holder' style={{padding:'70px'}}>
             {/* Header Section */}
             <Row className="mb-4 pb-3 align-items-center border-bottom ">
                 <Col>
-                    {/* Main Title */}
-                    <h2 className="mb-1 fw-bold" style={{fontFamily:'Poppins'}}> Ordre de Service :{numero}</h2>
-                    {/* Display linked Marche Public info if available */}
-                   
+                    <h2 className="mb-1 fw-bold" style={{fontFamily:'Poppins'}}> Ordre de Service : {numero}</h2>
                 </Col>
-                {/* Optional Close Button */}
                 <Col xs="auto">
                     {onClose && (
                           <Button variant="warning" className='btn rounded-5 px-5 py-2 bg-warning shadow' onClick={onClose} size="sm" title="Retour">
@@ -194,102 +182,122 @@ const OrdreServiceVisualisation = ({ itemId, onClose, baseApiUrl }) => {
             </Row>
 
             {/* Main Details Card */}
-           
-                <h5 className='bg-transparent text-uppercase fw-bold text-secondary mb-4'>
-                    Informations Principales
-                </h5>
-               <Card className="mb-4 shadow-sm border-0">  <Card.Body>
-                    <Row>
-                        {/* Type */}
-                        <Col md={4} className="mb-3">
-                            <strong className="d-block text-dark">Type:</strong>
-                            <Badge bg={typeInfo.color || 'secondary'} className="p-2 fs-6 shadow-sm">
-                                <FontAwesomeIcon icon={typeInfo.icon} className="me-2" />
-                                {typeInfo.label}
-                            </Badge>
-                        </Col>
-
-                        {/* Numero */}
-                        <Col md={4} className="mb-3">
-                         {marche_public ? ( <div>  <strong className="d-block text-dark">
-                            <FontAwesomeIcon icon={faFileContract} className="me-1 text-warning"/>
-                            Lié au Marché: 
-                            </strong>
-                            <span>{marche_public.numero_marche || 'N/A'}</span> <br/><em><small className='text-muted' style={{fontSize:'16px'}}>{marche_public.intitule || 'Intitulé non disponible'}</small></em>
-                            </div> 
-                        
-                    ) : (
-                         <small className="text-danger d-block">Marché public associé non trouvé.</small>
-                    )}
-                        </Col>
-
-                        {/* Date Emission */}
-                        <Col md={4} className="mb-3">
-                            <strong className="d-block ">
-                                <FontAwesomeIcon icon={faCalendarAlt}  className="me-1 text-warning" /> Date d'Émission:
-                            </strong>
-                            <span className="">{formatDate(date_emission) || '-'}</span>
-                        </Col>
-                    </Row>
-
-                    {/* Description (only shown if present) */}
-                    {description && (
-                         <Row>
-                             <Col xs={12} className="mb-2 mt-2 pt-2 border-top">
-                                <strong className="d-block text-dark">Description:</strong>
-                                {/* Use pre-wrap to respect newlines and spaces in the description */}
-                                <p className="bg-light p-2 rounded border" style={{ whiteSpace: 'pre-wrap', fontSize: '0.95em' }}>{description}</p>
-                             </Col>
-                         </Row>
-                     )}
-                </Card.Body>
-            </Card>
             <h5 className='bg-transparent text-uppercase fw-bold text-secondary mb-4'>
-            <FontAwesomeIcon icon={faPaperclip} className="me-2 text-warning" /> Fichier Joint
+                Informations Principales
             </h5>
-            {/* Fichier Joint Card */}
-            <Card className="shadow-sm border-0">
-                 
-                <Card.Body>
-                    {/* Display file info if filename and URL exist */}
-                    {fileName && fileUrl ? (
-                        <Stack direction="horizontal" gap={3} className="align-items-center">
-                            {/* File Icon */}
-                            <FontAwesomeIcon icon={getFileIcon(fileName)} size="x" className="text-dark" />
-                            {/* Filename (truncated for potentially long names) */}
-                            <span className="me-auto text-truncate fw-medium" title={fileName}>
-                                {fileName}
-                            </span>
-                            {/* Link to open the file */}
-                            <a
-                                href={fileUrl}
-                                target="_blank" // Open in new tab
-                                rel="noopener noreferrer" // Security best practice
-                                className="btn btn-sm btn-outline-warning bg-dark py-1 px-3"
-                                title="Ouvrir le fichier joint"
-                            >
-                                <FontAwesomeIcon icon={faExternalLinkAlt} size="sm" className='me-1'/> Ouvrir
-                            </a>
-                        </Stack>
-                    ) : (
-                        // Message if no file is attached
-                        <span className="text-muted fst-italic">
-                            <FontAwesomeIcon icon={faInfoCircle} className="me-1"/> Aucun fichier n'est joint à cet ordre de service.
+           <Card className="mb-4 shadow-sm border-0">  <Card.Body>
+                <Row>
+                    {/* Type */}
+                    <Col md={4} className="mb-3">
+                        <strong className="d-block text-dark">Type:</strong>
+                        <Badge bg={typeInfo.color || 'secondary'} className="p-2 fs-6 shadow-sm">
+                            <FontAwesomeIcon icon={typeInfo.icon} className="me-2" />
+                            {typeInfo.label}
+                        </Badge>
+                    </Col>
+
+                    {/* Numero */}
+                    <Col md={4} className="mb-3">
+                       <strong className="d-block text-dark">
+                           <FontAwesomeIcon icon={faHashtag} className="me-1 text-warning"/> Numéro/Référence:
+                       </strong>
+                       <span>{numero || '-'}</span>
+                    </Col>
+
+
+                    {/* Date Emission */}
+                    <Col md={4} className="mb-3">
+                        <strong className="d-block ">
+                            <FontAwesomeIcon icon={faCalendarAlt}  className="me-1 text-warning" /> Date d'Émission:
+                        </strong>
+                        <span className="">{formatDate(date_emission) || '-'}</span>
+                    </Col>
+                </Row>
+
+                 {/* Row for Marche Public and Fonctionnaire */}
+                 <Row className="mt-2 pt-3 border-top">
+                      {/* Marché Public */}
+                     <Col md={6} className="mb-3">
+                         <strong className="d-block text-dark">
+                             <FontAwesomeIcon icon={faFileContract} className="me-1 text-warning"/> Lié au Marché:
+                         </strong>
+                         {marche_public ? (
+                            <div className="ms-2">
+                                <span className="d-block">{marche_public.numero_marche || 'N/A'}</span>
+                                <em className="text-muted" style={{ fontSize: '0.9em' }}>{marche_public.intitule || 'Intitulé non disponible'}</em>
+                             </div>
+                         ) : (
+                            <span className="text-muted ms-2 fst-italic">Non spécifié</span>
+                         )}
+                     </Col>
+
+                     {/* Fonctionnaire */}
+                     <Col md={6} className="mb-3">
+                         <strong className="d-block text-dark">
+                             <FontAwesomeIcon icon={faUserTie} className="me-1 text-warning"/> Points Focaux:
+                         </strong>
+                         {/* Display name if available, otherwise the ID, otherwise '-' */}
+                         <span className="ms-2">
+                             {fonctionnaireName ? (
+                                 fonctionnaireName
+                             ) : id_fonctionnaire ? (
+                                 <span className="text-muted fst-italic">(ID: {id_fonctionnaire})</span> // Show ID if name is missing but ID exists
+                             ) : (
+                                 '-' // Show dash if no ID or name
+                             )}
+                         </span>
+                     </Col>
+                 </Row>
+
+                {/* Description (only shown if present) */}
+                {description && (
+                     <Row>
+                         <Col xs={12} className="mb-2 mt-2 pt-3 border-top">
+                            <strong className="d-block text-dark">Description:</strong>
+                            <p className="bg-light p-2 rounded border" style={{ whiteSpace: 'pre-wrap', fontSize: '0.95em' }}>{description}</p>
+                         </Col>
+                     </Row>
+                 )}
+            </Card.Body>
+        </Card>
+
+        {/* Fichier Joint Section */}
+        <h5 className='bg-transparent text-uppercase fw-bold text-secondary mb-4 mt-4'>
+        <FontAwesomeIcon icon={faPaperclip} className="me-2 text-warning" /> Fichier Joint
+        </h5>
+        <Card className="shadow-sm border-0">
+            <Card.Body>
+                {fileName && fileUrl ? (
+                    <Stack direction="horizontal" gap={3} className="align-items-center">
+                        <FontAwesomeIcon icon={getFileIcon(fileName)} size="lg" className="text-secondary" /> {/* Slightly larger icon */}
+                        <span className="me-auto text-truncate fw-medium" title={fileName}>
+                            {fileName}
                         </span>
-                    )}
-                </Card.Body>
-             </Card>
-        </div>
+                        <a
+                            href={fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-sm btn-outline-warning bg-dark py-1 px-3" // Keep style
+                            title="Ouvrir le fichier joint"
+                        >
+                            <FontAwesomeIcon icon={faExternalLinkAlt} size="sm" className='me-1'/> Ouvrir
+                        </a>
+                    </Stack>
+                ) : (
+                    <span className="text-muted fst-italic">
+                        <FontAwesomeIcon icon={faInfoCircle} className="me-1"/> Aucun fichier n'est joint à cet ordre de service.
+                    </span>
+                )}
+            </Card.Body>
+         </Card>
+    </div> // End holder div
     );
 };
 
 // --- PropTypes Definition ---
 OrdreServiceVisualisation.propTypes = {
-    // The ID of the Ordre de Service to display
     itemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    // Optional function to close this view (e.g., if shown in a modal)
     onClose: PropTypes.func,
-    // Base URL for making API calls
     baseApiUrl: PropTypes.string.isRequired,
 };
 

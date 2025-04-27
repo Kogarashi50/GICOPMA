@@ -19,7 +19,7 @@ import '../bon_commandes_views/boncmd.css'; // Reuse existing styles if suitable
 
 // --- Environment Variables (Keep original) ---
 const BASE_API_URL =  'http://localhost:8000/api';
-const STORAGE_URL = 'http://localhost:8000/storage';
+const STORAGE_URL = 'http://localhost:8000/public';
 
 // --- Helper Functions (Keep original) ---
 const formatDecimal = (value, currency = 'MAD', decimals = 2) => {

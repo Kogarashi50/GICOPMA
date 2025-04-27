@@ -12,7 +12,7 @@ import {
 
 // --- Constants ---
 const BASE_API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
-const STORAGE_URL = process.env.REACT_APP_STORAGE_URL || 'http://localhost:8000/storage'; // Added storage URL
+const STORAGE_URL = process.env.REACT_APP_STORAGE_URL || 'http://localhost:8000/public'; // Added storage URL
 
 const TYPE_CONTRAT_OPTIONS = [
     { value: 'Maintenance', label: 'Maintenance' },
