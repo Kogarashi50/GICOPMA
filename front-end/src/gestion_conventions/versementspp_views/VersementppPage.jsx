@@ -170,7 +170,7 @@ const VersementsPPPage = () => {
 
     return (
         // Use a consistent container style
-        <div style={{ height: 'calc(100vh - 60px)', padding: '1rem' }}>
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             <DynamicTable {...tableConfig} />
         </div>
     );

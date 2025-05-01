@@ -52,7 +52,7 @@ const PartenairesPage = () => {
         displayKeyForDelete: "Description",
         defaultVisibleColumns: defaultCols,
         globalSearchExclusions: searchExclusions,
-        itemsPerPage: 8,                   // **Set items per page (enables pagination requests)**
+        itemsPerPage: 10,                   // **Set items per page (enables pagination requests)**
         enableColumnFiltering: true,
         enableGlobalFiltering: true,
         enableSorting: true,
@@ -81,8 +81,7 @@ const PartenairesPage = () => {
 
     return (
         // Consistent container style
-        <div style={{ height: 'calc(100vh - 60px)', padding: '1rem' }}>
-            
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>  
             {/* Render the Dynamic Table with the configuration */}
             <DynamicTable {...tableConfig} />
         </div>

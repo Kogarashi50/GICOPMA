@@ -84,7 +84,7 @@ const RolesPage = ({ currentUser }) => {
     // Render the table if authorized
     // (Original styling and structure maintained)
     return (
-        <div className="container-fluid px-4 py-3">
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             {/* Using DynamicTable with the consistent Base URL approach */}
             <DynamicTable
                 // --- API Configuration ---
@@ -109,7 +109,7 @@ const RolesPage = ({ currentUser }) => {
                 userPermissions={userPermissions} // Pass permissions down (DynamicTable might use this)
 
                 // --- Optional DynamicTable Features (Examples) ---
-                itemsPerPage={15}
+                itemsPerPage={10}
                 enableGlobalSearch={true}       // Allow global filtering across searchable columns
                  // defaultVisibleColumns={['id', 'name', 'created_at', 'actions']} // Control default visibility if needed
                 // renderFilters={/* Add specific filter UI components if needed */}

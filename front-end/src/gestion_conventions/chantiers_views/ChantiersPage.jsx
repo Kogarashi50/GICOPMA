@@ -51,7 +51,7 @@ const ChantiersPage = () => {
     const searchExclusions = useMemo(() => [ 'Id', 'Id_Domaine', 'created_at', 'updated_at' ], []);
 
     return (
-        <div style={{ height: 'calc(100vh - 56px)', padding: '1rem' }}> {/* Adjust height as needed */}
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             <DynamicTable
                 // --- Core ---
                 fetchUrl="/chantiers" // API endpoint to fetch chantiers
@@ -65,7 +65,7 @@ const ChantiersPage = () => {
                 displayKeyForDelete="Code_Chantier" // Field to show in delete confirmation
                 defaultVisibleColumns={defaultCols}
                 globalSearchExclusions={searchExclusions}
-                itemsPerPage={8}
+                itemsPerPage={10}
                 // customFilterFunctions={{}} // Add if specific filters needed
                 baseApiUrl={BASE_API_URL} // Pass the base URL
                 // --- Components ---

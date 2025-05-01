@@ -3,38 +3,42 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Spinner, Alert, Table, Badge, Stack, Button, Row, Col, Card } from 'react-bootstrap'; // Keep Card for Points Focaux
+import { Spinner, Alert, Table, Badge, Stack, Button, Row, Col, Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faFilePdf, faFileWord, faFileImage, faFileExcel, faFileAlt,
     faExternalLinkAlt, faTimes, faInfoCircle, faLink,
-    faUserTie // Keep User Tie icon
+    faUserTie
 } from '@fortawesome/free-solid-svg-icons';
 
 import './marche.css'; // Ensure this CSS file exists and has necessary styles
 
-// --- Helpers (Keep formatting functions, status badge, file icon) ---
+// --- Helpers ---
 const displayData = (data, fallback = '-') => data ?? fallback;
 const formatDate = (dateString) => {
     if (!dateString) return '-';
     try {
         const datePart = dateString.split(' ')[0];
+        // Basic check for YYYY-MM-DD format before parsing
         if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+             // If not YYYY-MM-DD, try parsing directly (might be full timestamp)
              const parsedDate = new Date(dateString);
-             if (isNaN(parsedDate)) throw new Error("Invalid date format");
-             return parsedDate.toLocaleDateString('fr-CA');
+             if (isNaN(parsedDate)) throw new Error("Invalid date format after direct parse");
+             return parsedDate.toLocaleDateString('fr-CA'); // Use YYYY-MM-DD format
         }
-        return new Date(datePart + 'T00:00:00').toLocaleDateString('fr-CA');
+        // If it looks like YYYY-MM-DD, ensure time part doesn't cause timezone issues
+        return new Date(datePart + 'T00:00:00').toLocaleDateString('fr-CA'); // Use YYYY-MM-DD format
      }
-    catch (e) { console.error("Date format error:", dateString, e); return dateString; }
+    catch (e) { console.error("Date format error:", dateString, e); return dateString; } // Return original on error
 };
 const formatCurrency = (value) => {
     if (value == null || value === '' || isNaN(Number(value))) return '-';
     try {
+        // Format using Moroccan Dirham locale
         return parseFloat(value).toLocaleString('fr-MA', { style: 'currency', currency: 'MAD', minimumFractionDigits: 2 });
     } catch (e) {
          console.error("Currency format error:", value, e);
-         return String(value);
+         return String(value); // Fallback to string representation
     }
 };
 const formatPercentage = (value) => {
@@ -50,6 +54,7 @@ const STATUT_OPTIONS = [
 const getStatusBadge = (statusValue) => {
     const option = STATUT_OPTIONS.find(opt => opt.value === statusValue);
     const color = option ? option.color : "light";
+    // Determine text color based on background for readability
     const textColor = ['warning', 'light', 'secondary'].includes(color) ? 'dark' : 'white';
     return <Badge bg={color} text={textColor} className="shadow-sm">{displayData(statusValue)}</Badge>;
 };
@@ -57,132 +62,137 @@ const getFileIcon = (filenameOrMimeType) => {
     if (!filenameOrMimeType) return faFileAlt;
     const lowerCase = String(filenameOrMimeType).toLowerCase();
     if (lowerCase.includes('pdf')) return faFilePdf;
-    if (lowerCase.includes('doc')) return faFileWord;
-    if (lowerCase.includes('xls')) return faFileExcel;
+    if (lowerCase.includes('doc')) return faFileWord; // doc, docx
+    if (lowerCase.includes('xls')) return faFileExcel; // xls, xlsx
+    // Check common image extensions or mime type start
     if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].some(ext => lowerCase.endsWith(ext)) || lowerCase.startsWith('image/')) return faFileImage;
-    return faFileAlt;
+    return faFileAlt; // Default icon
 };
 // --- End Helpers ---
 
 // --- Constants ---
-// Constants for Card styling specifically for Points Focaux if needed
-const CARD_CLASS = "border-light shadow-sm mb-3"; // Standard card class for the Points Focaux
-const CARD_TITLE_CLASS = "mb-3 section-title text-uppercase fw-bold text-secondary"; // Use existing title style
+const CARD_CLASS = "border-light shadow-sm mb-3";
+const CARD_TITLE_CLASS = "mb-3 section-title text-uppercase fw-bold text-secondary";
 // --- End Constants ---
 
 
 const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
-    // --- State Variables (Keep all from previous working version) ---
+    // --- State Variables ---
     const [marcheData, setMarcheData] = useState(null);
-    const [lotsData, setLotsData] = useState([]);
-    const [filesData, setFilesData] = useState([]);
-    const [conventionName, setConventionName] = useState(null);
-    const [fonctionnairesList, setFonctionnairesList] = useState([]);
-    const [loadingMarche, setLoadingMarche] = useState(true);
-    const [loadingRelated, setLoadingRelated] = useState(true);
+    const [lotsData, setLotsData] = useState([]); // Still useful for the lots table
+    const [filesData, setFilesData] = useState([]); // Combined list of all files
+    const [conventionName, setConventionName] = useState(null); // Extracted convention name
+    const [fonctionnairesList, setFonctionnairesList] = useState([]); // Separate fetch
+    const [loadingMarche, setLoadingMarche] = useState(true); // Loading main data
+    const [loadingRelated, setLoadingRelated] = useState(true); // Loading fonctionnaires etc.
     const [error, setError] = useState(null);
 
-    // --- Public Base URL Calculation (Keep from previous working version) ---
-    const publicBaseUrl = React.useMemo(() => {
-        try {
-            const url = new URL(baseApiUrl);
-            url.pathname = url.pathname.replace(/\/api(\/)?$/, '');
-            return url.origin + url.pathname.replace(/\/$/, '');
-        } catch (e) {
-            console.error("Could not parse baseApiUrl to determine public base URL", baseApiUrl, e);
-            return baseApiUrl.replace(/\/api(\/)?$/, '').replace(/\/$/, '');
-        }
-    }, [baseApiUrl]);
+    // No need for publicBaseUrl calculation if backend provides full URLs
 
-    // --- Fetch Logic (Keep from previous working version) ---
-    useEffect(() => {
+    // --- Fetch Logic (Simplified) ---
+     useEffect(() => {
         let isMounted = true;
         if (!itemId) {
-            setLoadingMarche(false); setLoadingRelated(false);
+            setLoadingMarche(false); setLoadingRelated(false); // Set both false
             setError("ID du Marché manquant.");
             return;
         }
 
         const fetchDetails = async () => {
-            setLoadingMarche(true); setLoadingRelated(true);
+            setLoadingMarche(true);
+            setLoadingRelated(true); // Set related loading true initially
             setError(null);
             setMarcheData(null); setLotsData([]); setFilesData([]); setConventionName(null); setFonctionnairesList([]);
-            console.log(`Visualisation: Fetching main details for Marche ID: ${itemId}`);
-            const apiPrefix = '';
+            console.log(`Visualisation: Fetching ALL details for Marche ID: ${itemId} from main endpoint`);
+            const apiPrefix = ''; // Assuming API base URL already includes /api if needed
 
             try {
+                // --- ONLY ONE API CALL for Marche + Lots + Files ---
                 const marcheUrl = `${baseApiUrl}${apiPrefix}/marches-publics/${itemId}`;
                 const marcheRes = await axios.get(marcheUrl, { withCredentials: true });
                 if (!isMounted) return;
+
                 const fetchedMarcheData = marcheRes.data?.marche_public || marcheRes.data || null;
                 if (!fetchedMarcheData || !fetchedMarcheData.id) {
                     throw new Error("Données principales du marché non trouvées ou invalides.");
                 }
-                setMarcheData(fetchedMarcheData);
-                setLoadingMarche(false);
-                console.log(`Visualisation: Fetched Marche data, ID Convention: ${fetchedMarcheData.id_convention}`);
+                console.log("Visualisation: Received main data:", fetchedMarcheData); // Log the full response
 
-                const lotsUrl = `${baseApiUrl}${apiPrefix}/marches-publics/${itemId}/lots`;
-                const filesUrl = `${baseApiUrl}${apiPrefix}/marches-publics/${itemId}/fichiers`;
+                // --- Set Marche Data ---
+                setMarcheData(fetchedMarcheData); // Contains convention, appelOffre relations if loaded
+                setLoadingMarche(false); // Main data is loaded
+
+                // --- Extract Lots Data ---
+                const extractedLots = fetchedMarcheData.lots || [];
+                // Ensure lots have their files with URLs added by backend
+                setLotsData(extractedLots);
+                console.log("Visualisation: Extracted Lots (count):", extractedLots.length);
+
+
+                // --- Extract and Combine Files Data ---
+                const generalFiles = fetchedMarcheData.fichiers_joints_generaux || [];
+                let allFiles = [...generalFiles]; // Start with general files
+
+                // Add files from within each lot (assuming they have URLs from backend)
+                extractedLots.forEach(lot => {
+                    if (lot.fichiers_joints && Array.isArray(lot.fichiers_joints)) {
+                        // Assuming files within lots also have the 'url' property added by backend
+                        allFiles = [...allFiles, ...lot.fichiers_joints];
+                    }
+                });
+                setFilesData(allFiles); // Set the combined list of all files
+                console.log("Visualisation: Extracted and Combined Files (count):", allFiles.length);
+                // Check the console log for 'allFiles' to verify 'url' properties are present
+
+
+                // --- Set Convention Name (use data already loaded) ---
+                const loadedConvention = fetchedMarcheData.convention;
+                if (loadedConvention) {
+                    setConventionName(loadedConvention.Intitule || null);
+                } else {
+                    setConventionName(null); // No associated convention
+                }
+
+                // --- Fetch Fonctionnaires (Separate call remains) ---
                 const fonctionnairesUrl = `${baseApiUrl}${apiPrefix}/fonctionnaires`;
-                const relatedPromises = [
-                    axios.get(lotsUrl, { withCredentials: true }),
-                    axios.get(filesUrl, { withCredentials: true }),
-                    axios.get(fonctionnairesUrl, { withCredentials: true })
-                ];
-                let conventionPromise = Promise.resolve({ status: 'fulfilled', value: null });
-                if (fetchedMarcheData.id_convention) {
-                    const conventionUrl = `${baseApiUrl}${apiPrefix}/conventions/${fetchedMarcheData.id_convention}`;
-                    conventionPromise = axios.get(conventionUrl, { withCredentials: true });
-                 }
-                relatedPromises.push(conventionPromise);
-
-                const results = await Promise.allSettled(relatedPromises);
-                const [lotsRes, filesRes, foncRes, conventionResSettled] = results;
-                if (!isMounted) return;
-
-                // Process Lots
-                if (lotsRes.status === 'fulfilled' && lotsRes.value?.data) {
-                    setLotsData(lotsRes.value.data?.lots || lotsRes.value.data || []);
-                } else { console.warn("Could not fetch lots:", lotsRes.reason?.message); setLotsData([]); }
-                // Process Files
-                if (filesRes.status === 'fulfilled' && filesRes.value?.data) {
-                    setFilesData(filesRes.value.data?.fichiers_joints || filesRes.value.data || []);
-                } else { console.warn("Could not fetch files:", filesRes.reason?.message); setFilesData([]); }
-                // Process Fonctionnaires
-                if (foncRes.status === 'fulfilled' && foncRes.value?.data) {
-                    const foncData = foncRes.value.data.fonctionnaires || foncRes.value.data || [];
-                    setFonctionnairesList(foncData.map(f => ({ value: f.id, label: f.nom_complet || `ID ${f.id}` })));
-                    console.log("Visualisation: Fetched Fonctionnaires List (length):", (foncData.map(f => ({ value: f.id, label: f.nom_complet || `ID ${f.id}` }))).length);
-                } else { console.warn("Could not fetch fonctionnaires list:", foncRes.reason?.message); setFonctionnairesList([]); }
-                // Process Convention
-                if (conventionResSettled.status === 'fulfilled' && conventionResSettled.value?.data) {
-                    const name = conventionResSettled.value.data?.convention?.Intitule || conventionResSettled.value.data?.Intitule || null;
-                    setConventionName(name);
-                } else if (fetchedMarcheData.id_convention) {
-                    setConventionName(`(Erreur chargement Conv. ID: ${fetchedMarcheData.id_convention})`);
-                    console.warn(`Could not fetch convention details (ID: ${fetchedMarcheData.id_convention}):`, conventionResSettled.reason?.message);
-                } else { setConventionName(null); }
+                try {
+                    const foncRes = await axios.get(fonctionnairesUrl, { withCredentials: true });
+                    if (isMounted && foncRes.data) {
+                        const foncData = foncRes.data.fonctionnaires || foncRes.data || [];
+                        setFonctionnairesList(foncData.map(f => ({ value: f.id, label: f.nom_complet || `ID ${f.id}` })));
+                        console.log("Visualisation: Fetched Fonctionnaires List (length):", (foncData.map(f => ({ value: f.id, label: f.nom_complet || `ID ${f.id}` }))).length);
+                    } else if (isMounted) {
+                         console.warn("Could not fetch fonctionnaires list (no data)"); setFonctionnairesList([]);
+                    }
+                } catch (foncErr) {
+                     if (isMounted) {
+                         console.warn("Could not fetch fonctionnaires list:", foncErr.message); setFonctionnairesList([]);
+                     }
+                }
+                // --- End Fonctionnaires Fetch ---
 
             } catch (err) {
                  if (!isMounted) return;
-                console.error("Error fetching primary marche data:", err.response || err);
+                console.error("Error fetching marche data:", err.response || err);
                 setError(err.response?.data?.message || err.message || "Erreur critique lors du chargement du marché.");
-                 setLoadingMarche(false);
+                 setLoadingMarche(false); // Stop main loading on error
                  setMarcheData(null);
             } finally {
+                 // Set related loading false after all processing (including fonctionnaires)
                  if (isMounted) setLoadingRelated(false);
             }
         };
         fetchDetails();
-        return () => { isMounted = false; };
-    }, [itemId, baseApiUrl]);
+        return () => { isMounted = false; }; // Cleanup function
+    }, [itemId, baseApiUrl]); // Dependencies
 
-    // --- Helper to render Fonctionnaire names (Keep from previous working version) ---
+    // --- Helper to render Fonctionnaire names ---
     const getFonctionnaireNames = useCallback((fonctionnaireIdString) => {
-        if (!fonctionnaireIdString || typeof fonctionnaireIdString !== 'string' || !Array.isArray(fonctionnairesList) || fonctionnairesList.length === 0) {
+        // Handle cases where string might be null/undefined or just whitespace
+        if (!fonctionnaireIdString || typeof fonctionnaireIdString !== 'string' || fonctionnaireIdString.trim() === '' || !Array.isArray(fonctionnairesList) || fonctionnairesList.length === 0) {
             return <span className="text-muted small fst-italic">Aucun point focal assigné.</span>;
         }
+        // Split, trim, and filter out empty strings after trimming
         const ids = fonctionnaireIdString.split(';').map(id => id.trim()).filter(id => id);
         if (ids.length === 0) {
             return <span className="text-muted small fst-italic">Aucun point focal assigné.</span>;
@@ -190,6 +200,7 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
         return (
             <Stack direction="horizontal" gap={1} wrap="wrap">
                 {ids.map(id => {
+                    // Case-insensitive comparison might be safer if IDs vary in case
                     const fonctionnaire = fonctionnairesList.find(f => String(f.value).toLowerCase() === String(id).toLowerCase());
                     return (
                         <Badge key={id} pill bg="light" text="dark" className="border me-1 mb-1 fw-normal shadow-sm">
@@ -200,58 +211,54 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                 })}
              </Stack>
         );
-    }, [fonctionnairesList]);
+    }, [fonctionnairesList]); // Dependency on fonctionnairesList
 
-    // --- Original renderDetail / renderDetail2 helpers ---
-    const renderDetail = (label, value, formatter = null, mdSize = 6, lgSize = 3) => ( // Default lg=3 again
-         (value !== null && value !== undefined && value !== '') || value === 0 ?
+    // --- Render Detail Helpers ---
+    const renderDetail = (label, value, formatter = null, mdSize = 6, lgSize = 3) => (
+         (value !== null && value !== undefined && value !== '') || value === 0 ? // Show if value is 0
             <Col xs={12} md={mdSize} lg={lgSize} className="mb-3 data-point text-center">
                 <strong className="text-dark titly d-block label">{label}</strong>
                 <span className="value">{formatter ? formatter(value) : displayData(value)}</span>
             </Col>
-        : null
+        : null // Don't render if null/undefined/empty string
     );
     const renderDetail2 = (label, value, formatter = null) => (
-        (value !== null && value !== undefined && value !== '') || value === 0 ?
+        (value !== null && value !== undefined && value !== '') || value === 0 ? // Show if value is 0
            <div className="mb-2 d-flex justify-content-between align-items-center data-point">
                <strong className="text-dark titly fw-bold label me-2">{label} :</strong>
                <span className="value text-end">
                    {formatter ? formatter(value) : displayData(value)}
                </span>
            </div>
-       : null
+       : null // Don't render if null/undefined/empty string
    );
 
-    // --- Public File URL (Keep from previous working version) ---
-    const getPublicFileUrl = (relativePath) => {
-        if (!relativePath || !publicBaseUrl) return null;
-        const storageUrl = `${publicBaseUrl}/storage`;
-        return `${storageUrl}/${relativePath.replace(/^storage\//i, '').replace(/^\//, '')}`;
-    };
-
-    // --- File Mapping (Keep from previous working version) ---
+    // --- File Mapping Logic ---
+    // Filter files based on presence/absence of lot_id from the combined filesData
     const marketFiles = filesData.filter(f => f.marche_id && !f.lot_id);
+    // Group files by lot_id for the lots table
     const lotFilesMap = filesData.reduce((acc, f) => {
         if (f.lot_id) {
             if (!acc[f.lot_id]) acc[f.lot_id] = [];
-            acc[f.lot_id].push(f);
+            acc[f.lot_id].push(f); // Assumes file object now has 'url'
         }
         return acc;
     }, {});
 
     // --- Render Logic ---
 
-    if (loadingMarche) {
+    if (loadingMarche) { // Show initial spinner only for marche data
        return <div className="text-center p-5"><Spinner animation="border" /><span> Chargement initial...</span></div>;
     }
 
     if (error) { return <Alert variant="danger" className="m-3">Erreur: {error}</Alert>; }
+    // Check specifically if marcheData is loaded, even if related data is still loading
     if (!marcheData) { return <Alert variant="warning" className="m-3">Aucune donnée principale de marché trouvée.</Alert>; }
 
-    // Main content render - Reverted to original structure without Cards for main details
+    // Main content render
     return (
         <div className='px-4'>
-            {/* Header Section - Original */}
+            {/* Header Section */}
              <div className="d-flex justify-content-between align-items-start mb-4 px-5 pt-5 border-bottom holder pb-1">
                  <div>
                     <h2 className="mb-1 fw-bold text-dark ">Marché Public : {displayData(marcheData.numero_marche)}</h2>
@@ -263,35 +270,35 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                  )}
              </div>
 
-             {/* Original holder padding */}
+             {/* Main Content Area Padding */}
             <div className="px-5 pb-3 holder">
 
-                {/* --- Main Details Section - Original Structure --- */}
+                {/* --- Main Details Section --- */}
                 <h5 className="mb-3 section-title text-uppercase fw-bold text-secondary">Informations Générales</h5>
-                 {/* Intitule - Original */}
+                 {/* Intitule */}
                 <Row className="mb-4 pb-3 border-bottom data-section">
                      <Col xs={12} className="mb-3 data-point text-dark text-center pill bg-white shadow-sm p-2 px-5 rounded-2 ">
                         <strong className=" titly fs-bold d-block label">Intitulé du Marché</strong>
                         <p className="value lead mb-0">{displayData(marcheData.intitule)}</p>
                     </Col>
                 </Row>
-                 {/* Convention, AO, Type, Statut - Original Row */}
+                 {/* Convention, AO, Type, Statut Row */}
                 <Row className="mb-3 data-section">
                      <Col xs={12} className="mb-3 data-point">
                          <Row className='p-4 m-2 bg-white shadow-sm rounded-5'>
                             {/* Convention Associée */}
                             {renderDetail(
                                 "Convention Associée",
-                                conventionName,
+                                conventionName, // Use extracted name
                                 (name) => name ? <span><FontAwesomeIcon icon={faLink} className="me-2 text-warning"/>{displayData(name)}</span> : '-',
-                                6, 3 // Original col sizes
+                                6, 3
                             )}
                              {/* Appel d'Offre */}
                             {renderDetail(
                                 "Appel d'Offre Réf.",
-                                marcheData.appel_offre?.numero,
+                                marcheData.appel_offre?.numero, // Access nested property safely
                                 (num) => num ? <span><FontAwesomeIcon icon={faLink} className="me-2 text-warning"/>{displayData(num)}</span> : '-',
-                                6, 3 // Original col sizes
+                                6, 3
                             )}
                              {/* Type */}
                             {renderDetail("Type", marcheData.type_marche, null, 6, 3)}
@@ -300,7 +307,7 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                          </Row>
                      </Col>
                  </Row>
-                 {/* Procedure, Mode, Budget, Montant, Source, Attributaire, Dates - Original Row */}
+                 {/* Procedure, Mode, Budget, Montant, Source, Attributaire, Dates Row */}
                  <Row className="mb-3 data-section">
                      <Col xs={12} className="mb-3 data-point">
                          <div className='d-flex w-100 justify-content-between'>
@@ -319,7 +326,7 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                          </div>
                      </Col>
                  </Row>
-                 {/* Dates, Avancement, Engagement - Original Row */}
+                 {/* Dates, Avancement, Engagement Row */}
                 <Row className="mb-4 pb-3 border-bottom data-section">
                     <Col md={6}>
                         <div className='p-4 m-2 bg-white rounded-5 shadow-sm flex-fill w-100'>
@@ -340,34 +347,32 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                 </Row>
                 {/* --- End Main Details Section --- */}
 
-
-                {/* Loading indicator for related data */}
+                {/* Loading indicator specifically for related data (like fonctionnaires) */}
                  {loadingRelated && (
                      <div className="text-center my-3 text-muted">
-                         <Spinner animation="border" size="sm" className="me-2"/> Chargement des détails (lots, fichiers, points focaux...)...
+                         <Spinner animation="border" size="sm" className="me-2"/> Chargement des détails supplémentaires...
                      </div>
                  )}
 
-
-                {/* --- Points Focaux Section (New Card at the end) --- */}
-                {!loadingMarche && ( // Only show this card after main marche data is loaded
-                     <Card className={CARD_CLASS}>
-                         <Card.Body>
-                             <Card.Title as="h5" className={CARD_TITLE_CLASS}>Points Focaux</Card.Title>
-                             {loadingRelated ? (
-                                 <div className="text-center">
-                                     <Spinner animation="border" size="sm" />
-                                 </div>
-                             ) : (
-                                 getFonctionnaireNames(marcheData.id_fonctionnaire)
-                             )}
-                         </Card.Body>
-                     </Card>
-                )}
+                {/* --- Points Focaux Section (Card) --- */}
+                {/* Show Card even if related data is loading, show spinner inside */}
+                <Card className={CARD_CLASS}>
+                     <Card.Body>
+                         <Card.Title as="h5" className={CARD_TITLE_CLASS}>Points Focaux</Card.Title>
+                         {loadingRelated ? ( // Check if related data (fonctionnaires) is still loading
+                             <div className="text-center">
+                                 <Spinner animation="border" size="sm" />
+                             </div>
+                         ) : (
+                             // Use the helper function with the ID string from marcheData
+                             getFonctionnaireNames(marcheData.id_fonctionnaire)
+                         )}
+                     </Card.Body>
+                 </Card>
                 {/* --- End Points Focaux Section --- */}
 
-
-                {/* --- Lots Section (Original Structure) --- */}
+                {/* --- Lots Section --- */}
+                {/* Show only after related data (which includes lots from main fetch) is done loading */}
                  {!loadingRelated && lotsData && lotsData.length > 0 && (
                      <div className="mb-4 pb-3 border-bottom data-section">
                         <h5 className="mb-3 section-title text-uppercase fw-bold text-secondary">Lots Associés ({lotsData.length})</h5>
@@ -382,17 +387,19 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                                 </tr>
                             </thead>
                              <tbody>
-                                {lotsData.map(lot => (
+                                {lotsData.map(lot => ( // Use lotsData state variable
                                     <tr key={lot.id}>
                                         <td>{displayData(lot.numero_lot)}</td>
                                         <td>{displayData(lot.objet)}</td>
                                         <td className="text-end">{formatCurrency(lot.montant_attribue)}</td>
                                         <td>{displayData(lot.attributaire)}</td>
                                         <td>
+                                            {/* Use lotFilesMap which is derived from combined filesData */}
                                             {lotFilesMap[lot.id]?.length > 0 ? (
                                                 <Stack direction="horizontal" gap={2}>
+                                                    {/* Map over files associated with this lot ID */}
                                                     {lotFilesMap[lot.id].map(file => {
-                                                        const publicUrl = getPublicFileUrl(file.chemin_fichier);
+                                                        const publicUrl = file.url; // Directly use the URL from the file object
                                                         return publicUrl ? (
                                                             <a key={file.id} href={publicUrl} target="_blank" rel="noopener noreferrer" className="p-0 text-secondary" title={`Ouvrir: ${file.nom_fichier}`}>
                                                                 <FontAwesomeIcon className='text-warning' icon={getFileIcon(file.nom_fichier || file.type_fichier)} />
@@ -400,7 +407,7 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                                                         ) : (<FontAwesomeIcon icon={faLink} className="text-muted" title="Lien indisponible"/>);
                                                     })}
                                                 </Stack>
-                                            ) : (<span className="text-muted fst-italic">-</span>)}
+                                            ) : (<span className="text-muted fst-italic">-</span>)} {/* No files for this lot */}
                                         </td>
                                     </tr>
                                 ))}
@@ -409,19 +416,22 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                     </div>
                  )}
 
-                 {/* --- General Files Section (Original Structure) --- */}
+                 {/* --- General Files Section --- */}
+                 {/* Show only after related data is done loading */}
                 {!loadingRelated && marketFiles && marketFiles.length > 0 && (
                     <div className="mb-3 data-section">
                         <h5 className="mb-3 section-title text-uppercase fw-bold text-secondary">Fichiers Généraux ({marketFiles.length})</h5>
                         <Stack direction="horizontal" gap={3} wrap className='justify-content-start'>
+                            {/* Map over the filtered general files */}
                             {marketFiles.map(file => {
-                                const publicUrl = getPublicFileUrl(file.chemin_fichier);
+                                const publicUrl = file.url; // Directly use the URL from the file object
                                 return (
                                     <div key={file.id} className="border rounded p-2 d-flex align-items-center bg-dark text-white shadow-sm mb-2" style={{minWidth: '180px'}}>
                                         <FontAwesomeIcon icon={getFileIcon(file.nom_fichier || file.type_fichier)} className="me-2 fa-lg text-warning"/>
                                         <span className="me-auto small text-truncate" title={file.nom_fichier}>
                                             {displayData(file.nom_fichier, 'Fichier')}
                                         </span>
+                                        {/* Conditional rendering based on publicUrl */}
                                         {publicUrl ? (
                                             <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-warning py-0 px-1 ms-2" title="Ouvrir">
                                                 <FontAwesomeIcon icon={faExternalLinkAlt} size="xs" className='text-warning'/>
@@ -436,7 +446,7 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                     </div>
                 )}
 
-                {/* No Lots/Files Message (Original Structure) */}
+                {/* No Lots/Files Message */}
                  {!loadingRelated && (!lotsData || lotsData.length === 0) && (!marketFiles || marketFiles.length === 0) && (
                     <Alert variant='secondary' className='small py-2'><FontAwesomeIcon icon={faInfoCircle} className="me-2"/> Aucun lot ou fichier général joint pour ce marché.</Alert>
                  )}
@@ -445,7 +455,7 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
     );
 };
 
-// --- PropTypes (Keep from previous working version) ---
+// --- PropTypes ---
 MarchePublicVisualisation.propTypes = {
     itemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     onClose: PropTypes.func,

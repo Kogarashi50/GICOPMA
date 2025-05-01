@@ -22,7 +22,7 @@ const CommunesPage = () => {
     const searchExclusions = useMemo(() => ['Id', 'created_at', 'updated_at'], []);
 
     return (
-        <div style={{ height: 'calc(100vh - 56px)', padding: '1rem' }}>
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             <DynamicTable
                 // --- Core ---
                 fetchUrl="/communes" // <<< API endpoint for communes
@@ -36,7 +36,7 @@ const CommunesPage = () => {
                 displayKeyForDelete="Description" // Field for delete confirmation
                 defaultVisibleColumns={defaultCols}
                 globalSearchExclusions={searchExclusions}
-                itemsPerPage={8} // Adjust as needed
+                itemsPerPage={10} // Adjust as needed
                 baseApiUrl={BASE_API_URL}
                 // --- Components ---
                 CreateComponent={CommuneForm} // Use the new CommuneForm

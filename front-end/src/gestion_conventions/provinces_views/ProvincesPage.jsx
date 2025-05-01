@@ -54,7 +54,7 @@ const ProvincesPage = () => {
 
     return (
         // Container for the page, adjust styling as needed
-        <div style={{ height: 'calc(100vh - 56px)', padding: '1rem' }}> {/* Adjust 56px based on your header height */}
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             <DynamicTable
                 // --- Core API & Data ---
                 fetchUrl="/provinces"           // API endpoint to fetch the list
@@ -71,7 +71,7 @@ const ProvincesPage = () => {
                 // --- Features & Configuration ---
                 defaultVisibleColumns={defaultCols} // Columns visible when the table first loads
                 globalSearchExclusions={searchExclusions} // Fields excluded from the main search bar
-                itemsPerPage={8}                // Default number of items per page
+                itemsPerPage={10}                // Default number of items per page
                 baseApiUrl={BASE_API_URL}       // Pass the base API URL for constructing full URLs
 
                 // --- Component Injection ---

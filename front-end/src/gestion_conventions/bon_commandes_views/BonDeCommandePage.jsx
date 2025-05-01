@@ -144,7 +144,7 @@ const BonDeCommandePage = () => {
 
     return (
         // Ensure container takes necessary height and padding
-        <div style={{ height: 'calc(100vh - 56px)', padding: '1rem', overflow: 'hidden' }}>
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             <DynamicTable
                 // --- Core Props ---
                 fetchUrl="/bon-de-commande" // API endpoint for BC list
@@ -164,7 +164,7 @@ const BonDeCommandePage = () => {
                 // --- Optional Configuration ---
                 defaultVisibleColumns={defaultCols}
                 globalSearchExclusions={searchExclusions}
-                itemsPerPage={8} // Or your preferred default page size
+                itemsPerPage={10} // Or your preferred default page size
                 baseApiUrl={BASE_API_URL} // Pass the base API URL if DynamicTable needs it
 
                 // --- Filtering ---

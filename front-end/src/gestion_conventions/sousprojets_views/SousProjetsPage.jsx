@@ -108,7 +108,7 @@ const SousProjetsPage = () => {
 
     return (
         // Mimic ProjetsPage container style
-        <div style={{ height: 'calc(100vh - 56px)', padding: '1rem' }}>
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             <DynamicTable
                 // --- Core ---
                 fetchUrl="/sousprojets" // API endpoint for Sous-Projets
@@ -122,7 +122,7 @@ const SousProjetsPage = () => {
                 displayKeyForDelete="Nom_Projet" // Field for delete confirmation message
                 defaultVisibleColumns={defaultCols}
                 globalSearchExclusions={searchExclusions}
-                itemsPerPage={8} // Or your preferred default
+                itemsPerPage={10} // Or your preferred default
                 // customFilterFunctions={{}} // Add if needed later
                 baseApiUrl={BASE_API_URL}
                 // --- Components ---

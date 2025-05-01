@@ -92,7 +92,7 @@ const ContratDroitCommunPage = () => {
 
     return (
         // Adjust height and padding as needed for your layout
-        <div style={{padding: '1rem'}}>
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             <DynamicTable
                 fetchUrl="/contrat-droit-commun" // Matches api.php route
                 dataKey="contrats" // Matches JSON response key from controller index
@@ -105,7 +105,7 @@ const ContratDroitCommunPage = () => {
                 identifierKey="id" // Primary key of the contrat table
                 displayKeyForDelete="numero_contrat" // Field to show in delete confirmation
 
-                itemsPerPage={8}
+                itemsPerPage={10}
                 defaultVisibleColumns={defaultVisibleCols}
                 // renderFilters={renderContratFilters} // Pass the filter function if implemented
                 enableGlobalSearch={true} // Allow global search bar

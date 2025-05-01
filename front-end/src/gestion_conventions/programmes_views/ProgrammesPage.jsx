@@ -55,7 +55,7 @@ const ProgrammesPage = () => {
     const searchExclusions = useMemo(() => [ 'Id', 'Id_Chantier', 'updated_at' ], []);
 
     return (
-        <div style={{ height: 'calc(100vh - 56px)', padding: '1rem' }}>
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             <DynamicTable
                 // --- Core ---
                 fetchUrl="/programmes"          // API endpoint
@@ -69,7 +69,7 @@ const ProgrammesPage = () => {
                 displayKeyForDelete="Code_Programme" // Field for delete confirmation
                 defaultVisibleColumns={defaultCols}
                 globalSearchExclusions={searchExclusions}
-                itemsPerPage={8}
+                itemsPerPage={10}
                 baseApiUrl={BASE_API_URL}
                 // --- Components ---
                 CreateComponent={ProgrammeForm}

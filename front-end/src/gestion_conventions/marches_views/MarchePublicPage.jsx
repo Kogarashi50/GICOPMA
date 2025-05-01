@@ -217,7 +217,7 @@ const MarchePublicPage = () => {
       
     };
     return (
-        <div style={{ height: 'calc(100vh - 56px)', padding: '1rem', overflowY: 'auto' }}>
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
               {isCreating ? (
                                       // Show the form if action=create
                                       <MarchePublicForm
@@ -239,7 +239,7 @@ const MarchePublicPage = () => {
                 identifierKey="id"
                 displayKeyForDelete="numero_marche"
 
-                itemsPerPage={15}
+                itemsPerPage={10}
                 defaultVisibleColumns={defaultVisibleCols} // Convention column visibility controlled here
                 renderFilters={renderMarcheFilters}
                 enableGlobalSearch={true}

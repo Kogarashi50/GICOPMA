@@ -425,7 +425,7 @@ const ConventionsPage = () => {
     // --- Render DynamicTable ---
     return (
         // Container with scrolling for the whole page content
-        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(100vh - 56px)', padding: '1rem', overflowY: 'hidden' }}>
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             {isCreating ? (
                 <ConventionForm mode="create" onClose={() => handleFormClose(false)} onSuccess={() => handleFormClose(true)} baseApiUrl={BASE_API_URL} />
             ) : (  <DynamicTable

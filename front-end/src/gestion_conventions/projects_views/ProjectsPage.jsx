@@ -354,7 +354,7 @@ const ProjetsPage = () => {
 
         // Display & Functionality
         displayKeyForDelete: "Code_Projet", defaultVisibleColumns: defaultVisibleColumns,
-        globalSearchExclusions: searchExclusions, itemsPerPage: 8,
+        globalSearchExclusions: searchExclusions, itemsPerPage: 10,
         enableColumnFiltering: true, enableGlobalFiltering: true,
         enableSorting: true, enablePagination: true,
         enableRowSelection: false, enableExport: true,
@@ -379,7 +379,7 @@ const ProjetsPage = () => {
     const handleFormClose = (refreshNeeded = false) => { setSearchParams({}); /* Optional refresh logic */ };
 
     return (
-        <div style={{ height: 'calc(100vh - 60px)', padding: '1rem' }}>
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             {isCreating ? (
                 <ProjetForm mode="create" onClose={handleFormClose} onSuccess={() => handleFormClose(true)} baseApiUrl={BASE_API_URL}/>
             ) : (

@@ -1,15 +1,15 @@
-// src/gestion_conventions/ordres_service_views/OrdreServiceVisualisation.jsx (adjust path if needed)
+// src/gestion_conventions/ordres_service_views/OrdreServiceVisualisation.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Removed useMemo as publicBaseUrl calculation is no longer needed for file URLs
 import PropTypes from 'prop-types';
-import axios from 'axios'; // Use your configured axios instance
+import axios from 'axios';
 import { Spinner, Alert, Badge, Stack, Button, Row, Col, Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faFilePdf, faFileWord, faFileImage, faFileExcel, faFileAlt, faFileArchive,
     faExternalLinkAlt, faTimes, faInfoCircle, faCalendarAlt, faHashtag,
     faFileSignature, faStopCircle, faPlayCircle, faPaperclip, faFileContract,
-    faUserTie // Added icon for Fonctionnaire
+    faUserTie
 } from '@fortawesome/free-solid-svg-icons';
 import '../marches_views/marche.css'; // Assuming this provides the 'holder' class or other styles
 
@@ -43,22 +43,7 @@ const getFileIcon = (filenameOrMimeType) => {
     return faFileAlt;
 };
 
-// Constructs the public URL for accessing stored files
-const getPublicFileUrl = (baseApiUrl, relativePath) => {
-    if (!relativePath || !baseApiUrl) return null;
-    try {
-        const url = new URL(baseApiUrl);
-        let baseUrl = url.origin;
-        if (url.pathname.includes('/api')) {
-            baseUrl += url.pathname.substring(0, url.pathname.indexOf('/api'));
-        }
-        baseUrl = baseUrl.replace(/\/$/, '');
-        return `${baseUrl}/storage/${relativePath.replace(/^\//, '')}`;
-    } catch (e) {
-        console.error("Error constructing public URL:", e);
-        return null;
-    }
-};
+// *** REMOVED getPublicFileUrl function as it's no longer needed ***
 
 // Provides display label, icon, and color based on the 'type' value
 const getTypeDisplay = (typeValue) => {
@@ -98,22 +83,22 @@ const OrdreServiceVisualisation = ({ itemId, onClose, baseApiUrl }) => {
         setOrdreData(null);
         console.log(`OrdreServiceVisualisation: Fetching details for ID: ${itemId}`);
 
-        // *** IMPORTANT: Adjust the API endpoint if your backend needs to load the fonctionnaire relationship ***
-        // If the backend doesn't automatically include it, you might need a query param like '?include=fonctionnaire'
-        // Or ensure the backend controller always loads it for the 'show' method.
-        const apiUrl = `${baseApiUrl}/ordres-service/${itemId}`; // Add query params if needed '?include=fonctionnaire'
+        // Backend controller's 'show' method should load necessary relations (marchePublic, fonctionnaire if needed)
+        // and add the 'fichier_joint_url' property.
+        const apiUrl = `${baseApiUrl}/ordres-service/${itemId}`;
 
-        axios.get(apiUrl, { withCredentials: true }) // Added withCredentials
+        axios.get(apiUrl, { withCredentials: true })
             .then(response => {
                 if (!isMounted) return;
 
+                // Expecting the full URL 'fichier_joint_url' to be present in the response data
                 const fetchedData = response.data?.ordre_service || response.data || null;
 
                 if (fetchedData) {
                     setOrdreData(fetchedData);
-                    console.log("Fetched OrdreService details:", fetchedData);
+                    console.log("Fetched OrdreService details (expecting fichier_joint_url):", fetchedData);
                     // Log if fonctionnaire data is present
-                    console.log("Fonctionnaire data in response:", fetchedData.fonctionnaire);
+                    // console.log("Fonctionnaire data in response:", fetchedData.fonctionnaire); // Keep if backend sends it
                 } else {
                     setError("Données de l'ordre de service non trouvées pour cet ID.");
                     console.warn(`No data found for OrdreService ID: ${itemId}`);
@@ -152,14 +137,15 @@ const OrdreServiceVisualisation = ({ itemId, onClose, baseApiUrl }) => {
 
     // --- Data Destructuring (after checks) ---
     const {
-        type, numero, date_emission, description, fichier_joint,
-        marche_public, // Assuming this object is included from backend
-        id_fonctionnaire, // The ID
-        fonctionnaire // <<< The loaded fonctionnaire object from backend (assuming Option A)
+        type, numero, date_emission, description, fichier_joint, // Still need fichier_joint for filename extraction
+        fichier_joint_url, // <<< USE THIS URL FROM BACKEND
+        marche_public,
+        id_fonctionnaire,
+        fonctionnaire // Assuming backend loads this relation if needed for display
     } = ordreData;
 
     const typeInfo = getTypeDisplay(type);
-    const fileUrl = getPublicFileUrl(baseApiUrl, fichier_joint);
+    // Extract filename from the relative path (fichier_joint) if it exists
     const fileName = fichier_joint ? fichier_joint.split('/').pop() : null;
     const fonctionnaireName = fonctionnaire?.nom_complet || null; // Get name if object exists
 
@@ -170,13 +156,13 @@ const OrdreServiceVisualisation = ({ itemId, onClose, baseApiUrl }) => {
             {/* Header Section */}
             <Row className="mb-4 pb-3 align-items-center border-bottom ">
                 <Col>
-                    <h2 className="mb-1 fw-bold" style={{fontFamily:'Poppins'}}> Ordre de Service : {numero}</h2>
+                    <h2 className="mb-1 fw-bold" style={{fontFamily:'Poppins'}}> Ordre de Service : {numero || '-'}</h2>
                 </Col>
                 <Col xs="auto">
                     {onClose && (
                           <Button variant="warning" className='btn rounded-5 px-5 py-2 bg-warning shadow' onClick={onClose} size="sm" title="Retour">
-                                                      <b>Revenir a la liste</b>
-                                                 </Button>
+                              <b>Revenir a la liste</b>
+                          </Button>
                     )}
                 </Col>
             </Row>
@@ -185,7 +171,8 @@ const OrdreServiceVisualisation = ({ itemId, onClose, baseApiUrl }) => {
             <h5 className='bg-transparent text-uppercase fw-bold text-secondary mb-4'>
                 Informations Principales
             </h5>
-           <Card className="mb-4 shadow-sm border-0">  <Card.Body>
+           <Card className="mb-4 shadow-sm border-0">
+            <Card.Body>
                 <Row>
                     {/* Type */}
                     <Col md={4} className="mb-3">
@@ -241,9 +228,9 @@ const OrdreServiceVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                              {fonctionnaireName ? (
                                  fonctionnaireName
                              ) : id_fonctionnaire ? (
-                                 <span className="text-muted fst-italic">(ID: {id_fonctionnaire})</span> // Show ID if name is missing but ID exists
+                                 <span className="text-muted fst-italic">(ID: {id_fonctionnaire})</span>
                              ) : (
-                                 '-' // Show dash if no ID or name
+                                 '-'
                              )}
                          </span>
                      </Col>
@@ -267,20 +254,25 @@ const OrdreServiceVisualisation = ({ itemId, onClose, baseApiUrl }) => {
         </h5>
         <Card className="shadow-sm border-0">
             <Card.Body>
-                {fileName && fileUrl ? (
+                {/* Use fileName to know IF a file exists, use fichier_joint_url for the actual link */}
+                {fileName && fichier_joint_url ? (
                     <Stack direction="horizontal" gap={3} className="align-items-center">
-                        <FontAwesomeIcon icon={getFileIcon(fileName)} size="lg" className="text-secondary" /> {/* Slightly larger icon */}
-                        <span className="me-auto text-truncate fw-medium" title={fileName}>
+                        <FontAwesomeIcon icon={getFileIcon(fileName)} size="lg" className="text-secondary" />
+                        <span className="btn btn-sm btn-outline-warning bg-dark py-1 px-3" title={fileName}
+                            href={fichier_joint_url} 
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
                             {fileName}
                         </span>
                         <a
-                            href={fileUrl}
+                            href={fichier_joint_url} 
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="btn btn-sm btn-outline-warning bg-dark py-1 px-3" // Keep style
+                            className="btn btn-sm btn-outline-warning bg-dark py-1 px-3"
                             title="Ouvrir le fichier joint"
                         >
-                            <FontAwesomeIcon icon={faExternalLinkAlt} size="sm" className='me-1'/> Ouvrir
+                            <FontAwesomeIcon icon={faExternalLinkAlt} size="sm" className='me-1'/> {fileName}
                         </a>
                     </Stack>
                 ) : (

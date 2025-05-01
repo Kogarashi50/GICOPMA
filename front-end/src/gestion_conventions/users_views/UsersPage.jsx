@@ -99,7 +99,7 @@ const UsersPage = ({ currentUser }) => {
 
     return (
         // Keep original container styling
-        <div className="container-fluid px-4 py-3">
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             <DynamicTable
                 // --- API Configuration ---
                 baseApiUrl={BASE_API_URL}             // *** ADDED: Explicitly pass base URL ***

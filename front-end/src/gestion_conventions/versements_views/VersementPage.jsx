@@ -354,7 +354,7 @@ const VersementPage = () => {
 
     // --- Render DynamicTable ---
     return (
-        <div className="container-fluid mt-3">
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             {/* Use the dynamic URL as key to force re-render/refetch when filter changes */}
             <DynamicTable
                 key={dynamicFetchUrl}

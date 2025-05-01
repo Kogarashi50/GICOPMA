@@ -232,7 +232,7 @@ const AppelOffrePage = () => {
     };
 
     return (
-        <div style={{ height: 'calc(100vh - 56px)', padding: '1rem', overflowY: 'auto' }}>
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
               {isCreating ? (
                   <AppelOffreForm
                        onClose={handleFormClose}

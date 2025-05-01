@@ -275,7 +275,7 @@ const AvenantsPage = () => {
     // --- Render Component ---
     return (
         // Main container with padding and scroll
-        <div style={{ height: 'calc(100vh - 56px - 2rem)', padding: '1rem', overflowY: 'auto' }}>
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             <DynamicTable
                 // --- Core ---
                 fetchUrl="/avenants"
@@ -292,7 +292,7 @@ const AvenantsPage = () => {
                 displayKeyForDelete="numero_avenant" // Field to display in delete confirmation
 
                 // --- Options ---
-                itemsPerPage={8} // Default items per page
+                itemsPerPage={10} // Default items per page
                 defaultVisibleColumns={defaultCols} // Default columns shown
                 availableColumnKeys={availableCols} // All columns available for selection
                 globalSearchExclusions={searchExclusions} // Columns excluded from global search

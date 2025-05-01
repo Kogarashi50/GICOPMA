@@ -305,7 +305,7 @@ console.log(userOptions)
 
     return (
         // Use simple padding div
-        <div style={{ padding: '1rem' }}>
+        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
           
 
             {/* DynamicTable Component */}
@@ -319,7 +319,7 @@ console.log(userOptions)
                 itemNamePlural="Entrées d'Historique"
                 identifierKey="id"
 
-                itemsPerPage={8}
+                itemsPerPage={10}
                 defaultSortBy={{ id: 'created_at', desc: true }}
                 defaultVisibleColumns={defaultVisibleCols}
                 renderFilters={renderActivityFilters} // Pass the updated filter form generator
