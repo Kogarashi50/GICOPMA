@@ -186,7 +186,9 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
                      label: commit.label || `Partenaire ID ${commit.Id_Partenaire}`,
                     engagement_type: (commit.autre_engagement) ? 'autre' : 'financier',
                     montant: String(commit.Montant_Convenu ?? ''),
-                    autre_engagement: commit.autre_engagement || '',                      is_signatory: !!commit.is_signatory,
+                    autre_engagement: commit.autre_engagement || '',
+                    engagements_annuels: commit.engagements_annuels || [], // <<< ADD THIS LINE
+                    is_signatory: !!commit.is_signatory,
                      date_signature: commit.date_signature || '',
                      details_signature: commit.details_signature || '',
                 })));
@@ -232,7 +234,39 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
      };
+// <<< ADD THIS HELPER FUNCTION >>>
+    const calculateEngagementYears = (startYear, durationMonths) => {
+        const start = parseInt(startYear, 10);
+        const duration = parseInt(durationMonths, 10);
+        if (isNaN(start) || isNaN(duration) || start <= 1900 || duration <= 0) {
+            return [];
+        }
+        const numYears = Math.ceil(duration / 12);
+        return Array.from({ length: numYears }, (_, i) => start + i);
+    };
 
+    // <<< ADD THIS NEW EVENT HANDLER >>>
+    const handleYearlyAmountChange = (tempId, year, value) => {
+        setSelectedPartnerDetails(prevDetails =>
+            prevDetails.map(p => {
+                if (p.tempId === tempId) {
+                    const updatedEngagements = p.engagements_annuels ? [...p.engagements_annuels] : [];
+                    const yearIndex = updatedEngagements.findIndex(e =>  Number(e.annee) === year);
+                    const numericValue = value.replace(/[^0-9.]/g, ''); // Sanitize input
+
+                    if (yearIndex > -1) {
+                        updatedEngagements[yearIndex].montant_prevu = numericValue;
+                    } else {
+                        updatedEngagements.push({ annee: year, montant_prevu: numericValue });
+                    }
+                    // Filter out any entries that were emptied
+                    const finalEngagements = updatedEngagements.filter(e => e.montant_prevu && e.montant_prevu !== '');
+                    return { ...p, engagements_annuels: finalEngagements };
+                }
+                return p;
+            })
+        );
+    };
     const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: undefined })); };
     const handleProgrammeChange = (selectedOption) => { setFormData(prev => ({ ...prev, programmeId: selectedOption })); if (formErrors.Id_Programme) setFormErrors(prev => ({ ...prev, Id_Programme: undefined })); };
     // Add these new handlers to ConventionForm.jsx
@@ -287,7 +321,8 @@ const handleTypeToggleChange = (value) => {
     const handleMarkForDeletion = (docId) => { setDocumentsToDelete(prev => [...new Set([...prev, docId])]); };
     const handleUnmarkForDeletion = (docId) => { setDocumentsToDelete(prev => prev.filter(id => id !== docId)); if (formErrors.fichiers_delete) setFormErrors(prev => ({ ...prev, fichiers_delete: undefined })); };
     const handlePartnerSelectionChange = (selectedOptions) => { const newSelectedPartnersOptions = selectedOptions || []; setSelectedPartnerDetails(prevDetails => { const keptDetails = prevDetails.filter(detail => newSelectedPartnersOptions.some(opt => opt.value === detail.id)); 
-        const addedDetails = newSelectedPartnersOptions.filter(option => !prevDetails.some(detail => detail.id === option.value)).map(option => ({ tempId: generateTempId(), id: option.value, Id_CP: null, label: option.label, montant: '',engagement_type: 'financier',autre_engagement: '', is_signatory: false, date_signature: '', details_signature: '', })); return [...keptDetails, ...addedDetails]; }); if (formErrors.partenaires) setFormErrors(prev => ({ ...prev, partenaires: undefined })); if (formErrors.signatories) setFormErrors(prev => ({ ...prev, signatories: undefined })); const newPartnerIds = newSelectedPartnersOptions.map(opt => opt.value); setFormErrors(prev => { const nextErrors = { ...prev }; Object.keys(nextErrors).forEach(key => { const matchAmount = key.match(/^montant_(\d+)$/); const matchDate = key.match(/^date_sig_(\d+)$/); const matchDetails = key.match(/^details_sig_(\d+)$/); const partnerIdStr = matchAmount?.[1] || matchDate?.[1] || matchDetails?.[1]; if (partnerIdStr && !newPartnerIds.includes(parseInt(partnerIdStr, 10))) delete nextErrors[key]; }); return nextErrors; }); };
+        const addedDetails = newSelectedPartnersOptions.filter(option => !prevDetails.some(detail => detail.id === option.value)).map(option => ({ tempId: generateTempId(), id: option.value, Id_CP: null, label: option.label,        engagements_annuels: [], // <<< ADD THIS LINE
+ montant: '',engagement_type: 'financier',autre_engagement: '', is_signatory: false, date_signature: '', details_signature: '', })); return [...keptDetails, ...addedDetails]; }); if (formErrors.partenaires) setFormErrors(prev => ({ ...prev, partenaires: undefined })); if (formErrors.signatories) setFormErrors(prev => ({ ...prev, signatories: undefined })); const newPartnerIds = newSelectedPartnersOptions.map(opt => opt.value); setFormErrors(prev => { const nextErrors = { ...prev }; Object.keys(nextErrors).forEach(key => { const matchAmount = key.match(/^montant_(\d+)$/); const matchDate = key.match(/^date_sig_(\d+)$/); const matchDetails = key.match(/^details_sig_(\d+)$/); const partnerIdStr = matchAmount?.[1] || matchDate?.[1] || matchDetails?.[1]; if (partnerIdStr && !newPartnerIds.includes(parseInt(partnerIdStr, 10))) delete nextErrors[key]; }); return nextErrors; }); };
     const handleCommitmentChange = (tempId, value) => { setSelectedPartnerDetails(prevDetails => prevDetails.map(p => p.tempId === tempId ? { ...p, montant: value } : p)); const partnerId = selectedPartnerDetails.find(p=>p.tempId === tempId)?.id; if(partnerId) { const errorKey = `montant_${partnerId}`; if (formErrors[errorKey]) setFormErrors(prev => ({ ...prev, [errorKey]: undefined })); } };
     const handleSignatoryChange = (tempId, isChecked) => { setSelectedPartnerDetails(prevDetails => prevDetails.map(p => p.tempId === tempId ? { ...p, is_signatory: isChecked, date_signature: isChecked ? p.date_signature : '', details_signature: isChecked ? p.details_signature : '' } : p)); const partnerId = selectedPartnerDetails.find(p=>p.tempId === tempId)?.id; if(partnerId){ if (isChecked && formErrors.signatories) setFormErrors(prev => ({ ...prev, signatories: undefined })); const dateErrorKey = `date_sig_${partnerId}`; const detailsErrorKey = `details_sig_${partnerId}`; if (!isChecked && formErrors[dateErrorKey]) setFormErrors(prev => ({ ...prev, [dateErrorKey]: undefined })); if (!isChecked && formErrors[detailsErrorKey]) setFormErrors(prev => ({ ...prev, [detailsErrorKey]: undefined })); } };
     const handleSignatureDateChange = (tempId, value) => { setSelectedPartnerDetails(prevDetails => prevDetails.map(p => p.tempId === tempId ? { ...p, date_signature: value } : p)); const partnerId = selectedPartnerDetails.find(p=>p.tempId === tempId)?.id; if(partnerId) { const errorKey = `date_sig_${partnerId}`; if (formErrors[errorKey]) setFormErrors(prev => ({ ...prev, [errorKey]: undefined })); } };
@@ -416,6 +451,11 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
         autre_engagement: p.engagement_type === 'autre' && p.autre_engagement ? p.autre_engagement : null,                is_signatory: p.is_signatory,
                 date_signature: p.is_signatory && p.date_signature ? p.date_signature : null,
                 details_signature: p.is_signatory && p.details_signature ? p.details_signature : null,
+                 engagements_annuels: p.engagements_annuels?.map(e => ({
+            annee: e.annee,
+            montant_prevu: parseCurrency(e.montant_prevu)
+        })) || []
+    
             };
             if (isEditing && p.Id_CP !== null && p.Id_CP !== undefined) {
                 commitment.id_cp = p.Id_CP;
@@ -490,7 +530,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                         </Row>
                                             
                                                 <Row className="mb-3 g-3">
-                                                    <Form.Group as={Col} md={6} controlId="formNumeroApprobation">
+                                                    <Form.Group as={Col} md={4} controlId="formNumeroApprobation">
                                                         <Form.Label className="small mb-1 fw-medium">Numéro d'approbation <span className="text-danger">*</span></Form.Label>
                                                         <Form.Control 
                                                             className={inputClass} 
@@ -503,7 +543,21 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                                         />
                                                         <Form.Control.Feedback type="invalid">{formErrors.numero_approbation}</Form.Control.Feedback>
                                                     </Form.Group>
-                                                    <Form.Group as={Col} md={6} controlId="formSession">
+                                                    <Form.Group as={Col} md={4} controlId="formDureeConvention">
+        <Form.Label className="small mb-1 fw-medium">Durée de la convention (mois)</Form.Label>
+        <Form.Control 
+            className={inputClass} 
+            isInvalid={!!formErrors.duree_convention} 
+            type="number" 
+            name="duree_convention" 
+            placeholder="ex: 36"
+            value={formData.duree_convention} 
+            onChange={handleChange} 
+            size="sm"
+        />
+        <Form.Control.Feedback type="invalid">{formErrors.duree_convention}</Form.Control.Feedback>
+    </Form.Group>
+                                                    <Form.Group as={Col} md={4} controlId="formSession">
                                                         <Form.Label className="small mb-1 fw-medium">Session (Mois) <span className="text-danger">*</span></Form.Label>
                                                         <Form.Select
                                                             className={inputClass}
@@ -546,7 +600,6 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                     {selectedPartnerDetails.map((partner, index) => (
                                         <div key={partner.tempId} id={`formDetail_${partner.id}`} className={`mb-3 ${index < selectedPartnerDetails.length - 1 ? 'border-bottom pb-3' : ''}`}>
                                             <Row className="mb-2 align-items-center px-sm-3">
-    {/* Column for Engagement Type Switch */}
     <Col sm={12} md={4} className="mb-2 mb-md-0">
         <Form.Group>
             <Form.Label className="small mb-1 fw-medium text-muted">Type d'engagement</Form.Label>
@@ -614,6 +667,51 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
         />
     </Col>
 </Row>
+{partner.engagement_type === 'financier' && formData.Annee_Convention && formData.duree_convention && (
+        (() => {
+            const engagementYears = calculateEngagementYears(formData.Annee_Convention, formData.duree_convention);
+            if (engagementYears.length === 0) return null;
+
+            const yearlyTotal = partner.engagements_annuels?.reduce((sum, item) => sum + parseCurrency(item.montant_prevu), 0) || 0;
+            const totalCommitment = parseCurrency(partner.montant);
+            const isTotalMismatch = yearlyTotal !== totalCommitment;
+
+            return (
+                <Row className="mt-2 mb-2 px-sm-3 justify-content-end">
+                    <Col sm={12}>
+                        <div className="p-2 border rounded-3 bg-light">
+                            <p className="small fw-medium text-muted mb-2">Répartition annuelle prévisionnelle :</p>
+                            <Row className="g-2">
+                                {engagementYears.map(year => {
+                                    const engagementForYear = partner.engagements_annuels?.find(e => Number(e.annee) === year);
+                                    return (
+                                        <Col key={year} xs={6} sm={4} md={3}>
+                                            <InputGroup size="sm">
+                                                <InputGroup.Text>{year}</InputGroup.Text>
+                                                <Form.Control
+                                                    type="number"
+                                                    step="0.01"
+                                                    placeholder="Montant"
+                                                    value={engagementForYear?.montant_prevu || ''}
+                                                    onChange={(e) => handleYearlyAmountChange(partner.tempId, year, e.target.value)}
+                                                />
+                                            </InputGroup>
+                                        </Col>
+                                    );
+                                })}
+                            </Row>
+                            {isTotalMismatch && totalCommitment > 0 && (
+                                <Alert variant="warning" className="mt-2 py-1 px-2 small mb-0">
+                                    <FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/>
+                                    La somme de la répartition ({yearlyTotal.toLocaleString('fr-MA')} MAD) ne correspond pas à l'engagement total ({totalCommitment.toLocaleString('fr-MA')} MAD).
+                                </Alert>
+                            )}
+                        </div>
+                    </Col>
+                </Row>
+            );
+        })()
+    )}
                                             {partner.is_signatory && ( <Row className="mt-2 mb-1 px-sm-3">
                                                 <Col sm={5} md={4} className="d-none d-sm-block"></Col>
                                                 <Col xs={12} sm={4} md={4} className="mb-2 mb-sm-0"> <Form.Group controlId={`formDateSig_${partner.id}`}><Form.Label className="small mb-0 fw-medium text-muted">Date Signature</Form.Label><Form.Control type="date" size="sm" value={partner.date_signature} onChange={(e) => handleSignatureDateChange(partner.tempId, e.target.value)} className="form-control-sm rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors[`date_sig_${partner.id}`]} required={partner.is_signatory}/><Form.Control.Feedback type="invalid" className="small">{formErrors[`date_sig_${partner.id}`]}</Form.Control.Feedback></Form.Group> </Col>
@@ -671,11 +769,11 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
     </Card.Body>
 </Card>
                         <Row className="mb-3 g-3">
-                             <Form.Group as={Col} md={4} lg={4} controlId="formMaitre_Ouvrage"><Form.Label className="small mb-1 fw-medium">Maitre Ouvrage</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Maitre_Ouvrage} type="text" name="Maitre_Ouvrage" value={formData.Maitre_Ouvrage} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Maitre_Ouvrage}</Form.Control.Feedback></Form.Group>
+                             <Form.Group as={Col} md={6} lg={6} controlId="formMaitre_Ouvrage"><Form.Label className="small mb-1 fw-medium">Maitre Ouvrage</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Maitre_Ouvrage} type="text" name="Maitre_Ouvrage" value={formData.Maitre_Ouvrage} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Maitre_Ouvrage}</Form.Control.Feedback></Form.Group>
                              
 
-                            {formData.type === 'cadre' && (<Form.Group as={Col} md={4} lg={4} controlId="formId_Programme"><Form.Label className="small mb-1 fw-medium">Programme</Form.Label><Select inputId='programme-select-input' name="programmeId" menuPlacement="auto" options={programmesOptions} value={formData.programmeId} onChange={handleProgrammeChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.programmes} className={formErrors.Id_Programme ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Programme ? 'block' : 'none'}}>{formErrors.Id_Programme}</Form.Control.Feedback></Form.Group>)}
-                             {formData.type === 'specifique' && (<Form.Group as={Col} md={4} lg={4} controlId="formId_Projet"><Form.Label className="small mb-1 fw-medium">Projet</Form.Label><Select inputId='projet-select-input' name="projetId" menuPlacement="auto" options={projetsOptions} value={formData.projetId} onChange={handleProjetChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.projets} className={formErrors.Id_Projet ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Projet ? 'block' : 'none'}}>{formErrors.Id_Projet}</Form.Control.Feedback></Form.Group>)}<Form.Group as={Col} md={4} lg={4} controlId="formProvince"><Form.Label className="small mb-1 fw-medium">Localisation (Provinces)</Form.Label><Select inputId='province-select-input' name="provinces" menuPlacement="auto" options={provincesOptions} value={formData.provinces} onChange={handleProvinceChange} styles={selectStyles} placeholder="- Selectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.provinces} className={formErrors.Province ? 'is-invalid' : ''} classNamePrefix="react-select"/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Province ? 'block' : 'none'}}>{formErrors.Province}</Form.Control.Feedback></Form.Group>
+                            {formData.type === 'cadre' && (<Form.Group as={Col} md={6} lg={6} controlId="formId_Programme"><Form.Label className="small mb-1 fw-medium">Programme</Form.Label><Select inputId='programme-select-input' name="programmeId" menuPlacement="auto" options={programmesOptions} value={formData.programmeId} onChange={handleProgrammeChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.programmes} className={formErrors.Id_Programme ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Programme ? 'block' : 'none'}}>{formErrors.Id_Programme}</Form.Control.Feedback></Form.Group>)}
+                             {formData.type === 'specifique' && (<Form.Group as={Col} md={6} lg={6} controlId="formId_Projet"><Form.Label className="small mb-1 fw-medium">Projet</Form.Label><Select inputId='projet-select-input' name="projetId" menuPlacement="auto" options={projetsOptions} value={formData.projetId} onChange={handleProjetChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.projets} className={formErrors.Id_Projet ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Projet ? 'block' : 'none'}}>{formErrors.Id_Projet}</Form.Control.Feedback></Form.Group>)}
                         </Row>
                         <Row className="mb-3 g-3">
     <Form.Group as={Col} md={6} controlId="formMaitreOuvrageDelegue">
@@ -691,20 +789,8 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
         />
         <Form.Control.Feedback type="invalid">{formErrors.maitre_ouvrage_delegue}</Form.Control.Feedback>
     </Form.Group>
-    <Form.Group as={Col} md={6} controlId="formDureeConvention">
-        <Form.Label className="small mb-1 fw-medium">Durée de la convention (mois)</Form.Label>
-        <Form.Control 
-            className={inputClass} 
-            isInvalid={!!formErrors.duree_convention} 
-            type="number" 
-            name="duree_convention" 
-            placeholder="ex: 36"
-            value={formData.duree_convention} 
-            onChange={handleChange} 
-            size="sm"
-        />
-        <Form.Control.Feedback type="invalid">{formErrors.duree_convention}</Form.Control.Feedback>
-    </Form.Group>
+    <Form.Group as={Col} md={6} lg={6} controlId="formProvince"><Form.Label className="small mb-1 fw-medium">Localisation (Provinces)</Form.Label><Select inputId='province-select-input' name="provinces" menuPlacement="auto" options={provincesOptions} value={formData.provinces} onChange={handleProvinceChange} styles={selectStyles} placeholder="- Selectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.provinces} className={formErrors.Province ? 'is-invalid' : ''} classNamePrefix="react-select"/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Province ? 'block' : 'none'}}>{formErrors.Province}</Form.Control.Feedback></Form.Group>
+
 </Row>
                         <Row className="mb-3 g-3">
                             <Form.Group as={Col} md={4} controlId="formStatut"><Form.Label className="small mb-1 fw-medium">Statut <span className="text-danger">*</span></Form.Label><Select inputId='statut-select-input' name="Statut" options={groupedStatutOptions} value={formData.Statut} onChange={handleStatutChange} styles={selectStyles} placeholder="- Sélectionner Statut -" isClearable formatGroupLabel={(group) => (<div style={{ fontWeight: 'bold', color: '#555', borderTop: '1px solid #eee', paddingTop: '5px', marginTop:'5px' }}>{group.label}</div>)} className={formErrors.Statut ? 'is-invalid' : ''} classNamePrefix="react-select"/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Statut ? 'block' : 'none'}}>{formErrors.Statut}</Form.Control.Feedback></Form.Group>

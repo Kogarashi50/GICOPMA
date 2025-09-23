@@ -288,9 +288,10 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
 
             // --- Create ConvPart Records ---
             Log::info('Création enregistrements ConvPart...');
-            if (!empty($partnerCommitmentsInput)) {
-                foreach ($partnerCommitmentsInput as $commitment) {
-                    ConvPart::create([
+if (!empty($partnerCommitmentsInput)) {
+    // vvv REPLACE THIS ENTIRE LOOP vvv
+    foreach ($partnerCommitmentsInput as $commitment) {
+        $convPart = ConvPart::create([
             'Id_Convention' => $convention->id,
             'Id_Partenaire' => $commitment['Id_Partenaire'],
             'Montant_Convenu' => $commitment['Montant_Convenu'],
@@ -299,10 +300,23 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
             'date_signature' => ($commitment['is_signatory'] && !empty($commitment['date_signature'])) ? $commitment['date_signature'] : null,
             'details_signature' => ($commitment['is_signatory'] && !empty($commitment['details_signature'])) ? $commitment['details_signature'] : null,
         ]);
-                }
-                Log::info(count($partnerCommitmentsInput) . " enregistrement(s) ConvPart créé(s).");
-            } // Empty case already handled by validation
 
+        // CORRECTED and SIMPLIFIED logic for yearly engagements
+        // It now correctly uses the `$commitment` variable
+        if (isset($commitment['engagements_annuels']) && is_array($commitment['engagements_annuels']) && !empty($commitment['Montant_Convenu'])) {
+            foreach ($commitment['engagements_annuels'] as $engagementAnnuelData) {
+                 if (isset($engagementAnnuelData['annee']) && isset($engagementAnnuelData['montant_prevu']) && is_numeric($engagementAnnuelData['montant_prevu'])) {
+                    // Use simple 'create' since this is a new record
+                    $convPart->engagementsAnnuels()->create([
+                        'annee' => $engagementAnnuelData['annee'],
+                        'montant_prevu' => $engagementAnnuelData['montant_prevu']
+                    ]);
+                }
+            }
+        }
+    }
+    Log::info(count($partnerCommitmentsInput) . " enregistrement(s) ConvPart créé(s).");
+}
             // --- Commit ---
             DB::commit();
             Log::info('Transaction DB validée (store).');
@@ -343,6 +357,8 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
                'convParts' => function ($query) {
     // We add `autre_engagement` to the select list
     $query->with('partenaire:Id,Description,Description_Arr,Code')
+          ->with('engagementsAnnuels')
+
           ->select([
               'Id_CP', 'Id_Convention', 'Id_Partenaire', 'Montant_Convenu', 
               'autre_engagement', // <-- ADD THIS
@@ -426,7 +442,7 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
                         'label'           => $partnerLabel, // Use the calculated label
                         'Montant_Convenu' => $c['Montant_Convenu'] ?? null,
                         'autre_engagement' => $c['autre_engagement'] ?? null,
-
+                        'engagements_annuels' => $c['engagements_annuels'] ?? [], 
                         'Montant_Verse'   => $c['Montant_Verse'] ?? '0.00',
                         'is_signatory'    => (bool)($c['is_signatory'] ?? false),
                         'date_signature'  => $c['date_signature'] ?? null,
@@ -668,6 +684,24 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
                     ['Id_Convention' => $convention->id, 'Id_Partenaire' => $commitmentData['Id_Partenaire']],
                     $dataToSync
                 );
+                if (isset($commitmentData['engagements_annuels']) && is_array($commitmentData['engagements_annuels']) && !empty($commitmentData['engagements_annuels'])) {
+    $submittedYears = [];
+    foreach ($commitmentData['engagements_annuels'] as $engagementAnnuelData) {
+        // Ensure we have valid data before trying to save
+        if (isset($engagementAnnuelData['annee']) && isset($engagementAnnuelData['montant_prevu'])) {
+            $convPart->engagementsAnnuels()->updateOrCreate(
+                ['annee' => $engagementAnnuelData['annee']], // Keys to find the record by
+                ['montant_prevu' => $engagementAnnuelData['montant_prevu']] // Data to update or create with
+            );
+            $submittedYears[] = $engagementAnnuelData['annee'];
+        }
+    }
+    // This is important: it removes any yearly records that were deselected or are no longer valid
+    $convPart->engagementsAnnuels()->whereNotIn('annee', $submittedYears)->delete();
+} else {
+    // If no yearly breakdown is submitted (e.g., for an "Autre" commitment), ensure no old records are left behind.
+    $convPart->engagementsAnnuels()->delete();
+}
                  Log::debug("Synchronisé ConvPart ID: {$convPart->Id_CP} pour Partenaire ID: {$commitmentData['Id_Partenaire']}. Nouvellement créé: " . ($convPart->wasRecentlyCreated ? 'Oui' : 'Non'));
             }
             Log::info("Synchronisation ConvPart terminée.");

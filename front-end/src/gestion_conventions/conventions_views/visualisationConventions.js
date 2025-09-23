@@ -20,6 +20,8 @@ import {
   faTasks,
   faUserTie,
   faBuilding,
+   faChevronDown, 
+    faChevronUp,
   faMapMarkerAlt,
   faProjectDiagram,
   faClipboardList,
@@ -30,6 +32,7 @@ import Button from "react-bootstrap/Button"
 import Card from "react-bootstrap/Card"
 import Row from "react-bootstrap/Row"
 import Col from "react-bootstrap/Col"
+import Collapse from "react-bootstrap/Collapse"
 import Alert from "react-bootstrap/Alert"
 import PropTypes from "prop-types"
 import Spinner from "react-bootstrap/Spinner"
@@ -89,7 +92,12 @@ const ConventionVisualisation = ({ itemId, onClose, baseApiUrl = "http://localho
   const [error, setError] = useState(null)
   const [provincesList, setProvincesList] = useState([])
   const [fonctionnairesList, setFonctionnairesList] = useState([])
-
+  const [openPartnerId, setOpenPartnerId] = useState(null); // <<< ADD THIS STATE
+ const handleTogglePartner = (partnerId) => {
+    // If the clicked partner is already open, close it by setting state to null.
+    // Otherwise, set the state to the ID of the clicked partner to open it.
+    setOpenPartnerId(currentOpenId => (currentOpenId === partnerId ? null : partnerId));
+  };
   const getMonthName = (monthNumber) => {
     const monthMap = {
       1: "Janvier",
@@ -205,7 +213,46 @@ const ConventionVisualisation = ({ itemId, onClose, baseApiUrl = "http://localho
   useEffect(() => {
     fetchData()
   }, [fetchData])
+const renderYearlyBreakdown = (engagements) => {
+        if (!engagements || engagements.length === 0) {
+            return (
+                <div className="text-center text-muted fst-italic small py-2">
+                    Aucune répartition annuelle prévisionnelle n'a été fournie.
+                </div>
+            );
+        }
 
+        // Sort by year to ensure correct order
+        const sortedEngagements = [...engagements].sort((a, b) => a.annee - b.annee);
+ return (
+           <div className="mt-2 yearly-breakdown-container pt-3">
+            {/* Header Row */}
+            <div className="d-flex justify-content-between border border-warning border-1 px-3 py-2 mb-2 rounded-5 bg-white">
+                <h6 className="text-secondary small fw-bold mb-0">Année</h6>
+                <h6 className="text-secondary small fw-bold mb-0">Montant Prévisionnel</h6>
+            </div>
+
+            {/* Data Rows */}
+            <div className=" rounded-4 border border-warning bg-white ">
+                    <hr className="py-0 my-0 mx-4 px-2  text-warning"/>
+
+                {sortedEngagements.map(({ annee, montant_prevu }, index) => (
+                    <><div
+                        key={annee}
+                        className={`d-flex justify-content-between m-2  align-items-center px-2 `}
+                    >
+                        <span className="fw-medium text-dark">{annee}</span>
+                        <span className="fw-bold text-dark">{formatCurrency(montant_prevu)}</span>
+
+                    </div>
+                    <hr className="py-0 my-0 mx-4 px-2  text-warning"/>
+
+                    </>
+                ))}
+            </div>
+        </div>
+        );
+    };
   // --- Memoized Helpers for Rendering ---
   const getProvinceNames = useCallback(
     (localisationString) => {
@@ -817,6 +864,31 @@ const ConventionVisualisation = ({ itemId, onClose, baseApiUrl = "http://localho
                                   )}
                                 </Col>
                               </Row>
+                                {p.engagements_annuels && p.engagements_annuels.length > 0 && (
+                        <div className="mt-3 border-top pt-2" style={{ borderColor: "#e9ecef" }}>
+                            <Button
+                                onClick={() => handleTogglePartner(p.Id_CP)}
+                                variant="link"
+                                className="d-flex justify-content-between align-items-center w-100 text-decoration-none p-0"
+                                aria-controls={`collapse-partner-${p.Id_CP}`}
+                                aria-expanded={openPartnerId === p.Id_CP}
+                            >
+                                <h6 className="small fw-bold text-dark mb-0">
+                                    Répartition Annuelle
+                                </h6>
+                                <FontAwesomeIcon
+                                    icon={openPartnerId === p.Id_CP ? faChevronUp : faChevronDown}
+                                    className="text-muted"
+                                />
+                            </Button>
+                            <Collapse in={openPartnerId === p.Id_CP}>
+                                <div id={`collapse-partner-${p.Id_CP}`}>
+                                    {renderYearlyBreakdown(p.engagements_annuels)}
+                                </div>
+                            </Collapse>
+                        </div>
+                    )}
+                
                             </div>
                           )}
 

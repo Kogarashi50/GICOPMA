@@ -109,4 +109,8 @@ class ConvPart extends Model
         // local key (PK) on *this* model's table ('convention_partenaire'.'Id_CP')
         return $this->hasMany(VersementCP::class, 'id_CP', 'Id_CP');
     }
+    public function engagementsAnnuels(): HasMany
+    {
+        return $this->hasMany(EngagementAnnuel::class, 'id_cp', 'Id_CP');
+    }
 }

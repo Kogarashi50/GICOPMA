@@ -10349,3 +10349,1532 @@
 [2025-09-20 21:45:35] local.INFO: Récupération réussie de 12 conventions.  
 [2025-09-20 21:45:36] local.INFO: Récupération de la liste des partenaires...  
 [2025-09-20 21:45:36] local.INFO: Récupération réussie de 201 partenaires.  
+[2025-09-23 20:06:02] local.INFO: Fetching recent convention summaries for dashboard...  
+[2025-09-23 20:06:02] local.DEBUG: Status order defined: ["signé","en cours de signature","non signé","visé","en cours de visa","non visé","approuvé","en cours d'approbation","non approuvé"] 
+[2025-09-23 20:06:03] local.INFO: Recent convention summaries fetched and processed successfully. {"data":{"Illuminate\\Support\\Collection":[{"id":400,"intitule":"Convention Cadre pour le Développement de l'Infrastructure Hydraulique","statut":"signé","advancementPercentage":32.0,"status_priority":0},{"id":378,"intitule":"Convention de partenariat pour une subvention supplémentaire au renouvellement du parc de Taxis","statut":"signé","advancementPercentage":9.0,"status_priority":0},{"id":357,"intitule":"Convention de partenariat avec la compagnie nationale Royal Air Maroc pour le renforcement de la liaison aérienne entre Casablanca et Oujda 2016-2017","statut":"signé","advancementPercentage":100,"status_priority":0},{"id":418,"intitule":"int3","statut":"visé","advancementPercentage":0.0,"status_priority":3},{"id":416,"intitule":"int1","statut":"visé","advancementPercentage":0.0,"status_priority":3},{"id":415,"intitule":"int2","statut":"visé","advancementPercentage":0,"status_priority":3}]}} 
+[2025-09-23 20:06:10] local.INFO: Fetching recent convention summaries for dashboard...  
+[2025-09-23 20:06:10] local.DEBUG: Status order defined: ["signé","en cours de signature","non signé","visé","en cours de visa","non visé","approuvé","en cours d'approbation","non approuvé"] 
+[2025-09-23 20:06:10] local.INFO: Recent convention summaries fetched and processed successfully. {"data":{"Illuminate\\Support\\Collection":[{"id":400,"intitule":"Convention Cadre pour le Développement de l'Infrastructure Hydraulique","statut":"signé","advancementPercentage":32.0,"status_priority":0},{"id":378,"intitule":"Convention de partenariat pour une subvention supplémentaire au renouvellement du parc de Taxis","statut":"signé","advancementPercentage":9.0,"status_priority":0},{"id":357,"intitule":"Convention de partenariat avec la compagnie nationale Royal Air Maroc pour le renforcement de la liaison aérienne entre Casablanca et Oujda 2016-2017","statut":"signé","advancementPercentage":100,"status_priority":0},{"id":418,"intitule":"int3","statut":"visé","advancementPercentage":0.0,"status_priority":3},{"id":416,"intitule":"int1","statut":"visé","advancementPercentage":0.0,"status_priority":3},{"id":415,"intitule":"int2","statut":"visé","advancementPercentage":0,"status_priority":3}]}} 
+[2025-09-23 20:06:12] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 20:06:12] local.INFO: Récupération réussie de 12 conventions.  
+[2025-09-23 20:06:14] local.INFO: Récupération de la liste des partenaires...  
+[2025-09-23 20:06:14] local.INFO: Récupération réussie de 201 partenaires.  
+[2025-09-23 20:06:17] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 20:06:17] local.INFO: Récupération réussie de 12 conventions.  
+[2025-09-23 20:06:19] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:06:19] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:06:19] local.INFO: Récupération de la liste des partenaires...  
+[2025-09-23 20:06:19] local.INFO: Récupération réussie de 201 partenaires.  
+[2025-09-23 20:06:21] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:06:21] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:06:22] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:06:22] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:06:24] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:06:27] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 20:06:27] local.INFO: Récupération réussie de 12 conventions.  
+[2025-09-23 20:06:28] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:06:28] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:06:29] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:06:29] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:06:30] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:06:30] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:06:32] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:06:34] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 20:06:34] local.INFO: Récupération réussie de 12 conventions.  
+[2025-09-23 20:08:34] local.INFO: Requête de création de convention reçue...  
+[2025-09-23 20:08:34] local.DEBUG: Données brutes: {"membres_comite_technique":"[]","membres_comite_pilotage":"[]","code":null,"type":"specifique","intitule":"int7","annee_convention":"2023","statut":"en cours d'approbation","classification_prov":null,"categorie":null,"reference":null,"objet":null,"date_visa":null,"date_reception_vise":null,"duree_convention":"19","maitre_ouvrage_delegue":null,"objectifs":null,"maitre_ouvrage":null,"partenaire":"2","operationalisation":"Non","groupe":null,"rang":null,"observations":null,"cout_global":null,"Id_Programme":null,"id_projet":null,"session":"3","numero_approbation":"9898","localisation":null,"id_fonctionnaire":null,"partner_commitments":"[{\"Id_Partenaire\":2,\"Montant_Convenu\":300000000,\"autre_engagement\":null,\"is_signatory\":true,\"date_signature\":\"2025-09-17\",\"details_signature\":\"details\",\"engagements_annuels\":[{\"annee\":2023,\"montant_prevu\":200000000},{\"annee\":2024,\"montant_prevu\":100000000}]}]"} 
+[2025-09-23 20:08:34] local.INFO: Aucun fichier reçu (optionnel).  
+[2025-09-23 20:08:34] local.DEBUG: Engagements partenaires décodés: [{"Id_Partenaire":2,"Montant_Convenu":300000000,"autre_engagement":null,"is_signatory":true,"date_signature":"2025-09-17","details_signature":"details","engagements_annuels":[{"annee":2023,"montant_prevu":200000000},{"annee":2024,"montant_prevu":100000000}]}] 
+[2025-09-23 20:08:36] local.INFO: Validation principale réussie (store).  
+[2025-09-23 20:08:36] local.INFO: Validation détaillée engagements partenaires...  
+[2025-09-23 20:08:36] local.INFO: Validation détaillée engagements partenaires terminée.  
+[2025-09-23 20:08:36] local.INFO: Transaction DB démarrée (store).  
+[2025-09-23 20:08:36] local.INFO: Création enregistrement Convention... {"numero_approbation":"9898","session":"3","classification_prov":null,"categorie":null,"intitule":"int7","reference":null,"annee_convention":"2023","objet":null,"type":"specifique","objectifs":null,"localisation":null,"maitre_ouvrage":null,"partenaire":"2","id_fonctionnaire":null,"cout_global":null,"statut":"en cours d'approbation","date_visa":null,"date_reception_vise":null,"duree_convention":"19","maitre_ouvrage_delegue":null,"operationalisation":"Non","Id_Programme":null,"id_projet":null,"groupe":null,"rang":null,"observations":null,"membres_comite_technique":[],"membres_comite_pilotage":[],"code":"9898/03/2023"} 
+[2025-09-23 20:08:37] local.INFO: Convention créée: ID 419  
+[2025-09-23 20:08:37] local.INFO: Aucun fichier fourni (optionnel).  
+[2025-09-23 20:08:37] local.INFO: Création enregistrements ConvPart...  
+[2025-09-23 20:08:37] local.INFO: 1 enregistrement(s) ConvPart créé(s).  
+[2025-09-23 20:08:37] local.ERROR: ERREUR GÉNÉRALE (store): {"message":"Undefined variable $convPart","trace":"#0 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(256): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'Undefined varia...', 'C:\\\\Users\\\\Prueba...', 321)
+#1 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\app\\Http\\Controllers\\ConventionController.php(321): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'Undefined varia...', 'C:\\\\Users\\\\Prueba...', 321)
+#2 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(47): App\\Http\\Controllers\\ConventionController->store(Object(Illuminate\\Http\\Request))
+#3 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(266): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\ConventionController), 'store')
+#4 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(212): Illuminate\\Routing\\Route->runController()
+#5 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(808): Illuminate\\Routing\\Route->run()
+#6 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#7 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#8 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'create conventi...')
+#9 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(51): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#10 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#11 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(64): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#12 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'sanctum')
+#13 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#14 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#15 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(786): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#16 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(750): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#17 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(739): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#18 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(201): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#19 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#20 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#23 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#24 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#25 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#27 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#28 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#29 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#30 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#32 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#37 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(176): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#38 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(145): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#39 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1220): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#40 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\public\\index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#41 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\Prueba...')
+#42 {main}"} 
+[2025-09-23 20:09:03] local.INFO: Requête de création de convention reçue...  
+[2025-09-23 20:09:03] local.DEBUG: Données brutes: {"membres_comite_technique":"[]","membres_comite_pilotage":"[]","code":null,"type":"specifique","intitule":"int7","annee_convention":"2023","statut":"en cours d'approbation","classification_prov":null,"categorie":null,"reference":null,"objet":null,"date_visa":null,"date_reception_vise":null,"duree_convention":"19","maitre_ouvrage_delegue":null,"objectifs":null,"maitre_ouvrage":null,"partenaire":"2","operationalisation":"Non","groupe":null,"rang":null,"observations":null,"cout_global":null,"Id_Programme":null,"id_projet":null,"session":"3","numero_approbation":"9898","localisation":null,"id_fonctionnaire":null,"partner_commitments":"[{\"Id_Partenaire\":2,\"Montant_Convenu\":300000000,\"autre_engagement\":null,\"is_signatory\":true,\"date_signature\":\"2025-09-17\",\"details_signature\":\"details\",\"engagements_annuels\":[{\"annee\":2023,\"montant_prevu\":200000000},{\"annee\":2024,\"montant_prevu\":100000000}]}]"} 
+[2025-09-23 20:09:03] local.INFO: Aucun fichier reçu (optionnel).  
+[2025-09-23 20:09:03] local.DEBUG: Engagements partenaires décodés: [{"Id_Partenaire":2,"Montant_Convenu":300000000,"autre_engagement":null,"is_signatory":true,"date_signature":"2025-09-17","details_signature":"details","engagements_annuels":[{"annee":2023,"montant_prevu":200000000},{"annee":2024,"montant_prevu":100000000}]}] 
+[2025-09-23 20:09:03] local.INFO: Validation principale réussie (store).  
+[2025-09-23 20:09:03] local.INFO: Validation détaillée engagements partenaires...  
+[2025-09-23 20:09:03] local.INFO: Validation détaillée engagements partenaires terminée.  
+[2025-09-23 20:09:03] local.INFO: Transaction DB démarrée (store).  
+[2025-09-23 20:09:03] local.INFO: Création enregistrement Convention... {"numero_approbation":"9898","session":"3","classification_prov":null,"categorie":null,"intitule":"int7","reference":null,"annee_convention":"2023","objet":null,"type":"specifique","objectifs":null,"localisation":null,"maitre_ouvrage":null,"partenaire":"2","id_fonctionnaire":null,"cout_global":null,"statut":"en cours d'approbation","date_visa":null,"date_reception_vise":null,"duree_convention":"19","maitre_ouvrage_delegue":null,"operationalisation":"Non","Id_Programme":null,"id_projet":null,"groupe":null,"rang":null,"observations":null,"membres_comite_technique":[],"membres_comite_pilotage":[],"code":"9898/03/2023"} 
+[2025-09-23 20:09:04] local.INFO: Convention créée: ID 420  
+[2025-09-23 20:09:04] local.INFO: Aucun fichier fourni (optionnel).  
+[2025-09-23 20:09:04] local.INFO: Création enregistrements ConvPart...  
+[2025-09-23 20:09:04] local.INFO: 1 enregistrement(s) ConvPart créé(s).  
+[2025-09-23 20:09:04] local.ERROR: ERREUR GÉNÉRALE (store): {"message":"Undefined variable $convPart","trace":"#0 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(256): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'Undefined varia...', 'C:\\\\Users\\\\Prueba...', 321)
+#1 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\app\\Http\\Controllers\\ConventionController.php(321): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'Undefined varia...', 'C:\\\\Users\\\\Prueba...', 321)
+#2 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(47): App\\Http\\Controllers\\ConventionController->store(Object(Illuminate\\Http\\Request))
+#3 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(266): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\ConventionController), 'store')
+#4 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(212): Illuminate\\Routing\\Route->runController()
+#5 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(808): Illuminate\\Routing\\Route->run()
+#6 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#7 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#8 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'create conventi...')
+#9 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(51): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#10 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#11 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(64): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#12 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'sanctum')
+#13 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#14 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#15 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(786): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#16 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(750): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#17 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(739): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#18 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(201): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#19 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#20 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#23 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#24 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#25 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#27 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#28 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#29 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#30 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#32 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#37 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(176): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#38 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(145): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#39 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1220): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#40 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\public\\index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#41 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\Prueba...')
+#42 {main}"} 
+[2025-09-23 20:09:14] local.INFO: Requête de création de convention reçue...  
+[2025-09-23 20:09:14] local.DEBUG: Données brutes: {"membres_comite_technique":"[]","membres_comite_pilotage":"[]","code":null,"type":"specifique","intitule":"int7","annee_convention":"2023","statut":"en cours d'approbation","classification_prov":null,"categorie":null,"reference":null,"objet":null,"date_visa":null,"date_reception_vise":null,"duree_convention":"19","maitre_ouvrage_delegue":null,"objectifs":null,"maitre_ouvrage":null,"partenaire":"2","operationalisation":"Non","groupe":null,"rang":null,"observations":null,"cout_global":null,"Id_Programme":null,"id_projet":null,"session":"3","numero_approbation":"9898","localisation":null,"id_fonctionnaire":null,"partner_commitments":"[{\"Id_Partenaire\":2,\"Montant_Convenu\":300000000,\"autre_engagement\":null,\"is_signatory\":true,\"date_signature\":\"2025-09-17\",\"details_signature\":\"details\",\"engagements_annuels\":[{\"annee\":2023,\"montant_prevu\":200000000},{\"annee\":2024,\"montant_prevu\":100000000}]}]"} 
+[2025-09-23 20:09:14] local.INFO: Aucun fichier reçu (optionnel).  
+[2025-09-23 20:09:14] local.DEBUG: Engagements partenaires décodés: [{"Id_Partenaire":2,"Montant_Convenu":300000000,"autre_engagement":null,"is_signatory":true,"date_signature":"2025-09-17","details_signature":"details","engagements_annuels":[{"annee":2023,"montant_prevu":200000000},{"annee":2024,"montant_prevu":100000000}]}] 
+[2025-09-23 20:09:14] local.INFO: Validation principale réussie (store).  
+[2025-09-23 20:09:14] local.INFO: Validation détaillée engagements partenaires...  
+[2025-09-23 20:09:14] local.INFO: Validation détaillée engagements partenaires terminée.  
+[2025-09-23 20:09:14] local.INFO: Transaction DB démarrée (store).  
+[2025-09-23 20:09:14] local.INFO: Création enregistrement Convention... {"numero_approbation":"9898","session":"3","classification_prov":null,"categorie":null,"intitule":"int7","reference":null,"annee_convention":"2023","objet":null,"type":"specifique","objectifs":null,"localisation":null,"maitre_ouvrage":null,"partenaire":"2","id_fonctionnaire":null,"cout_global":null,"statut":"en cours d'approbation","date_visa":null,"date_reception_vise":null,"duree_convention":"19","maitre_ouvrage_delegue":null,"operationalisation":"Non","Id_Programme":null,"id_projet":null,"groupe":null,"rang":null,"observations":null,"membres_comite_technique":[],"membres_comite_pilotage":[],"code":"9898/03/2023"} 
+[2025-09-23 20:09:14] local.INFO: Convention créée: ID 421  
+[2025-09-23 20:09:14] local.INFO: Aucun fichier fourni (optionnel).  
+[2025-09-23 20:09:14] local.INFO: Création enregistrements ConvPart...  
+[2025-09-23 20:09:14] local.INFO: 1 enregistrement(s) ConvPart créé(s).  
+[2025-09-23 20:09:14] local.ERROR: ERREUR GÉNÉRALE (store): {"message":"Undefined variable $convPart","trace":"#0 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(256): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'Undefined varia...', 'C:\\\\Users\\\\Prueba...', 321)
+#1 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\app\\Http\\Controllers\\ConventionController.php(321): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'Undefined varia...', 'C:\\\\Users\\\\Prueba...', 321)
+#2 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(47): App\\Http\\Controllers\\ConventionController->store(Object(Illuminate\\Http\\Request))
+#3 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(266): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\ConventionController), 'store')
+#4 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(212): Illuminate\\Routing\\Route->runController()
+#5 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(808): Illuminate\\Routing\\Route->run()
+#6 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#7 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#8 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'create conventi...')
+#9 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(51): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#10 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#11 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(64): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#12 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'sanctum')
+#13 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#14 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#15 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(786): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#16 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(750): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#17 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(739): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#18 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(201): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#19 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#20 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#23 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#24 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#25 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#27 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#28 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#29 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#30 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#32 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#37 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(176): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#38 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(145): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#39 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1220): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#40 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\public\\index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#41 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\Prueba...')
+#42 {main}"} 
+[2025-09-23 20:14:18] local.INFO: Requête de création de convention reçue...  
+[2025-09-23 20:14:18] local.DEBUG: Données brutes: {"membres_comite_technique":"[]","membres_comite_pilotage":"[]","code":null,"type":"specifique","intitule":"int7","annee_convention":"2023","statut":"en cours d'approbation","classification_prov":null,"categorie":null,"reference":null,"objet":null,"date_visa":null,"date_reception_vise":null,"duree_convention":"19","maitre_ouvrage_delegue":null,"objectifs":null,"maitre_ouvrage":null,"partenaire":"2","operationalisation":"Non","groupe":null,"rang":null,"observations":null,"cout_global":null,"Id_Programme":null,"id_projet":null,"session":"3","numero_approbation":"9898","localisation":null,"id_fonctionnaire":null,"partner_commitments":"[{\"Id_Partenaire\":2,\"Montant_Convenu\":300000000,\"autre_engagement\":null,\"is_signatory\":true,\"date_signature\":\"2025-09-17\",\"details_signature\":\"details\",\"engagements_annuels\":[{\"annee\":2023,\"montant_prevu\":200000000},{\"annee\":2024,\"montant_prevu\":100000000}]}]"} 
+[2025-09-23 20:14:18] local.INFO: Aucun fichier reçu (optionnel).  
+[2025-09-23 20:14:18] local.DEBUG: Engagements partenaires décodés: [{"Id_Partenaire":2,"Montant_Convenu":300000000,"autre_engagement":null,"is_signatory":true,"date_signature":"2025-09-17","details_signature":"details","engagements_annuels":[{"annee":2023,"montant_prevu":200000000},{"annee":2024,"montant_prevu":100000000}]}] 
+[2025-09-23 20:14:18] local.INFO: Validation principale réussie (store).  
+[2025-09-23 20:14:18] local.INFO: Validation détaillée engagements partenaires...  
+[2025-09-23 20:14:18] local.INFO: Validation détaillée engagements partenaires terminée.  
+[2025-09-23 20:14:18] local.INFO: Transaction DB démarrée (store).  
+[2025-09-23 20:14:18] local.INFO: Création enregistrement Convention... {"numero_approbation":"9898","session":"3","classification_prov":null,"categorie":null,"intitule":"int7","reference":null,"annee_convention":"2023","objet":null,"type":"specifique","objectifs":null,"localisation":null,"maitre_ouvrage":null,"partenaire":"2","id_fonctionnaire":null,"cout_global":null,"statut":"en cours d'approbation","date_visa":null,"date_reception_vise":null,"duree_convention":"19","maitre_ouvrage_delegue":null,"operationalisation":"Non","Id_Programme":null,"id_projet":null,"groupe":null,"rang":null,"observations":null,"membres_comite_technique":[],"membres_comite_pilotage":[],"code":"9898/03/2023"} 
+[2025-09-23 20:14:18] local.INFO: Convention créée: ID 422  
+[2025-09-23 20:14:18] local.INFO: Aucun fichier fourni (optionnel).  
+[2025-09-23 20:14:18] local.INFO: Création enregistrements ConvPart...  
+[2025-09-23 20:14:18] local.INFO: 1 enregistrement(s) ConvPart créé(s).  
+[2025-09-23 20:14:18] local.INFO: Transaction DB validée (store).  
+[2025-09-23 20:14:18] local.INFO: loubna - Convention Stored {"numero_approbation":"9898","session":"3","classification_prov":null,"categorie":null,"intitule":"int7","reference":null,"annee_convention":"2023","objet":null,"type":"specifique","objectifs":null,"localisation":null,"maitre_ouvrage":null,"partenaire":"2","id_fonctionnaire":null,"cout_global":null,"statut":"en cours d'approbation","date_visa":null,"date_reception_vise":null,"duree_convention":"19","maitre_ouvrage_delegue":null,"operationalisation":"Non","Id_Programme":null,"id_projet":null,"groupe":null,"rang":null,"observations":null,"membres_comite_technique":[],"membres_comite_pilotage":[],"code":"9898/03/2023","updated_at":"2025-09-23T20:14:18.000000Z","created_at":"2025-09-23T20:14:18.000000Z","id":422,"programme":null,"projet":null,"documents":[],"conv_parts":[{"Id_CP":478,"Id_Convention":422,"Id_Partenaire":2,"Montant_Convenu":"300000000.00","autre_engagement":null,"created_at":"2025-09-23T20:14:18.000000Z","updated_at":"2025-09-23T20:14:18.000000Z","is_signatory":true,"date_signature":"2025-09-17","details_signature":"details","avenant_id":null,"partenaire":{"Id":2,"Description":"Fournisseurs","Code":401,"Description_Arr":"","created_at":"2025-04-02T13:06:40.000000Z","updated_at":"2025-04-02T13:06:40.000000Z"}}],"partner_commitments":[{"Id_Partenaire":2,"label":"401 - Fournisseurs","Montant_Convenu":"300000000.00","is_signatory":true,"date_signature":"2025-09-17","details_signature":"details"}]} 
+[2025-09-23 20:14:19] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 20:14:20] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 20:14:26] local.INFO: API: Requête pour détails Convention ID: 422  
+[2025-09-23 20:14:27] local.DEBUG: [DEBUG ID: 422] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:14:27] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 20:14:27] local.INFO: API: Succès récupération détails Convention ID: 422  
+[2025-09-23 20:14:27] local.INFO: API: Requête pour détails Convention ID: 422  
+[2025-09-23 20:14:27] local.DEBUG: [DEBUG ID: 422] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:14:27] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 20:14:27] local.INFO: API: Succès récupération détails Convention ID: 422  
+[2025-09-23 20:14:29] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:14:29] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:14:30] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:14:30] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:16:44] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:16:44] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:16:44] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:16:44] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:16:45] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:16:45] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:16:46] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:16:48] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:16:48] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:16:48] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:16:48] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:16:49] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:16:49] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:16:49] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:16:51] local.INFO: API: Requête pour détails Convention ID: 422  
+[2025-09-23 20:16:51] local.DEBUG: [DEBUG ID: 422] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:16:51] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 20:16:51] local.INFO: API: Succès récupération détails Convention ID: 422  
+[2025-09-23 20:16:51] local.INFO: API: Requête pour détails Convention ID: 422  
+[2025-09-23 20:16:51] local.DEBUG: [DEBUG ID: 422] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:16:51] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 20:16:51] local.INFO: API: Succès récupération détails Convention ID: 422  
+[2025-09-23 20:17:05] local.INFO: Tentative suppression Convention ID: 422...  
+[2025-09-23 20:17:05] local.INFO: Collecté 0 fichiers physiques à supprimer.  
+[2025-09-23 20:17:05] local.INFO: Transaction DB démarrée (Convention destroy ID: 422)  
+[2025-09-23 20:17:05] local.INFO: Enregistrements ConvPart supprimés.  
+[2025-09-23 20:17:05] local.INFO: Enregistrements Document supprimés.  
+[2025-09-23 20:17:05] local.INFO: Enregistrement Convention ID: 422 supprimé.  
+[2025-09-23 20:17:05] local.INFO: Transaction DB validée (Convention destroy ID: 422).  
+[2025-09-23 20:17:05] local.INFO: Aucun fichier physique à supprimer.  
+[2025-09-23 20:17:06] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 20:17:06] local.INFO: Récupération réussie de 12 conventions.  
+[2025-09-23 20:17:10] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:17:10] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:17:10] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:17:10] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:17:11] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:17:11] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:17:12] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:17:13] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:17:13] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:17:13] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:17:13] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:17:14] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:17:14] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:17:14] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:18:24] local.INFO: Requête de création de convention reçue...  
+[2025-09-23 20:18:24] local.DEBUG: Données brutes: {"membres_comite_technique":"[]","membres_comite_pilotage":"[]","code":null,"type":"specifique","intitule":"int6","annee_convention":"2022","statut":"en cours d'approbation","classification_prov":null,"categorie":null,"reference":null,"objet":null,"date_visa":null,"date_reception_vise":null,"duree_convention":"26","maitre_ouvrage_delegue":null,"objectifs":null,"maitre_ouvrage":null,"partenaire":"4","operationalisation":"Non","groupe":null,"rang":null,"observations":null,"cout_global":null,"Id_Programme":null,"id_projet":null,"session":"9","numero_approbation":"232","localisation":null,"id_fonctionnaire":null,"partner_commitments":"[{\"Id_Partenaire\":4,\"Montant_Convenu\":300000000,\"autre_engagement\":null,\"is_signatory\":false,\"date_signature\":null,\"details_signature\":null,\"engagements_annuels\":[{\"annee\":2022,\"montant_prevu\":100000000},{\"annee\":2023,\"montant_prevu\":100000000},{\"annee\":2024,\"montant_prevu\":100000000}]}]"} 
+[2025-09-23 20:18:24] local.INFO: Aucun fichier reçu (optionnel).  
+[2025-09-23 20:18:24] local.DEBUG: Engagements partenaires décodés: [{"Id_Partenaire":4,"Montant_Convenu":300000000,"autre_engagement":null,"is_signatory":false,"date_signature":null,"details_signature":null,"engagements_annuels":[{"annee":2022,"montant_prevu":100000000},{"annee":2023,"montant_prevu":100000000},{"annee":2024,"montant_prevu":100000000}]}] 
+[2025-09-23 20:18:24] local.INFO: Validation principale réussie (store).  
+[2025-09-23 20:18:24] local.INFO: Validation détaillée engagements partenaires...  
+[2025-09-23 20:18:24] local.INFO: Validation détaillée engagements partenaires terminée.  
+[2025-09-23 20:18:24] local.INFO: Transaction DB démarrée (store).  
+[2025-09-23 20:18:24] local.INFO: Création enregistrement Convention... {"numero_approbation":"232","session":"9","classification_prov":null,"categorie":null,"intitule":"int6","reference":null,"annee_convention":"2022","objet":null,"type":"specifique","objectifs":null,"localisation":null,"maitre_ouvrage":null,"partenaire":"4","id_fonctionnaire":null,"cout_global":null,"statut":"en cours d'approbation","date_visa":null,"date_reception_vise":null,"duree_convention":"26","maitre_ouvrage_delegue":null,"operationalisation":"Non","Id_Programme":null,"id_projet":null,"groupe":null,"rang":null,"observations":null,"membres_comite_technique":[],"membres_comite_pilotage":[],"code":"232/09/2022"} 
+[2025-09-23 20:18:24] local.INFO: Convention créée: ID 423  
+[2025-09-23 20:18:24] local.INFO: Aucun fichier fourni (optionnel).  
+[2025-09-23 20:18:24] local.INFO: Création enregistrements ConvPart...  
+[2025-09-23 20:18:24] local.INFO: 1 enregistrement(s) ConvPart créé(s).  
+[2025-09-23 20:18:24] local.INFO: Transaction DB validée (store).  
+[2025-09-23 20:18:24] local.INFO: loubna - Convention Stored {"numero_approbation":"232","session":"9","classification_prov":null,"categorie":null,"intitule":"int6","reference":null,"annee_convention":"2022","objet":null,"type":"specifique","objectifs":null,"localisation":null,"maitre_ouvrage":null,"partenaire":"4","id_fonctionnaire":null,"cout_global":null,"statut":"en cours d'approbation","date_visa":null,"date_reception_vise":null,"duree_convention":"26","maitre_ouvrage_delegue":null,"operationalisation":"Non","Id_Programme":null,"id_projet":null,"groupe":null,"rang":null,"observations":null,"membres_comite_technique":[],"membres_comite_pilotage":[],"code":"232/09/2022","updated_at":"2025-09-23T20:18:24.000000Z","created_at":"2025-09-23T20:18:24.000000Z","id":423,"programme":null,"projet":null,"documents":[],"conv_parts":[{"Id_CP":479,"Id_Convention":423,"Id_Partenaire":4,"Montant_Convenu":"300000000.00","autre_engagement":null,"created_at":"2025-09-23T20:18:24.000000Z","updated_at":"2025-09-23T20:18:24.000000Z","is_signatory":false,"date_signature":null,"details_signature":null,"avenant_id":null,"partenaire":{"Id":4,"Description":"Agence de Développement de l’Oriental","Code":402,"Description_Arr":"","created_at":"2025-04-02T13:06:40.000000Z","updated_at":"2025-04-02T13:06:40.000000Z"}}],"partner_commitments":[{"Id_Partenaire":4,"label":"402 - Agence de Développement de l’Oriental","Montant_Convenu":"300000000.00","is_signatory":false,"date_signature":null,"details_signature":null}]} 
+[2025-09-23 20:18:25] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 20:18:25] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 20:18:32] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:18:32] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:18:33] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:18:33] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:18:33] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:18:33] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:18:34] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:18:35] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:18:35] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:18:36] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:18:36] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:18:36] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:18:36] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:18:37] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:18:38] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:18:38] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:18:38] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:18:38] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:18:39] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:18:39] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:18:39] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:18:39] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:20:43] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:20:43] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:20:44] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:20:44] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:20:47] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:20:47] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:20:49] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:20:52] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:20:52] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:20:52] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:20:52] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:20:53] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:20:53] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:20:55] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:20:58] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:20:58] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:20:58] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:20:58] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:20:59] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:20:59] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:21:00] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:21:03] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:21:03] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:21:04] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:21:04] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:21:04] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:21:04] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:21:05] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:21:05] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:21:05] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:21:05] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:21:06] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:21:08] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:21:08] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:21:08] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:21:08] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:21:09] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:21:09] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:21:09] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:21:09] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:21:10] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:21:10] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:21:10] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:21:10] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:21:37] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:21:37] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:21:37] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:21:37] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:21:41] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:21:41] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:21:42] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:21:44] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:21:44] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:21:45] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:21:45] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:21:46] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:21:46] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:21:47] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:21:49] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:21:49] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:21:49] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:21:49] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:21:50] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:21:50] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:21:50] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:21:52] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:21:52] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:21:52] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:21:52] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:21:53] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:21:53] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:21:53] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:21:53] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:21:54] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:21:54] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:21:54] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:21:54] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:22:22] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:22:22] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:22:23] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:22:23] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:22:24] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:22:24] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:22:26] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:22:27] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:22:27] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:22:28] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:22:28] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:22:28] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:22:29] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:22:29] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:22:30] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:22:30] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:22:31] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:22:31] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:22:31] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:22:31] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:22:32] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:22:33] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:22:33] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:22:33] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:22:33] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:22:33] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:22:33] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:22:33] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:22:33] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:22:34] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:22:34] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:22:34] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:22:34] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:22:56] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:22:56] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:22:56] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:22:56] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:22:57] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:22:57] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:22:57] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:22:59] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:22:59] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:22:59] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:22:59] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:23:01] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:23:01] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:23:01] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:23:01] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:27:07] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:27:07] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:27:08] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:27:08] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:27:09] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:27:09] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:27:10] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:27:12] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:27:12] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:27:12] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:27:12] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:27:13] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:27:13] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:27:13] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:27:13] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:27:26] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:27:26] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:27:33] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:27:33] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:27:34] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:27:34] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:27:34] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:27:35] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:27:35] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:27:35] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:27:35] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:27:36] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:27:36] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:27:36] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:27:36] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:27:47] local.INFO: Requête MAJ reçue pour Convention ID 423...  
+[2025-09-23 20:27:47] local.DEBUG: Données brutes MAJ (convention): {"membres_comite_technique":"[]","membres_comite_pilotage":"[]","code":"232/09/2022","type":"specifique","intitule":"int6","annee_convention":"2022","statut":"en cours d'approbation","classification_prov":null,"categorie":null,"reference":null,"objet":null,"date_visa":null,"date_reception_vise":null,"duree_convention":"26","maitre_ouvrage_delegue":null,"objectifs":null,"maitre_ouvrage":null,"partenaire":"4","operationalisation":"Non","groupe":null,"rang":null,"observations":null,"cout_global":null,"Id_Programme":null,"id_projet":null,"session":"9","numero_approbation":"232","localisation":null,"id_fonctionnaire":null,"partner_commitments":"[{\"Id_Partenaire\":4,\"Montant_Convenu\":300000000,\"autre_engagement\":null,\"is_signatory\":false,\"date_signature\":null,\"details_signature\":null,\"engagements_annuels\":[{\"annee\":\"2022\",\"montant_prevu\":100000000},{\"annee\":\"2023\",\"montant_prevu\":100000000},{\"annee\":\"2024\",\"montant_prevu\":20000000}],\"id_cp\":479}]","_method":"PUT"} 
+[2025-09-23 20:27:49] local.INFO: Validation détaillée engagements partenaires (update)...  
+[2025-09-23 20:27:49] local.INFO: Validation détaillée engagements partenaires (update) OK.  
+[2025-09-23 20:27:49] local.INFO: Transaction DB démarrée (Convention update ID: 423). Confirmation: Non  
+[2025-09-23 20:27:49] local.INFO: Aucun nouveau fichier (update).  
+[2025-09-23 20:27:49] local.INFO: MAJ enregistrement Convention...  
+[2025-09-23 20:27:49] local.INFO: Convention MAJ: ID 423  
+[2025-09-23 20:27:49] local.INFO: Synchronisation engagements partenaires (ConvPart) pour Convention ID: 423  
+[2025-09-23 20:27:49] local.INFO: Aucun enregistrement ConvPart marqué pour suppression.  
+[2025-09-23 20:27:49] local.INFO: Traitement MAJ/Création pour 1 engagements soumis.  
+[2025-09-23 20:27:49] local.DEBUG: Synchronisé ConvPart ID: 479 pour Partenaire ID: 4. Nouvellement créé: Non  
+[2025-09-23 20:27:49] local.INFO: Synchronisation ConvPart terminée.  
+[2025-09-23 20:27:49] local.INFO: Transaction DB validée (Convention update).  
+[2025-09-23 20:27:49] local.INFO: loubna - Convention Updated {"id":423,"Code":"232/09/2022","type":"specifique","Fichier":null,"Classification_prov":null,"Categorie":null,"Intitule":"int6","Reference":null,"numero_approbation":232,"session":9,"Annee_Convention":"2022","Objet":null,"Objectifs":null,"localisation":null,"Maitre_Ouvrage":null,"maitre_ouvrage_delegue":null,"Partenaire":"4","Cout_Global":null,"Statut":"en cours d'approbation","date_visa":null,"date_reception_vise":null,"Operationalisation":"Non","Id_Programme":null,"Groupe":null,"Rang":null,"duree_convention":26,"created_at":"2025-09-23T20:18:24.000000Z","updated_at":"2025-09-23T20:27:49.000000Z","id_projet":null,"observations":null,"membres_comite_technique":[],"membres_comite_pilotage":[],"id_fonctionnaire":null,"programme":null,"projet":null,"documents":[],"avenants":[],"partner_commitments":[{"Id_CP":479,"Id_Partenaire":4,"label":"402 - ","Montant_Convenu":"300000000.00","Montant_Verse":"0.00","is_signatory":false,"date_signature":null,"details_signature":null}]} 
+[2025-09-23 20:27:50] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 20:27:50] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 20:27:54] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:27:54] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:27:57] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:27:57] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:27:57] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:27:57] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:27:58] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:27:59] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:27:59] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:28:00] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:28:00] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:28:00] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:28:00] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:28:00] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:28:02] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 20:28:02] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:28:02] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 20:28:02] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 20:28:02] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 20:28:02] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 20:28:02] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:28:02] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 20:28:02] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 20:28:02] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 20:28:12] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:28:12] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:28:12] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:28:12] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:28:13] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:28:13] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:28:14] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:28:15] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:28:15] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:28:15] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:28:15] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:28:15] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:28:15] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:28:16] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:28:17] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:28:17] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:28:17] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:28:17] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:28:18] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:28:18] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:28:18] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:28:18] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:29:30] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:29:30] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:29:30] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:29:30] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:29:31] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:29:31] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:29:32] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:29:33] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:29:33] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:29:34] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:29:34] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:29:34] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:29:34] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:29:35] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:29:36] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:29:36] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:29:36] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:29:36] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:29:36] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:29:36] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:29:36] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:29:36] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:30:39] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:30:39] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:30:40] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:30:40] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:30:40] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:30:40] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:30:41] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:30:42] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:30:42] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:30:42] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:30:42] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:30:43] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:30:43] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:30:43] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:30:43] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:31:05] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:31:05] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:31:06] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:31:06] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:31:07] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:31:07] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:31:07] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:31:08] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:31:08] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:31:08] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:31:08] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:31:10] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:31:10] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:31:10] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:31:10] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:31:36] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:31:36] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:31:37] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:31:37] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:31:37] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:31:38] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:31:38] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:31:40] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:31:40] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:31:40] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:31:40] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:31:46] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:31:46] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:31:46] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:31:46] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:31:47] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:31:47] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:31:48] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:31:48] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:31:49] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:31:50] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:31:51] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:31:54] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:31:55] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:31:55] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:31:55] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:32:12] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:32:12] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:32:12] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:32:12] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:32:16] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:32:16] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:32:20] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:32:20] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:32:21] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:32:21] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:32:22] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:32:23] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:32:24] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:32:24] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:32:24] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:32:24] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:32:24] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:32:25] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:32:25] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:32:26] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:32:26] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:32:26] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:32:28] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 20:32:28] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 20:32:28] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 20:32:28] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 20:32:28] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:32:28] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:32:29] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 20:32:30] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:32:30] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:32:30] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:32:30] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:32:31] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:32:31] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:32:31] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:32:31] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:32:31] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:32:31] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:32:31] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:32:31] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:38:26] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:38:26] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:38:26] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:38:26] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:38:27] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:38:27] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:38:27] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:38:27] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:38:29] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:38:29] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:38:32] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:38:32] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:41:25] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:41:25] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:41:25] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:41:25] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:41:28] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:41:28] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:41:32] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:41:32] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:41:32] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:41:32] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:41:33] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:41:33] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:42:20] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:42:20] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:42:20] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:42:20] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:42:24] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:42:24] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:42:30] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:42:31] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:42:31] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:42:31] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:42:32] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:42:32] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:43:44] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:43:45] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:43:45] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:43:45] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:43:47] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:43:47] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:44:36] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:44:36] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:44:36] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:44:36] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:44:39] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:44:39] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:44:45] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:44:45] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:44:45] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:44:45] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:44:47] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:44:47] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:45:36] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:45:36] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:45:36] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:45:36] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:45:38] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:45:38] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:45:41] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:45:41] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:45:41] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:45:41] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:45:41] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:45:41] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:45:41] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:45:41] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:45:43] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:45:43] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:45:43] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:45:43] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:45:44] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:45:44] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:45:46] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:45:46] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:45:47] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:45:47] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:46:16] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:46:16] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:46:16] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:46:16] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:46:17] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:46:17] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:46:49] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:46:49] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:46:49] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:46:49] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:46:50] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:46:50] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:46:50] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:46:50] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:46:52] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:46:52] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:46:53] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:46:53] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:47:38] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:47:38] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:47:38] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:47:38] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:47:41] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:47:41] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:47:44] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:47:44] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:47:44] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:47:44] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:47:45] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:47:45] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:48:21] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:48:21] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:48:21] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:48:21] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:48:22] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:48:22] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:48:22] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:48:22] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:48:23] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:48:23] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:48:24] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:48:24] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:49:01] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:49:01] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:49:01] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:49:01] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:49:03] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:49:03] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:49:04] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:49:04] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:49:04] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:49:04] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:49:05] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:49:05] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:49:25] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:49:25] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:49:25] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:49:25] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:49:27] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:49:27] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:49:30] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:49:30] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:49:30] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:49:30] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:49:31] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:49:31] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:50:10] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:50:10] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:50:10] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:50:10] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:50:11] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:50:12] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:53:30] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:53:30] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:53:30] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:53:30] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:53:31] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:53:31] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:54:19] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:54:19] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:54:19] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:54:19] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:54:19] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:54:20] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:54:39] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:54:39] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:54:39] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:54:39] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:54:42] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:54:42] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:54:47] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:54:47] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:54:47] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:54:47] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:54:49] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:54:49] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:54:52] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:54:52] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:54:52] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:54:52] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:54:54] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:54:54] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:55:09] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:55:09] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:55:09] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:55:09] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:55:10] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:55:10] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:55:27] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:55:27] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:55:27] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:55:27] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:55:28] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:55:28] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:56:08] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:56:08] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:56:08] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:56:08] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:56:09] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:56:09] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:56:43] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:56:43] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:56:43] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:56:43] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:56:45] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:56:45] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:56:48] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:56:48] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:56:48] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:56:48] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:56:48] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:56:48] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:56:48] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:56:48] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:56:50] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:56:50] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:56:51] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:56:51] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:57:33] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:57:33] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:57:33] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:57:33] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:57:34] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:57:34] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:57:34] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:57:34] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:57:36] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:57:36] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:57:38] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:57:39] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:57:40] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:57:40] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:57:40] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:57:40] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:57:41] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:57:41] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:58:23] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:58:23] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:58:23] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:58:23] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:58:23] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:58:23] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:59:02] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:59:02] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:59:02] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:59:02] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:59:03] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:59:03] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:59:03] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:59:03] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:59:05] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:59:05] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:59:06] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:59:06] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:59:47] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:59:47] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:59:47] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:59:47] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 20:59:54] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 20:59:54] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 20:59:58] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 20:59:58] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 20:59:59] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 20:59:59] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:00:02] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:00:02] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:00:03] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:00:03] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:00:03] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:00:03] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:00:05] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:00:05] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:00:48] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:00:48] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:00:48] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:00:48] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:00:50] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:00:50] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:00:53] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:00:53] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:00:53] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:00:53] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:00:56] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:00:56] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:01:20] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:01:20] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:01:20] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:01:20] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:01:21] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:01:21] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:01:31] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:01:31] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:01:31] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:01:31] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:01:34] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:01:34] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:01:40] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:01:40] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:01:40] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:01:40] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:01:41] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:01:41] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:02:16] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:02:16] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:02:16] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:02:16] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:02:17] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:02:17] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:02:42] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:02:42] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:02:42] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:02:42] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:02:44] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:02:44] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:03:08] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:03:08] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:03:08] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:03:08] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:03:08] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:03:08] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:03:08] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:03:08] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:03:10] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:03:10] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:03:11] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:03:11] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:03:39] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:03:39] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:03:39] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:03:39] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:03:40] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:03:40] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:03:42] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:03:42] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:03:42] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:03:42] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:03:43] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:03:43] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:04:08] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:04:08] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:04:08] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:04:08] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:04:10] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:04:10] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:05:09] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:05:10] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:05:10] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:05:10] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:05:12] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:05:12] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:05:35] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:05:35] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:05:35] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:05:35] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:05:35] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:05:35] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:06:58] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:06:58] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:06:58] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:06:58] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:07:01] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:07:01] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:07:03] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:07:03] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:07:03] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:07:03] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:07:04] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:07:04] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:07:24] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:07:24] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:07:25] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:07:25] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:07:26] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:07:26] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:08:04] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:08:04] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:08:04] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:08:04] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:08:06] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:08:06] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:08:06] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:08:06] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:08:06] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:08:06] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:08:07] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:08:07] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:08:07] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:08:07] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:08:09] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:08:09] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:08:10] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:08:10] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:09:00] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:09:01] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:09:01] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:09:01] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:09:10] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:09:10] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:09:44] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:09:44] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:09:44] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:09:44] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:09:45] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:09:45] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:09:45] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:09:45] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:09:47] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:09:47] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:09:47] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:09:47] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:09:50] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:09:50] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:09:52] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:09:52] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:09:55] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:09:55] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:10:08] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:10:08] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:10:08] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:10:08] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:10:09] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:10:09] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:11:32] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:11:32] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:11:32] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:11:32] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:11:33] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:11:33] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:11:33] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:11:33] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:11:35] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:11:35] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:11:35] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:11:35] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:11:38] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:11:38] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:11:41] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:11:41] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:11:42] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:11:42] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:12:54] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:12:54] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:12:54] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:12:54] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:12:55] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:12:55] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:12:55] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:12:55] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:12:57] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:12:57] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:12:57] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:12:57] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:13:00] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:13:00] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:13:03] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:13:03] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:13:05] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:13:05] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:13:32] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:13:33] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:13:33] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:13:33] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:13:36] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:13:36] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:13:43] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:13:43] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:13:43] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:13:43] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:13:45] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:13:45] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:13:45] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:13:45] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:13:49] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:13:49] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:13:51] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:13:51] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:14:34] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:14:34] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:14:34] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:14:34] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:14:36] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:14:36] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:14:41] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:14:41] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:14:41] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:14:41] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:14:42] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:14:42] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:14:42] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:14:42] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:14:45] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:14:45] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:14:45] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:14:45] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:14:47] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:14:47] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:14:49] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:14:49] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:14:50] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:14:50] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:15:12] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:15:12] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:15:12] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:15:12] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:15:14] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:15:14] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:15:33] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:15:33] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:15:33] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:15:33] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:15:37] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:15:37] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:17:18] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:17:18] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:17:18] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:17:18] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:17:22] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:17:22] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:17:27] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:17:27] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:17:27] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:17:27] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:17:28] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:17:28] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:17:28] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:17:28] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:17:33] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:17:33] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:17:36] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:17:36] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:19:12] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:19:13] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:19:13] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:19:13] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:19:18] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:19:19] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:19:19] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:19:19] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:19:23] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:19:24] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:19:26] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:19:26] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:19:52] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:19:53] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:19:53] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:19:53] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:19:55] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:19:55] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:20:19] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:20:19] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:20:19] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:20:19] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:20:21] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:20:21] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:20:46] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:20:46] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:20:46] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:20:46] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:20:46] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:20:49] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:20:49] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:20:49] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:20:49] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:20:49] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:20:50] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:20:50] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:20:56] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:20:56] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:21:16] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 21:21:16] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 21:21:22] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:21:22] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:21:24] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:21:24] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:21:26] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 21:21:27] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 21:21:27] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 21:21:28] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:21:28] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:21:29] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:21:29] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:21:30] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 21:21:32] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:21:32] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:21:32] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:21:32] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:21:32] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:21:33] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:21:33] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:21:33] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:21:33] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:21:33] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:21:59] local.INFO: Requête MAJ reçue pour Convention ID 418...  
+[2025-09-23 21:21:59] local.DEBUG: Données brutes MAJ (convention): {"membres_comite_technique":"[\"membre1\",\"membre2\",\"membre5\"]","membres_comite_pilotage":"[\"membre3\",\"membre4\"]","code":"784/06/2022","type":"specifique","intitule":"int3","annee_convention":"2022","statut":"visé","classification_prov":null,"categorie":"categorie1","reference":"reference1","objet":"objet1","date_visa":"2025-09-19","date_reception_vise":"2025-09-20","duree_convention":"35","maitre_ouvrage_delegue":"maitre ouvrage delegue","objectifs":"objectifs1","maitre_ouvrage":"maitre ouvrage","partenaire":"2;7","operationalisation":null,"groupe":null,"rang":null,"observations":"observation1","cout_global":"10000000000","Id_Programme":null,"id_projet":"173","session":"6","numero_approbation":"784","localisation":"3;5","id_fonctionnaire":"58;99","partner_commitments":"[{\"Id_Partenaire\":2,\"Montant_Convenu\":20000,\"autre_engagement\":null,\"is_signatory\":true,\"date_signature\":\"2025-09-18\",\"details_signature\":null,\"engagements_annuels\":[{\"annee\":2022,\"montant_prevu\":10000},{\"annee\":2023,\"montant_prevu\":5000},{\"annee\":2024,\"montant_prevu\":5000}],\"id_cp\":473},{\"Id_Partenaire\":7,\"Montant_Convenu\":null,\"autre_engagement\":\"autre\",\"is_signatory\":false,\"date_signature\":null,\"details_signature\":null,\"engagements_annuels\":[],\"id_cp\":474}]","_method":"PUT"} 
+[2025-09-23 21:22:01] local.INFO: Validation détaillée engagements partenaires (update)...  
+[2025-09-23 21:22:01] local.INFO: Validation détaillée engagements partenaires (update) OK.  
+[2025-09-23 21:22:01] local.INFO: Transaction DB démarrée (Convention update ID: 418). Confirmation: Non  
+[2025-09-23 21:22:01] local.INFO: Aucun nouveau fichier (update).  
+[2025-09-23 21:22:01] local.INFO: MAJ enregistrement Convention...  
+[2025-09-23 21:22:01] local.INFO: Convention MAJ: ID 418  
+[2025-09-23 21:22:01] local.INFO: Synchronisation engagements partenaires (ConvPart) pour Convention ID: 418  
+[2025-09-23 21:22:01] local.INFO: Aucun enregistrement ConvPart marqué pour suppression.  
+[2025-09-23 21:22:01] local.INFO: Traitement MAJ/Création pour 2 engagements soumis.  
+[2025-09-23 21:22:02] local.DEBUG: Synchronisé ConvPart ID: 473 pour Partenaire ID: 2. Nouvellement créé: Non  
+[2025-09-23 21:22:02] local.DEBUG: Synchronisé ConvPart ID: 474 pour Partenaire ID: 7. Nouvellement créé: Non  
+[2025-09-23 21:22:02] local.INFO: Synchronisation ConvPart terminée.  
+[2025-09-23 21:22:02] local.INFO: Transaction DB validée (Convention update).  
+[2025-09-23 21:22:02] local.INFO: loubna - Convention Updated {"id":418,"Code":"784/06/2022","type":"specifique","Fichier":null,"Classification_prov":null,"Categorie":"categorie1","Intitule":"int3","Reference":"reference1","numero_approbation":784,"session":6,"Annee_Convention":"2022","Objet":"objet1","Objectifs":"objectifs1","localisation":"3;5","Maitre_Ouvrage":"maitre ouvrage","maitre_ouvrage_delegue":"maitre ouvrage delegue","Partenaire":"2;7","Cout_Global":"10000000000.00","Statut":"visé","date_visa":"2025-09-19","date_reception_vise":"2025-09-20","Operationalisation":null,"Id_Programme":null,"Groupe":null,"Rang":null,"duree_convention":35,"created_at":"2025-09-18T16:07:06.000000Z","updated_at":"2025-09-23T21:22:01.000000Z","id_projet":173,"observations":"observation1","membres_comite_technique":["membre1","membre2","membre5"],"membres_comite_pilotage":["membre3","membre4"],"id_fonctionnaire":"58;99","programme":null,"projet":{"ID_Projet":173,"Nom_Projet":"Création d’un réseau de couveuses","maitre_ouvrage":null,"maitre_ouvrage_delegue":null,"duree_projet_mois":null,"date_debut_prevue":null,"date_fin_prevue":null,"Id_Programme":111,"Cout_CRO":4750000.0,"Date_Debut":"2018-01-01T00:00:00.000000Z","Observations":"","Etat_Avan_Physi":0.0,"Etat_Avan_Finan":0.0,"Date_Fin":"2018-12-31T00:00:00.000000Z","Convention_Code":0,"Code_Projet":7,"Cout_Projet":9500000.0,"created_at":"2025-04-18T11:25:52.000000Z","updated_at":"2025-04-18T11:25:52.000000Z","id_fonctionnaire":null},"documents":[{"id":435,"Id_Doc":"convdoc_2eb33117-b31c-4f30-a633-40d0f59809e9","Id_Conv":418,"avenant_id":null,"Intitule":"WhatsApp Image 2025-05-06 at 23.13.29_04ee923b","created_at":"2025-09-19T13:58:05.000000Z","updated_at":"2025-09-19T13:58:05.000000Z","file_name":"WhatsApp Image 2025-05-06 at 23.13.29_04ee923b.jpg","file_type":"image/jpeg","file_size":50342,"file_path":"uploads/conventions/20250919-135805_LxL3a_WhatsApp_Image_2025-05-06_at_23.13.29_04ee923b.jpg","url":"http://localhost:8000/uploads/conventions/20250919-135805_LxL3a_WhatsApp_Image_2025-05-06_at_23.13.29_04ee923b.jpg"},{"id":436,"Id_Doc":"convdoc_ec75814a-287a-49e5-8ce6-ac5367288948","Id_Conv":418,"avenant_id":null,"Intitule":"WhatsApp Image 2025-05-06 at 19.36.58_905ab17f","created_at":"2025-09-19T13:58:05.000000Z","updated_at":"2025-09-19T13:58:05.000000Z","file_name":"WhatsApp Image 2025-05-06 at 19.36.58_905ab17f.jpg","file_type":"image/jpeg","file_size":66803,"file_path":"uploads/conventions/20250919-135805_9KMSX_WhatsApp_Image_2025-05-06_at_19.36.58_905ab17f.jpg","url":"http://localhost:8000/uploads/conventions/20250919-135805_9KMSX_WhatsApp_Image_2025-05-06_at_19.36.58_905ab17f.jpg"},{"id":438,"Id_Doc":"convdoc_52bcd151-0e45-4ac5-8ef2-9dcdaba910c3","Id_Conv":418,"avenant_id":null,"Intitule":"loubna","created_at":"2025-09-19T14:00:46.000000Z","updated_at":"2025-09-19T14:00:46.000000Z","file_name":"loubna.jpg","file_type":"image/jpeg","file_size":854671,"file_path":"uploads/conventions/20250919-140046_aKZjv_loubna.jpg","url":"http://localhost:8000/uploads/conventions/20250919-140046_aKZjv_loubna.jpg"}],"avenants":[],"partner_commitments":[{"Id_CP":473,"Id_Partenaire":2,"label":"401 - ","Montant_Convenu":"20000.00","Montant_Verse":"0.00","is_signatory":true,"date_signature":"2025-09-18","details_signature":null},{"Id_CP":474,"Id_Partenaire":7,"label":"404 - ","Montant_Convenu":null,"Montant_Verse":"0.00","is_signatory":false,"date_signature":null,"details_signature":null}]} 
+[2025-09-23 21:22:03] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:22:03] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:22:09] local.INFO: API: Requête pour détails Convention ID: 417  
+[2025-09-23 21:22:09] local.DEBUG: [DEBUG ID: 417] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:22:09] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:22:09] local.INFO: API: Succès récupération détails Convention ID: 417  
+[2025-09-23 21:22:10] local.INFO: API: Requête pour détails Convention ID: 417  
+[2025-09-23 21:22:10] local.DEBUG: [DEBUG ID: 417] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:22:10] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:22:10] local.INFO: API: Succès récupération détails Convention ID: 417  
+[2025-09-23 21:22:14] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:22:14] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:22:16] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:22:16] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:22:16] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:22:16] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:22:16] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:22:16] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:22:16] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:22:18] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:22:18] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:22:18] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:22:18] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:22:18] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:22:21] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:22:21] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:22:23] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:22:23] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:22:49] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:22:49] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:22:49] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:22:49] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:22:49] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:22:50] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:22:50] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:22:50] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:22:50] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:22:50] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:22:55] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 21:22:55] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 21:22:56] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:22:56] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:22:57] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:22:57] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:22:59] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 21:23:02] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 21:23:02] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 21:23:03] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:23:03] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:23:04] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:23:04] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:23:05] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 21:23:07] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:23:07] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:23:09] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:23:09] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:23:09] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:23:09] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:23:09] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:23:10] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:23:10] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:23:12] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:23:12] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:23:12] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:23:12] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:23:12] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:23:25] local.INFO: Requête MAJ reçue pour Convention ID 418...  
+[2025-09-23 21:23:25] local.DEBUG: Données brutes MAJ (convention): {"membres_comite_technique":"[\"membre1\",\"membre2\",\"membre5\"]","membres_comite_pilotage":"[\"membre3\",\"membre4\"]","code":"784/06/2022","type":"specifique","intitule":"int3","annee_convention":"2022","statut":"visé","classification_prov":null,"categorie":"categorie1","reference":"reference1","objet":"objet1","date_visa":"2025-09-19","date_reception_vise":"2025-09-20","duree_convention":"35","maitre_ouvrage_delegue":"maitre ouvrage delegue","objectifs":"objectifs1","maitre_ouvrage":"maitre ouvrage","partenaire":"2;7","operationalisation":null,"groupe":null,"rang":null,"observations":"observation1","cout_global":"10000000000","Id_Programme":null,"id_projet":"173","session":"6","numero_approbation":"784","localisation":"3;5","id_fonctionnaire":"58;99","partner_commitments":"[{\"Id_Partenaire\":2,\"Montant_Convenu\":20000,\"autre_engagement\":null,\"is_signatory\":true,\"date_signature\":\"2025-09-18\",\"details_signature\":\"details\",\"engagements_annuels\":[{\"annee\":\"2022\",\"montant_prevu\":10000},{\"annee\":\"2023\",\"montant_prevu\":5000},{\"annee\":\"2024\",\"montant_prevu\":5000}],\"id_cp\":473},{\"Id_Partenaire\":7,\"Montant_Convenu\":null,\"autre_engagement\":\"autre\",\"is_signatory\":false,\"date_signature\":null,\"details_signature\":null,\"engagements_annuels\":[],\"id_cp\":474}]","_method":"PUT"} 
+[2025-09-23 21:23:25] local.INFO: Validation détaillée engagements partenaires (update)...  
+[2025-09-23 21:23:25] local.INFO: Validation détaillée engagements partenaires (update) OK.  
+[2025-09-23 21:23:25] local.INFO: Transaction DB démarrée (Convention update ID: 418). Confirmation: Non  
+[2025-09-23 21:23:25] local.INFO: Aucun nouveau fichier (update).  
+[2025-09-23 21:23:25] local.INFO: MAJ enregistrement Convention...  
+[2025-09-23 21:23:25] local.INFO: Convention MAJ: ID 418  
+[2025-09-23 21:23:25] local.INFO: Synchronisation engagements partenaires (ConvPart) pour Convention ID: 418  
+[2025-09-23 21:23:25] local.INFO: Aucun enregistrement ConvPart marqué pour suppression.  
+[2025-09-23 21:23:25] local.INFO: Traitement MAJ/Création pour 2 engagements soumis.  
+[2025-09-23 21:23:25] local.DEBUG: Synchronisé ConvPart ID: 473 pour Partenaire ID: 2. Nouvellement créé: Non  
+[2025-09-23 21:23:25] local.DEBUG: Synchronisé ConvPart ID: 474 pour Partenaire ID: 7. Nouvellement créé: Non  
+[2025-09-23 21:23:25] local.INFO: Synchronisation ConvPart terminée.  
+[2025-09-23 21:23:25] local.INFO: Transaction DB validée (Convention update).  
+[2025-09-23 21:23:25] local.INFO: loubna - Convention Updated {"id":418,"Code":"784/06/2022","type":"specifique","Fichier":null,"Classification_prov":null,"Categorie":"categorie1","Intitule":"int3","Reference":"reference1","numero_approbation":784,"session":6,"Annee_Convention":"2022","Objet":"objet1","Objectifs":"objectifs1","localisation":"3;5","Maitre_Ouvrage":"maitre ouvrage","maitre_ouvrage_delegue":"maitre ouvrage delegue","Partenaire":"2;7","Cout_Global":"10000000000.00","Statut":"visé","date_visa":"2025-09-19","date_reception_vise":"2025-09-20","Operationalisation":null,"Id_Programme":null,"Groupe":null,"Rang":null,"duree_convention":35,"created_at":"2025-09-18T16:07:06.000000Z","updated_at":"2025-09-23T21:23:25.000000Z","id_projet":173,"observations":"observation1","membres_comite_technique":["membre1","membre2","membre5"],"membres_comite_pilotage":["membre3","membre4"],"id_fonctionnaire":"58;99","programme":null,"projet":{"ID_Projet":173,"Nom_Projet":"Création d’un réseau de couveuses","maitre_ouvrage":null,"maitre_ouvrage_delegue":null,"duree_projet_mois":null,"date_debut_prevue":null,"date_fin_prevue":null,"Id_Programme":111,"Cout_CRO":4750000.0,"Date_Debut":"2018-01-01T00:00:00.000000Z","Observations":"","Etat_Avan_Physi":0.0,"Etat_Avan_Finan":0.0,"Date_Fin":"2018-12-31T00:00:00.000000Z","Convention_Code":0,"Code_Projet":7,"Cout_Projet":9500000.0,"created_at":"2025-04-18T11:25:52.000000Z","updated_at":"2025-04-18T11:25:52.000000Z","id_fonctionnaire":null},"documents":[{"id":435,"Id_Doc":"convdoc_2eb33117-b31c-4f30-a633-40d0f59809e9","Id_Conv":418,"avenant_id":null,"Intitule":"WhatsApp Image 2025-05-06 at 23.13.29_04ee923b","created_at":"2025-09-19T13:58:05.000000Z","updated_at":"2025-09-19T13:58:05.000000Z","file_name":"WhatsApp Image 2025-05-06 at 23.13.29_04ee923b.jpg","file_type":"image/jpeg","file_size":50342,"file_path":"uploads/conventions/20250919-135805_LxL3a_WhatsApp_Image_2025-05-06_at_23.13.29_04ee923b.jpg","url":"http://localhost:8000/uploads/conventions/20250919-135805_LxL3a_WhatsApp_Image_2025-05-06_at_23.13.29_04ee923b.jpg"},{"id":436,"Id_Doc":"convdoc_ec75814a-287a-49e5-8ce6-ac5367288948","Id_Conv":418,"avenant_id":null,"Intitule":"WhatsApp Image 2025-05-06 at 19.36.58_905ab17f","created_at":"2025-09-19T13:58:05.000000Z","updated_at":"2025-09-19T13:58:05.000000Z","file_name":"WhatsApp Image 2025-05-06 at 19.36.58_905ab17f.jpg","file_type":"image/jpeg","file_size":66803,"file_path":"uploads/conventions/20250919-135805_9KMSX_WhatsApp_Image_2025-05-06_at_19.36.58_905ab17f.jpg","url":"http://localhost:8000/uploads/conventions/20250919-135805_9KMSX_WhatsApp_Image_2025-05-06_at_19.36.58_905ab17f.jpg"},{"id":438,"Id_Doc":"convdoc_52bcd151-0e45-4ac5-8ef2-9dcdaba910c3","Id_Conv":418,"avenant_id":null,"Intitule":"loubna","created_at":"2025-09-19T14:00:46.000000Z","updated_at":"2025-09-19T14:00:46.000000Z","file_name":"loubna.jpg","file_type":"image/jpeg","file_size":854671,"file_path":"uploads/conventions/20250919-140046_aKZjv_loubna.jpg","url":"http://localhost:8000/uploads/conventions/20250919-140046_aKZjv_loubna.jpg"}],"avenants":[],"partner_commitments":[{"Id_CP":473,"Id_Partenaire":2,"label":"401 - ","Montant_Convenu":"20000.00","Montant_Verse":"0.00","is_signatory":true,"date_signature":"2025-09-18","details_signature":"details"},{"Id_CP":474,"Id_Partenaire":7,"label":"404 - ","Montant_Convenu":null,"Montant_Verse":"0.00","is_signatory":false,"date_signature":null,"details_signature":null}]} 
+[2025-09-23 21:23:27] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:23:27] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:23:32] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:23:32] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:23:32] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:23:32] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:23:32] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:23:33] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:23:33] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:23:33] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:23:33] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:23:33] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:23:36] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:23:36] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:23:38] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:23:38] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:25:15] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:25:15] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:25:16] local.INFO: Récupération de la liste des partenaires...  
+[2025-09-23 21:25:16] local.INFO: Récupération réussie de 201 partenaires.  
+[2025-09-23 21:25:20] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:25:20] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:25:21] local.INFO: Récupération de la liste des partenaires...  
+[2025-09-23 21:25:21] local.INFO: Récupération réussie de 201 partenaires.  
+[2025-09-23 21:25:24] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 21:25:24] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 21:25:25] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:25:25] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:25:27] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:25:27] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:25:28] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 21:25:29] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:25:29] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:25:31] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 21:25:31] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 21:25:32] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:25:32] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:25:32] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:25:32] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:25:33] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 21:25:33] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:25:33] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:26:56] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 21:26:56] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 21:26:57] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:26:57] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:26:58] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:26:58] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:27:00] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 21:27:01] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 21:27:01] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 21:27:02] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:27:02] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:27:03] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:27:03] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:27:03] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 21:27:05] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:27:05] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:27:06] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:27:06] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:27:06] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:27:06] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:27:06] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:27:06] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:27:06] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:27:06] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:28:02] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:28:02] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:28:02] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:28:02] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:28:02] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:28:03] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:28:03] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:28:03] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:28:03] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:28:03] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:28:05] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:28:05] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:28:07] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:28:07] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:29:29] local.INFO: Fetching avenants (direct public)...  
+[2025-09-23 21:29:29] local.INFO: No include parameter specified, loading default relations.  
+[2025-09-23 21:29:29] local.INFO: Eager loading relations: convention, documents, partnerCommitments.partenaire  
+[2025-09-23 21:29:29] local.INFO: Successfully fetched 5 avenants.  
+[2025-09-23 21:29:32] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:29:32] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:29:32] local.INFO: Fetching avenants (direct public)...  
+[2025-09-23 21:29:32] local.INFO: No include parameter specified, loading default relations.  
+[2025-09-23 21:29:32] local.INFO: Eager loading relations: convention, documents, partnerCommitments.partenaire  
+[2025-09-23 21:29:32] local.INFO: Successfully fetched 5 avenants.  
+[2025-09-23 21:29:35] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:29:35] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:29:36] local.INFO: Fetching Convention options for dropdown...  
+[2025-09-23 21:29:36] local.INFO: Returning 13 Convention options.  
+[2025-09-23 21:29:37] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:29:37] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:29:38] local.INFO: Fetching Convention options for dropdown...  
+[2025-09-23 21:29:38] local.INFO: Returning 13 Convention options.  
+[2025-09-23 21:29:38] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:29:39] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:32:21] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:32:21] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:32:22] local.INFO: Récupération de la liste des partenaires...  
+[2025-09-23 21:32:22] local.INFO: Récupération réussie de 201 partenaires.  
+[2025-09-23 21:32:23] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:32:23] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:32:24] local.INFO: Récupération de la liste des partenaires...  
+[2025-09-23 21:32:24] local.INFO: Récupération réussie de 201 partenaires.  
+[2025-09-23 21:32:24] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:32:25] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:32:25] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:32:25] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:33:23] local.INFO: Fetching avenants (direct public)...  
+[2025-09-23 21:33:23] local.INFO: No include parameter specified, loading default relations.  
+[2025-09-23 21:33:23] local.INFO: Eager loading relations: convention, documents, partnerCommitments.partenaire  
+[2025-09-23 21:33:23] local.INFO: Successfully fetched 5 avenants.  
+[2025-09-23 21:33:24] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:33:24] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:33:27] local.INFO: Fetching avenants (direct public)...  
+[2025-09-23 21:33:27] local.INFO: No include parameter specified, loading default relations.  
+[2025-09-23 21:33:27] local.INFO: Eager loading relations: convention, documents, partnerCommitments.partenaire  
+[2025-09-23 21:33:27] local.INFO: Successfully fetched 5 avenants.  
+[2025-09-23 21:33:27] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:33:27] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:33:28] local.INFO: Fetching Convention options for dropdown...  
+[2025-09-23 21:33:28] local.INFO: Returning 13 Convention options.  
+[2025-09-23 21:33:29] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:33:29] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:33:30] local.INFO: Fetching Convention options for dropdown...  
+[2025-09-23 21:33:30] local.INFO: Returning 13 Convention options.  
+[2025-09-23 21:33:30] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:33:30] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:37:51] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:37:51] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:37:52] local.INFO: Récupération de la liste des partenaires...  
+[2025-09-23 21:37:52] local.INFO: Récupération réussie de 201 partenaires.  
+[2025-09-23 21:37:53] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:37:53] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:37:54] local.INFO: Récupération de la liste des partenaires...  
+[2025-09-23 21:37:54] local.INFO: Récupération réussie de 201 partenaires.  
+[2025-09-23 21:37:55] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:37:55] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:38:00] local.INFO: Récupération de toutes les conventions...  
+[2025-09-23 21:38:00] local.INFO: Récupération réussie de 13 conventions.  
+[2025-09-23 21:38:01] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:38:01] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:38:03] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:38:03] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:38:04] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 21:38:04] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 21:38:05] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 21:38:06] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:38:06] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:38:07] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:38:07] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:38:08] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 21:38:08] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 21:38:08] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 21:38:10] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:38:10] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:38:10] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:38:10] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:38:10] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:38:11] local.INFO: API: Requête pour détails Convention ID: 418  
+[2025-09-23 21:38:11] local.DEBUG: [DEBUG ID: 418] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:38:11] local.DEBUG: [MAP DEBUG Partner 2] Using Description: 'Fournisseurs'  
+[2025-09-23 21:38:11] local.DEBUG: [MAP DEBUG Partner 7] Using Description: 'Ministère de la Jeunesse et des Sports'  
+[2025-09-23 21:38:11] local.INFO: API: Succès récupération détails Convention ID: 418  
+[2025-09-23 21:38:39] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 21:38:39] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 21:38:39] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:38:39] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:38:40] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:38:40] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:38:42] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 21:38:43] local.INFO: API: Fetching Programme options for dropdown.  
+[2025-09-23 21:38:43] local.INFO: API: Returning 55 Programme options.  
+[2025-09-23 21:38:44] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-09-23 21:38:44] local.INFO: API: Returning 201 Partenaire options.  
+[2025-09-23 21:38:45] local.INFO: API: Fetching Province options for dropdown.  
+[2025-09-23 21:38:46] local.INFO: API: Returning 8 Province options.  
+[2025-09-23 21:38:48] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-09-23 21:39:00] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:39:00] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:39:00] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:39:00] local.INFO: API: Succès récupération détails Convention ID: 423  
+[2025-09-23 21:39:05] local.INFO: API: Requête pour détails Convention ID: 423  
+[2025-09-23 21:39:06] local.DEBUG: [DEBUG ID: 423] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-09-23 21:39:06] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-09-23 21:39:06] local.INFO: API: Succès récupération détails Convention ID: 423  
