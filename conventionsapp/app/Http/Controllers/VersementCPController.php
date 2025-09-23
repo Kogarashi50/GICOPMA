@@ -165,17 +165,10 @@ class VersementCPController extends Controller
     {
         Log::info("API: Récupération versement ID: {$id}");
         try {
-            // Use findOrFail with eager loading
             $versement = VersementCP::with([
-                'convPart.convention:id,code,intitule',
-                'convPart.partenaire:Id,Code,Description,Description_Arr'
-            ])->findOrFail($id); // findOrFail throws ModelNotFoundException if not found
-
-            // Optional: Add related IDs directly if frontend needs them at the top level
-            // if ($versement->convPart) {
-            //    $versement->convPart->convention_id = $versement->convPart->convention->id ?? null;
-            //    $versement->convPart->partenaire_id = $versement->convPart->partenaire->Id ?? null;
-            // }
+                'convPart.convention',
+                'convPart.partenaire'
+            ])->findOrFail($id); 
 
              Log::info("API: Versement trouvé ID: {$id}");
              return response()->json(['versement' => $versement], 200);

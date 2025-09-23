@@ -34,33 +34,34 @@ const ProgrammeForm = ({
     const [formData, setFormData] = useState({
         Code_Programme: '',
         Description: '',
-        Chantier: null, // For react-select object { value, label }
+        Domaine: null, // For react-select object { value, label }
     });
     const isEditing = itemId !== null;
-    const [chantierOptions, setChantierOptions] = useState([]);
+    const [domaineOptions, setDomaineOptions] = useState([]); // NEW
     const [loadingOptions, setLoadingOptions] = useState(true);
     const [submissionStatus, setSubmissionStatus] = useState({ loading: false, error: null, success: false });
     const [formErrors, setFormErrors] = useState({});
     const [loadingData, setLoadingData] = useState(isEditing);
 
-    const fetchChantiers = useCallback(async () => {
-        setLoadingOptions(true);
-        try {
-            const response = await axios.get(`${baseApiUrl}/chantiers`);
-            const data = response.data.chantiers || [];
-            setChantierOptions(data.map(c => ({
-                value: c.Code_Chantier, // Correct Key from Chantier data
-                label: `${c.Code_Chantier} - ${c.Description}`
-            })));
-        } catch (err) { /* ... error handling ... */ setFormErrors(prev => ({ ...prev, chantiers: "Err chrgmt chantiers." })); }
-        finally { setLoadingOptions(false); }
-    }, [baseApiUrl]);
+const fetchDomaines = useCallback(async () => { // Renamed
+    setLoadingOptions(true);
+    try {
+        // Use the new, correct endpoint that you created
+        const response = await axios.get(`${baseApiUrl}/options/domaines`, { withCredentials: true });
+        // The getOptions method already returns the correct {value, label} format
+        setDomaineOptions(response.data || []);
+    } catch (err) {
+        console.error("Erreur chargement Axe stratégique:", err);
+        setFormErrors(prev => ({ ...prev, domaines: "Erreur chargement des Axes stratégiques." }));
+    }
+    finally { setLoadingOptions(false); }
+}, [baseApiUrl]);
 
-    useEffect(() => { fetchChantiers(); }, [fetchChantiers]);
+useEffect(() => { fetchDomaines(); }, [fetchDomaines]); // Call the renamed function
 
     useEffect(() => {
         if (!isEditing || loadingOptions) {
-             if (!isEditing) { setFormData({ Code_Programme: '', Description: '', Chantier: null }); setFormErrors({}); setSubmissionStatus({}); setLoadingData(false); }
+             if (!isEditing) { setFormData({ Code_Programme: '', Description: '', Domaine: null }); setFormErrors({}); setSubmissionStatus({}); setLoadingData(false); }
             return;
         }
         let isMounted = true;
@@ -71,26 +72,26 @@ const ProgrammeForm = ({
                 const data = response.data.programme || response.data;
                 if (!data) throw new Error("Programme non trouvé.");
                 if (isMounted) {
-                    const selectedChantier = chantierOptions.find(opt => opt.value === data.Id_Chantier) || null;
+                    const selectedDomaine = domaineOptions.find(opt => opt.value === data.domaine_id) || null;
                     setFormData({
-                        Code_Programme: String(data.Code_Programme ?? ''),
-                        Description: String(data.Description ?? ''),
-                        Chantier: selectedChantier,
-                    });
+                    Code_Programme: String(data.Code_Programme ?? ''),
+                    Description: String(data.Description ?? ''),
+                    Domaine: selectedDomaine,
+                                });
                 }
             } catch (err) { if (isMounted) setSubmissionStatus({ loading: false, error: err.message || "Erreur chargement.", success: false }); }
             finally { if (isMounted) setLoadingData(false); }
         };
         fetchProgrammeData();
         return () => { isMounted = false };
-    }, [itemId, isEditing, baseApiUrl, loadingOptions, chantierOptions]);
+    }, [itemId, isEditing, baseApiUrl, loadingOptions, domaineOptions]);
 
     const validateForm = () => {
         const errors = {};
         if (!formData.Code_Programme?.trim()) errors.Code_programme = "Le code programme est requis.";
         if (!formData.Description?.trim()) errors.Description = "La description est requise.";
-        if (!formData.Chantier) errors.Chantier = "Le chantier est requis.";
-        setFormErrors(errors);
+        if (!formData.Domaine) errors.Domaine = "L'axe stratégique est requis."; // Corrected check
+    setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
 
@@ -100,11 +101,10 @@ const ProgrammeForm = ({
         if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: undefined }));
     };
 
-    const handleChantierChange = (selectedOption) => {
-        setFormData(prev => ({ ...prev, Chantier: selectedOption }));
-        if (formErrors.Chantier) setFormErrors(prev => ({ ...prev, Chantier: undefined }));
-    };
-
+const handleDomaineChange = (selectedOption) => {
+    setFormData(prev => ({ ...prev, Domaine: selectedOption }));
+    if (formErrors.Domaine) setFormErrors(prev => ({ ...prev, Domaine: undefined }));
+};
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) { setSubmissionStatus({ loading: false, error: "Veuillez corriger.", success: false }); return; }
@@ -113,7 +113,7 @@ const ProgrammeForm = ({
         const dataToSubmit = new FormData();
         dataToSubmit.append('Code_Programme', formData.Code_Programme);
         dataToSubmit.append('Description', formData.Description);
-        dataToSubmit.append('Id_Chantier', formData.Chantier.value);
+dataToSubmit.append('domaine_id', formData.Domaine.value); // <-- Correct field name and source
 
         const url = isEditing ? `${baseApiUrl}/programmes/${itemId}` : `${baseApiUrl}/programmes`;
         const httpMethodConfig = { headers: { 'Accept': 'application/json' }, withCredentials: true };
@@ -159,12 +159,25 @@ const ProgrammeForm = ({
                             <Form.Control className={FORM_CONTROL_CLASS} isInvalid={!!formErrors.Code_Programme} required type="text" name="Code_Programme" value={formData.Code_Programme} onChange={handleChange} size="sm"/>
                             <Form.Control.Feedback type="invalid">{formErrors.Code_programme}</Form.Control.Feedback>
                         </Form.Group>
-                        <Form.Group as={Col} md={6} controlId="formChantier">
-                            <Form.Label className="small mb-1 fw-medium">Chantier <span className="text-danger">*</span></Form.Label>
-                            <Select name="Chantier" menuPlacement="auto" options={chantierOptions} value={formData.Chantier} onChange={handleChantierChange} styles={selectStyles} placeholder="- Sélectionner Chantier -" isClearable isLoading={loadingOptions} className={formErrors.Chantier ? 'is-invalid' : ''} />
-                            {formErrors.Chantier && <div className="invalid-feedback d-block small mt-1">{formErrors.Chantier}</div>}
-                            {formErrors.chantiers && !loadingOptions && <div className="text-danger small mt-1">{formErrors.chantiers}</div>}
-                        </Form.Group>
+                        <Form.Control.Feedback type="invalid">{formErrors.Code_Programme}</Form.Control.Feedback>
+                        <Form.Group as={Col} md={6} controlId="formDomaine">
+    <Form.Label className="small mb-1 fw-medium">Axe stratégique <span className="text-danger">*</span></Form.Label>
+    <Select
+        name="Domaine"
+        menuPlacement="auto"
+        options={domaineOptions}
+        value={formData.Domaine}
+        onChange={handleDomaineChange}
+        styles={selectStyles}
+        placeholder="- Sélectionner Domaine -"
+        isClearable
+        isLoading={loadingOptions}
+        className={formErrors.Domaine ? 'is-invalid' : ''}
+    />
+    {formErrors.Domaine && <div className="invalid-feedback d-block small mt-1">{formErrors.Domaine}</div>}
+    {formErrors.domaines && !loadingOptions && <div className="text-danger small mt-1">{formErrors.domaines}</div>}
+</Form.Group>
+
                     </Row>
                     <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={12} controlId="formDescription">

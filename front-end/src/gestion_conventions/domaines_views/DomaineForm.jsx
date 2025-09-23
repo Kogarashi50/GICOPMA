@@ -148,22 +148,22 @@ const DomaineForm = ({
     // --- Main Form Render ---
     return (
         <>
-         <div className="d-flex justify-content-between align-items-center mb-4">
+         <div className="d-flex justify-content-between align-items-center mb-4 px-4">
                         <div>
                             <h5 className="text-uppercase fw-bold text-secondary mb-1">{isEditing ? 'Modifier le' : 'Créer un nouveau'}</h5>
-                            <h2 className="mb-0 fw-bold">Domaine {isEditing ? `(ID: ${itemId})` : ''}</h2>
+                            <h2 className="mb-0 fw-bold">Axes stratégiques {isEditing ? `(ID: ${itemId})` : ''}</h2>
                         </div>
                          <Button variant="warning" className='btn rounded-5 px-5 py-2 bg-warning shadow-sm' onClick={onClose} size="sm" title="Retour">
                             <b>Revenir a la liste</b>
                          </Button>
                     </div>
-        <Form noValidate onSubmit={handleSubmit}>
-            {submissionStatus.error && ( <Alert variant="danger" className="mb-3 py-2"><FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/> {submissionStatus.error}</Alert> )}
-            {submissionStatus.success && ( <Alert variant="success" className="mb-3 py-2">Opération réussie !</Alert> )}
+        <Form noValidate onSubmit={handleSubmit} className='m-5 '>
+            {submissionStatus.error && ( <Alert variant="danger" className="mb-3 py-2 "><FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/> {submissionStatus.error}</Alert> )}
+            {submissionStatus.success && ( <Alert variant="success" className="mb-3 py-2 ">Opération réussie !</Alert> )}
 
-            <Row className="mb-3">
+            <Row className="mb-3 ">
                 <Form.Group as={Col} md={4} controlId="domaineCode">
-                    <Form.Label className="small mb-1">Code Domaine <span className="text-danger">*</span></Form.Label>
+                    <Form.Label className="small mb-1">Code <span className="text-danger">*</span></Form.Label>
                     <Form.Control
                         className="p-2 mt-1 mb-3 rounded-5 shadow-sm bg-light" // Standard rounded, not pill for textarea
 

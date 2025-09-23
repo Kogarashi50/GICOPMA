@@ -3,23 +3,24 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Chantier;
+use App\Models\Domaine;
 use Spatie\Activitylog\Traits\LogsActivity;   // <--- MUST be imported
 use Spatie\Activitylog\LogOptions;  
+use Illuminate\Database\Eloquent\Relations\BelongsTo; // <-- Import BelongsTo
 class Programme extends Model
 {
     use LogsActivity;
-
+    protected $primaryKey = 'Id';
     protected $table = "programme";
     protected $fillable = [
-        'Id',
         'Description',
         'Code_Programme',
-        'Id_Chantier',
+        'domaine_id',
     ];
-    public function chantier()
+    public function domaine()
     {
-        return $this->belongsTo(Chantier::class, 'Id_Chantier', 'Code_Chantier');
+        // This links 'domaine_id' on this table to the 'Id' on the 'domaine' table.
+        return $this->belongsTo(Domaine::class, 'domaine_id', 'Id');
     }
     public function getActivitylogOptions(): LogOptions
     {

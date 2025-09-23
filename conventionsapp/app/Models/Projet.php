@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo; // Good practice to import
+use Illuminate\Database\Eloquent\Relations\BelongsToMany; // <-- ADD THIS IMPORT
 use Illuminate\Database\Eloquent\Relations\HasMany;   // Import HasMany
 use Spatie\Activitylog\Traits\LogsActivity;   // <--- MUST be imported
 use Spatie\Activitylog\LogOptions; 
@@ -51,18 +52,24 @@ class Projet extends Model
         // Keep the exact casing as defined in your previous model
         "ID_Projet", // Typically, you might not want the PK in fillable if it's auto-incrementing
         "Nom_Projet",
-        "Id_Domaine",
+        //"Id_Domaine",
         "Id_Programme",
-        "Id_Chantier",
+        //"Id_Chantier",
         "Cout_CRO",
         "Date_Debut",
         "Observations",
         "Etat_Avan_Physi",
+        "Etat_Avan_Finan", 
         "Date_Fin",
         "Convention_Code",
         "Code_Projet",
         "Cout_Projet",
         'id_fonctionnaire',
+        'maitre_ouvrage',
+        'maitre_ouvrage_delegue',
+        'duree_projet_mois',
+        'date_debut_prevue',
+        'date_fin_prevue',
 
     ];
     protected $casts = [
@@ -72,6 +79,8 @@ class Projet extends Model
         'Date_Fin' => 'date', // or 'decimal:2'
         'Date_Debut' => 'date', // or 'decimal:2'
         'Cout_CRO' => 'float', // or 'decimal:2'
+        'date_debut_prevue' => 'date',
+        'date_fin_prevue' => 'date',
         
 
     ];
@@ -87,12 +96,26 @@ class Projet extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
+     public function provinces(): BelongsToMany
+    {
+        // Links Projet model to Province model via the 'projet_province' pivot table
+        return $this->belongsToMany(Province::class, 'projet_province', 'projet_id', 'province_id', 'ID_Projet', 'Id');
+    }
+
+    /**
+     * The communes that belong to the project.
+     */
+    public function communes(): BelongsToMany
+    {
+        // Links Projet model to Commune model via the 'projet_commune' pivot table
+        return $this->belongsToMany(Commune::class, 'projet_commune', 'projet_id', 'commune_id', 'ID_Projet', 'Id');
+    }
     public function domaine(): BelongsTo
     {
         // Foreign key on projet table ('Id_Domaine'), Owner key on domaine table ('Code')
         return $this->belongsTo(Domaine::class, 'Id_Domaine', 'Code');
     }
-
+    
     /**
      * Get the programme associated with the projet.
      *
@@ -109,12 +132,14 @@ class Projet extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
+
+     
     public function chantier(): BelongsTo
     {
         // Foreign key on projet table ('Id_Chantier'), Owner key on chantier table ('Code_Chantier')
         return $this->belongsTo(Chantier::class, 'Id_Chantier', 'Code_Chantier');
     }
-
+    
     /**
      * Get the convention associated with the projet.
      *

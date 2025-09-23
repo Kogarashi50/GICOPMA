@@ -147,7 +147,7 @@ const RenderVersementFiltersComponent = ({
         <Form className="p-2 border bg-light rounded mb-2 small" onSubmit={(e) => {e.preventDefault(); applyRangeFilters();}}>
             <Row className="g-2 align-items-end">
                 {/* ID Engagement Filter */}
-                <Col xs={12} sm={6} md={4} lg={3}>
+                {/* <Col xs={12} >
                     <Form.Group controlId="filterConvPartId">
                         <Form.Label size="sm" className="mb-1 fw-bold">ID Engagement (CP)</Form.Label>
                         <Form.Control
@@ -158,10 +158,10 @@ const RenderVersementFiltersComponent = ({
                             aria-label="Filtrer par ID Engagement"
                         />
                     </Form.Group>
-                </Col>
+                </Col> */}
 
                 {/* Date Range Filter */}
-                <Col xs={12} sm={6} md={4} lg={3}>
+                <Col xs={12} >
                     <Form.Group controlId="filterDateRange">
                         <Form.Label size="sm" className="mb-1 fw-bold">Date Versement</Form.Label>
                         <InputGroup size="sm">
@@ -172,7 +172,7 @@ const RenderVersementFiltersComponent = ({
                 </Col>
 
                 {/* Moyen Paiement Filter */}
-                <Col xs={12} sm={6} md={4} lg={3}>
+                <Col xs={12} >
                     <Form.Group controlId="filterMoyenPaiement">
                         <Form.Label size="sm" className="mb-1 fw-bold">Moyen Paiement</Form.Label>
                         <Select
@@ -184,7 +184,7 @@ const RenderVersementFiltersComponent = ({
                 </Col>
 
                 {/* Montant Range Filter */}
-                 <Col xs={12} sm={6} md={4} lg={3}>
+                 <Col xs={12} >
                     <Form.Group controlId="filterMontantRange">
                         <Form.Label size="sm" className="mb-1 fw-bold">Montant Versé</Form.Label>
                         <InputGroup size="sm">
@@ -195,12 +195,12 @@ const RenderVersementFiltersComponent = ({
                 </Col>
 
                 {/* Action Buttons */}
-                <Col xs={6} sm={3} md={2} lg={'auto'} className="d-flex align-items-end">
+                <Col xs={6}  className="d-flex align-items-end">
                     <Button type="submit" variant="primary" size="sm" className="w-100" title="Appliquer filtres Date/Montant">
                        <FontAwesomeIcon icon={faMagnifyingGlass} /> <span className="d-none d-md-inline ms-1">Filtrer</span>
                     </Button>
                 </Col>
-                <Col xs={6} sm={3} md={2} lg={'auto'} className="d-flex align-items-end">
+                <Col xs={6}  className="d-flex align-items-end">
                     <Button variant="outline-secondary" size="sm" className="w-100" onClick={resetAllFilters} title="Réinitialiser tous les filtres">
                         <FontAwesomeIcon icon={faFilterCircleXmark} /> <span className="d-none d-md-inline ms-1">Reset</span>
                     </Button>

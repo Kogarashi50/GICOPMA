@@ -50,7 +50,7 @@ const SousProjetVisualisation = ({ itemId, onClose, baseApiUrl }) => {
         setLoading(true); setError(null); setSousProjetData(null); setFonctionnairesList([]);
         const apiPrefix = ''; // Set to '/api' if your Laravel routes ARE NOT prefixed automatically
         const sousProjetUrl = `${baseApiUrl}${apiPrefix}/sousprojets/${itemId}`;
-        const fonctionnairesUrl = `${baseApiUrl}${apiPrefix}/fonctionnaires`;
+        const fonctionnairesUrl = `${baseApiUrl}/options/fonctionnaires`; 
         console.log("Fetching Sous-Projet from:", sousProjetUrl);
         console.log("Fetching Fonctionnaires from:", fonctionnairesUrl);
 
@@ -116,7 +116,7 @@ const SousProjetVisualisation = ({ itemId, onClose, baseApiUrl }) => {
             return displayData(null);
         }
         return (
-            <Stack direction="horizontal" gap={1} wrap="wrap">
+            <div direction="horizontal" gap={1} wrap="wrap d-inline">
                 {ids.map(id => {
                     const fonctionnaire = fonctionnairesList.find(f => String(f.value).toLowerCase() === String(id).toLowerCase());
                     return (
@@ -126,7 +126,7 @@ const SousProjetVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                         </Badge>
                     );
                 })}
-             </Stack>
+             </div>
         );
     }, [fonctionnairesList]); // Re-calculate only if fonctionnairesList changes
 
@@ -196,7 +196,7 @@ const SousProjetVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                                 <dt className={DT_CLASS}>Projet Maître:</dt>
                                 <dd className={DD_CLASS} title={sousProjetData.projet ? `Code: ${sousProjetData.projet.Code_Projet}` : ''}>
                                     {/* Display name if available, otherwise show the ID from sousProjetData */}
-                                    {displayData(sousProjetData.projet?.Nom_Projet, `(Code: ${displayData(sousProjetData.ID_Projet_Maitre)})`)}
+                                    {displayData(sousProjetData.projet?.Code_Projet+ ' - '+sousProjetData.projet?.Nom_Projet, `(Code: ${displayData(sousProjetData.ID_Projet_Maitre)})`)}
                                 </dd>
                                 <dt className={DT_CLASS}>Statut:</dt><dd className={DD_CLASS}><Badge bg="secondary">{displayData(sousProjetData.Status)}</Badge></dd>
                                 <dt className={DT_CLASS}>Secteur:</dt><dd className={DD_CLASS}>{displayData(sousProjetData.Secteur)}</dd>
@@ -268,8 +268,8 @@ const SousProjetVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                      <Card className={CARD_CLASS}>
                         <Card.Body>
                             <Card.Title as="h6" className={CARD_TITLE_CLASS}>Points Focaux</Card.Title>
-                            <dt className={DT_CLASS}>Points Focaux : </dt>
-                            <dl className={`${DL_CLASS} mt-auto`}>
+                            <dt className={`${DT_CLASS} d-flex flex-row wrap justify-content-between`}>Points Focaux : </dt>
+                            <dl className={`${DL_CLASS} mt-auto `}>
                                 {getFonctionnaireNames(sousProjetData.id_fonctionnaire)}
                             </dl>
                         </Card.Body>

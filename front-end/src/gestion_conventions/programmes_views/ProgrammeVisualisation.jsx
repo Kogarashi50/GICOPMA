@@ -71,17 +71,16 @@ const ProgrammeVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                              </dl>
                          </Col>
                          <Col md={6}>
-                             <h6 className="text-secondary text-uppercase small fw-semibold mb-3">Chantier Associé</h6>
-                             {programmeData.chantier ? (
-                                <dl className="row mb-0 dl-compact">
-                                    <dt className="col-sm-4">Code Chantier:</dt>
-                                    <dd className="col-sm-8">{displayData(programmeData.chantier.Code_Chantier)}</dd> {/* Match key from Chantier model */}
-                                    <dt className="col-sm-4">Desc. Chantier:</dt>
-                                    <dd className="col-sm-8">{displayData(programmeData.chantier.Description)}</dd> {/* Match key from Chantier model */}
-                                  
-                                </dl>
-                             ) : ( <p className="text-muted">Détails non dispo. (Ref: {displayData(programmeData.Id_Chantier)}).</p> )}
-                         </Col>
+    <h6 className="text-secondary text-uppercase small fw-semibold mb-3">Axe stratégique Associé</h6>
+    {programmeData.domaine ? (
+       <dl className="row mb-0 dl-compact">
+           <dt className="col-sm-4">Code Axe stratégique:</dt>
+           <dd className="col-sm-8">{displayData(programmeData.domaine.Code)}</dd>
+           <dt className="col-sm-4">Desc. Axe stratégique:</dt>
+           <dd className="col-sm-8">{displayData(programmeData.domaine.Description)}</dd>
+       </dl>
+    ) : ( <p className="text-muted">Aucun Axe stratégique associé.</p> )}
+</Col>
                      </Row>
                  </Card.Body>
             </Card>

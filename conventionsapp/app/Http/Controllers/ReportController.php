@@ -37,9 +37,9 @@ class ReportController extends Controller
 
             // Projet Section Data
             $projets = Projet::with([
-                'domaine:Code,Description',
+                //'domaine:Code,Description',
                 'programme:Code_Programme,Description',
-                'chantier:Code_Chantier,Description',
+                //'chantier:Code_Chantier,Description',
                 'convention:id,Code,Intitule', // Use 'id' and 'Code' to link back
                 'engagementsFinanciers.partenaire:Id,Description', // Partner details
                 'engagementsFinanciers.versements:id,engagement_id,montant_verse' // Payment details

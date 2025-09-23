@@ -2,185 +2,171 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Programme; // Use the Programme model
-use App\Models\Chantier;  // Needed for validation check
+use App\Models\Programme;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
+use Illuminate\Validation\ValidationException;
 
 class ProgrammeController extends Controller
 {
     /**
      * Display a listing of the resource.
-     * Mirrors ChantierController index. Eager loads 'chantier'.
      */
     public function index(): JsonResponse
     {
         try {
-            $programmes = Programme::with('chantier') // Eager load the 'chantier' relationship
-                ->orderBy('created_at', 'desc') // Or orderBy('Code_Programme')
+            $programmes = Programme::with('domaine') // Corrected relationship
+                ->orderBy('Description', 'asc')
                 ->get();
-            // Ensure the response keys match frontend expectation (usually lowercase keys for relations)
-            return response()->json(['programmes' => $programmes], 200);
+            return response()->json(['programmes' => $programmes]);
         } catch (\Exception $e) {
             Log::error('Error fetching programmes: ' . $e->getMessage());
-            return response()->json(['failed' => 'Erreur lors de la récupération des programmes'], 500);
+            return response()->json(['message' => 'Erreur serveur lors de la récupération des programmes.'], 500);
         }
     }
 
     /**
-     * Remove the specified resource from storage.
-     * Mirrors ChantierController destroy. Uses 'Id' for lookup.
+     * Get programmes formatted for dropdowns.
      */
-    public function destroy(string $id): JsonResponse
+    public function getOptions(Request $request): JsonResponse
     {
-        // Log::info('Attempting to delete programme with Id: ' . $id);
-
+        Log::info("API: Fetching Programme options for dropdown.");
         try {
-            // Find first using 'Id' column
-            $programme = Programme::where('Id', $id)->first();
+            $programmes = Programme::orderBy('Description')
+                                  ->get(['Id', 'Code_Programme', 'Description']);
 
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;'); // Replicating pattern
+            $options = $programmes->map(function ($programme) {
+                $label = $programme->Description;
+                if (!empty($programme->Code_Programme) && !empty($programme->Description)) {
+                   $label = $programme->Code_Programme . ' - ' . $programme->Description;
+                } elseif (empty($programme->Description)) {
+                    $label = !empty($programme->Code_Programme) ? $programme->Code_Programme : "Programme ID: {$programme->Id}";
+                }
+                return ['value' => $programme->Id, 'label' => $label];
+            });
 
-            if (!$programme) {
-                 DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-                 // Log::warning('Programme not found with Id: ' . $id);
-                 return response()->json(['failed' => 'non trouve '], 404); // Mimicking ChantierController response
-            }
-
-            $deleted = Programme::where('Id', $id)->delete();
-
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
-            if ($deleted) {
-                // Log::info('Programme deleted successfully with Id: ' . $id);
-                return response()->json(['success' => 'done done'], 200); // Mimicking ChantierController response
-            } else {
-                // Log::warning('Programme deletion returned false for Id: ' . $id);
-                return response()->json(['failed' => 'non trouve '], 404); // Mimicking ChantierController response
-            }
+            Log::info("API: Returning " . $options->count() . " Programme options.");
+            return response()->json($options);
         } catch (\Exception $e) {
-            // Log::error('Failed to delete programme with Id: ' . $id . '. Error: ' . $e->getMessage());
-            try { DB::statement('SET FOREIGN_KEY_CHECKS=1;'); } catch (\Exception $dbException) { Log::error('Failed to re-enable FK checks on error: ' . $dbException->getMessage()); }
-            return response()->json(['failed' => 'process shut down'], 400); // Mimicking ChantierController response
-        }
-    }
-
-    /**
-     * Display the specified resource.
-     * Mirrors ChantierController show. Uses 'Id' for lookup. Eager loads 'chantier'.
-     */
-    public function show(string $id): JsonResponse
-    {
-        try {
-            // Find using 'Id' column
-            $programme = Programme::where('Id', $id)->first();
-
-            if (!$programme) {
-                 // Mimicking ChantierController's 500 response
-                return response()->json(['message' => 'Erreur lors de la récupération du programme.'], 500);
-            }
-
-            // Load the relationship after finding
-             $programme->load('chantier');
-
-             return response()->json(['programme' => $programme], 200); // Return under 'programme' key
-
-        } catch (\Exception $e) {
-            Log::error('Error fetching programme Id ' . $id . ': ' . $e->getMessage());
-            return response()->json(['failed' => 'Erreur serveur lors de la récupération du programme'], 500);
+            Log::error('Error fetching Programme options: ' . $e->getMessage());
+            return response()->json(['message' => 'Erreur serveur lors du chargement des options de programmes.'], 500);
         }
     }
 
     /**
      * Store a newly created resource in storage.
-     * Mirrors ChantierController store. Uses EXACT frontend key casing.
      */
-    public function store(Request $request): JsonResponse
-    {
-        // Validate using the EXACT keys expected from the frontend
+
+public function store(Request $request): JsonResponse
+{
+    try {
         $validatedData = $request->validate([
-            'Code_Programme' => 'required|string|max:255|unique:programme,Code_Programme', // Use exact case + unique on DB column
+            'Code_Programme' => 'required|string|max:255|unique:programme,Code_Programme',
             'Description' => 'required|string|max:65535',
-            // Validate that the value passed as 'Id_Chantier' exists in the 'chantier' table's 'Code_Chantier' column
-            'Id_Chantier' => ['required', 'string', Rule::exists('chantier', 'Code_Chantier')],
+            'domaine_id' => ['required', 'integer', Rule::exists('domaine', 'Id')],
         ]);
 
-        // Mimic the pattern of using $request->all() AFTER validation
-        // WARNING: Ensure 'Code_Programme', 'Description', 'Id_Chantier' EXACTLY match the case
-        //          in the Programme model's $fillable array for this to work safely.
-        $data = $request->all();
+        // The transaction's return value will be assigned to $programme
+        $programme = DB::transaction(function () use ($validatedData) {
+            // 1. Create the model
+            $newProgramme = Programme::create($validatedData);
 
+            // 2. IMPORTANT: Return the created model from the closure
+            return $newProgramme;
+        });
+
+        // 3. Load the relationship AFTER the transaction is successful
+        $programme->load('domaine');
+
+        // 4. Build and return the JSON response here, outside the transaction
+        return response()->json(['message' => 'Programme créé avec succès.', 'programme' => $programme], 201);
+
+    } catch (ValidationException $e) {
+         Log::warning('Validation failed for creating programme: ', $e->errors());
+         return response()->json(['message' => 'Les données fournies étaient invalides.', 'errors' => $e->errors()], 422);
+    } catch (\Exception $e) {
+         Log::error('Failed to store programme: ' . $e->getMessage(), ['request' => $request->all()]);
+         return response()->json(['message' => 'Erreur serveur lors de la création du programme.'], 500);
+    }
+}
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id): JsonResponse
+    {
         try {
-            // Assumes Programme model's $fillable matches the casing in $data
-            Programme::create($data);
-            // Mimic ChantierController's success response structure/code
-            return response()->json(['message' => 'Programme créé avec succès.'], 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-             return response()->json(['errors' => $e->errors()], 422);
+            $programme = Programme::with('domaine')->findOrFail($id);
+            return response()->json(['programme' => $programme]);
+        } catch (ModelNotFoundException $e) {
+             return response()->json(['message' => 'Programme non trouvé.'], 404);
         } catch (\Exception $e) {
-             Log::error('Failed to store programme: ' . $e->getMessage());
-             // Mimic ChantierController's error response structure/code
-             return response()->json(['message' => 'Erreur lors de la création du programme.'], 500);
+            Log::error('Error fetching programme Id ' . $id . ': ' . $e->getMessage());
+            return response()->json(['message' => 'Erreur serveur lors de la récupération du programme.'], 500);
         }
     }
 
     /**
      * Update the specified resource in storage.
-     * Mirrors ChantierController update. Uses EXACT frontend key casing.
      */
-    public function update(Request $request, string $id): JsonResponse
-    {
-        // Validate using the EXACT keys expected from the frontend
-        $data = $request->validate([
-             // Ensure unique Code_Programme, ignoring the current programme's Id
-             'Code_Programme' => [
-                'required',
-                'string',
-                'max:255',
-                 // Check unique on DB column 'Code_Programme', ignore based on primary key 'Id'
-                 Rule::unique('programme', 'Code_Programme')->ignore($id, 'Id')
-            ],
+public function update(Request $request, string $id): JsonResponse
+{
+    try {
+        $programme = Programme::findOrFail($id);
+
+        $validatedData = $request->validate([
+             'Code_Programme' => ['required', 'string', 'max:255', Rule::unique('programme', 'Code_Programme')->ignore($programme->Id, 'Id')],
             'Description' => 'required|string|max:65535',
-             // Validate that the value passed as 'Id_Chantier' exists in the 'chantier' table's 'Code_Chantier' column
-             'Id_Chantier' => ['required', 'string', Rule::exists('chantier', 'Code_Chantier')],
+            'domaine_id' => ['required', 'integer', Rule::exists('domaine', 'Id')],
         ]);
 
-        // NOTE: Using validated $data here which uses the correct frontend casing.
+        // Use a transaction for the update operation
+        DB::transaction(function () use ($programme, $validatedData) {
+            $programme->update($validatedData);
+        });
 
+        // Load the correct relationship and return the successful response
+        return response()->json([
+            'message' => 'Programme mis à jour avec succès.',
+            'programme' => $programme->fresh()->load('domaine') // Load 'domaine'
+        ]);
+
+    } catch (ModelNotFoundException $e) {
+        return response()->json(['message' => 'Programme non trouvé pour mise à jour.'], 404);
+    } catch (ValidationException $e) {
+         Log::warning("Validation failed for updating programme ID {$id}: ", $e->errors());
+         return response()->json(['message' => 'Les données fournies étaient invalides.', 'errors' => $e->errors()], 422);
+    } catch (\Exception $e) {
+         Log::error('Failed to update programme with Id: ' . $id . '. Error: ' . $e->getMessage(), ['request' => $request->all()]);
+         return response()->json(['message' => 'Erreur serveur lors de la mise à jour du programme.'], 500);
+    }
+}
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id): JsonResponse
+    {
         try {
-            // Find model using 'Id' column
-             $programme = Programme::where('Id', $id)->first();
+            $programme = Programme::findOrFail($id);
+            $programme->delete();
+            return response()->json(null, 204);
 
-             DB::statement('SET FOREIGN_KEY_CHECKS=0;'); // Replicating pattern
-
-             if (!$programme) {
-                 DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-                 // Mimicking ChantierController's "user not found" response structure/code
-                 return response()->json(['failed' => 'user not found'], 404);
-             }
-
-            // Assumes $fillable in Programme model matches the EXACT casing of keys in $data
-            $updated = Programme::where('Id', $id)->update($data);
-
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
-            if ($updated) {
-                 // Mimicking ChantierController's success response
-                return response()->json(['success' => 'done done'], 200);
-            } else {
-                 // Mimicking ChantierController's failure response structure/code
-                 return response()->json(['failed' => 'user not found'], 404);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Programme non trouvé pour suppression.'], 404);
+        } catch (QueryException $qe) {
+            Log::error("Database error deleting programme ID {$id}: " . $qe->getMessage());
+            if (str_contains($qe->getMessage(), 'constraint violation') || $qe->getCode() == '23000') {
+                return response()->json(['message' => 'Impossible de supprimer ce programme, il est référencé par d\'autres enregistrements.'], 409);
             }
-        } catch (\Illuminate\Validation\ValidationException $e) {
-             return response()->json(['errors' => $e->errors()], 422);
+            return response()->json(['message' => 'Erreur base de données lors de la suppression du programme.'], 500);
         } catch (\Exception $e) {
-             Log::error('Failed to update programme with Id: ' . $id . '. Error: ' . $e->getMessage());
-             try { DB::statement('SET FOREIGN_KEY_CHECKS=1;'); } catch (\Exception $dbException) { Log::error('Failed to re-enable FK checks on error: ' . $dbException->getMessage()); }
-             // Mimicking ChantierController's error response structure/code
-             return response()->json(['failed' => 'process shut down'], 404);
+            Log::error('Failed to delete programme with Id: ' . $id . '. Error: ' . $e->getMessage());
+            return response()->json(['message' => 'Erreur serveur lors de la suppression du programme.'], 500);
         }
     }
 }

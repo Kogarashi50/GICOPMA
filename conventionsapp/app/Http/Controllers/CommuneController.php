@@ -6,9 +6,28 @@ use App\Models\Commune;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse; 
 
 class CommuneController extends Controller
 {
+    public function getOptions(Request $request): JsonResponse
+    {
+        Log::info("API: Fetching Commune options for dropdown.");
+        try {
+            // Ensure 'Id' and 'Description' match your Commune model's actual column names
+            $communes = Commune::orderBy('Description')->get(['Id', 'Description']);
+
+            $options = $communes->map(function ($commune) {
+                return ['value' => $commune->Id, 'label' => $commune->Description];
+            });
+
+            Log::info("API: Returning " . $options->count() . " Commune options.");
+            return response()->json($options); // Return the array of {value, label} directly
+        } catch (\Exception $e) {
+            Log::error('Error fetching Commune options: ' . $e->getMessage());
+            return response()->json(['message' => 'Erreur serveur lors du chargement des options de communes.'], 500);
+        }
+    }
     public function index()
     {
         $communes =Commune::all();

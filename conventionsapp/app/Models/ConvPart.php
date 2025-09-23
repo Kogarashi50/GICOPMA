@@ -59,7 +59,8 @@ class ConvPart extends Model
         'Id_Convention',
         'Id_Partenaire',
         'Montant_Convenu',
-        'is_signatory',         // <<< ADDED
+        'is_signatory',  
+        'autre_engagement',       // <<< ADDED
         'date_signature', 
         'avenant_id',      // <<< ADDED
         'details_signature',    // <<< ADDED

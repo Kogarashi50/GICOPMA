@@ -30,7 +30,12 @@ class Avenant extends Model
         'montant_modifie',
         'nouvelle_date_fin',
         'id_fonctionnaire',
-
+        'code', // ADDED
+        'annee_avenant', // ADDED
+        'session', // ADDED
+        'numero_approbation', // ADDED
+        'statut', // ADDED
+        'date_visa', 
         // 'fichier_avenant', // <<< REMOVED
         'remarques',
         // Note: partenaire_ids is NOT directly fillable if using pivot table
@@ -40,6 +45,8 @@ class Avenant extends Model
         'date_signature' => 'date:Y-m-d',
         'nouvelle_date_fin' => 'date:Y-m-d',
         'montant_modifie' => 'decimal:2',
+        'date_visa' => 'date:Y-m-d', // ADDED
+
     ];
 
     public function convention(): BelongsTo

@@ -1,5 +1,3 @@
-// src/pages/your_cp_folder/VersementForm.jsx (Adjust path as needed)
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -139,7 +137,7 @@ const VersementForm = ({
         try {
             // Assuming an endpoint exists to get convention options { value: id, label: name }
              // <<< ADJUST/VERIFY API Endpoint >>>
-            const response = await axios.get(`${baseApiUrl}/conventions/options`, { withCredentials: true });
+            const response = await axios.get(`${baseApiUrl}/options/conventions`, { withCredentials: true });
             // Use response.data directly assuming it's the array [{value, label}, ...]
             const conventions = Array.isArray(response.data) ? response.data : [];
             setConventionOptions(conventions);
@@ -175,10 +173,10 @@ const VersementForm = ({
                  // <<< ADJUST/VERIFY API Path >>>
                 const versementResponse = await axios.get(`${baseApiUrl}/versements/${itemId}`, { withCredentials: true });
                 const data = versementResponse.data?.versement;
-                console.log("Data received in fetchEditData:",!data?.conv_part?.convention_id ,' ||', !data?.convPart?.partenaire_id ,' ||', !data?.convPart?.convention  ,' ||', !data?.convPart?.partenaire  ,' ||', data?.id_CP === undefined); // <<< ADD THIS LOG
+                console.log("Data received in fetchEditData:",data?.conv_part?.Id_Convention,' ||', data?.conv_part?.Id_Partenaire ,' ||', data?.conv_part?.convention  ,' ||', data?.conv_part?.partenaire ,' ||', data.id_CP ); // <<< ADD THIS LOG
 
                 // Validate required nested data points exist from the versement fetch
-                if (!data?.conv_part?.convention_id || !data?.conv_part?.partenaire_id || !data?.conv_part?.convention || !data?.conv_part?.partenaire || !data?.id_CP === undefined) {
+                if (!data?.conv_part?.Id_Convention || !data?.conv_part?.Id_Partenaire || !data?.conv_part?.convention || !data?.conv_part?.partenaire ||!data?.id_CP) {
                      console.error("Missing data in fetched versement:", data);
                     throw new Error("Données API incomplètes reçues pour le versement ou son engagement associé (convention/partenaire).");
                 }
@@ -198,7 +196,7 @@ const VersementForm = ({
                 const fetchedCommitmentId = data.id_CP;
                 setCommitmentId(fetchedCommitmentId);
 
-                const initialConvention = conventionOptions.find(opt => String(opt.value) === String(data.conv_part.convention_id));
+                const initialConvention = conventionOptions.find(opt => String(opt.value) === String(data.conv_part.Id_Convention));
                 if (initialConvention) {
                     setSelectedConvention(initialConvention);
                     const partner = data.conv_part.partenaire;
@@ -215,7 +213,7 @@ const VersementForm = ({
                 setLoadingCommitmentDetails(true);
                 try {
                     // <<< ADJUST/VERIFY API Endpoint & Params >>> Use the lookup route
-                    const detailsUrl = `${baseApiUrl}/convparts/lookup?convention_id=${data.conv_part.convention_id}&partenaire_id=${data.conv_part.partenaire_id}`;
+                    const detailsUrl = `${baseApiUrl}/convparts/lookup?convention_id=${data.conv_part.Id_Convention}&partenaire_id=${data.conv_part.Id_Partenaire}`;
                     const detailsResponse = await axios.get(detailsUrl, { withCredentials: true });
 
                     if (isMounted && detailsResponse.data) {

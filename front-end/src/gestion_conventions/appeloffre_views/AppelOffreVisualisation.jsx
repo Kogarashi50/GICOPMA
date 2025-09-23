@@ -62,7 +62,7 @@ const AppelOffreVisualisation = ({ itemId, onClose, baseApiUrl }) => {
 
         const apiPrefix = ''; // Adjust if needed
         const appelOffreUrl = `${baseApiUrl}${apiPrefix}/appel-offres/${itemId}`;
-        const fonctionnairesUrl = `${baseApiUrl}${apiPrefix}/fonctionnaires`;
+        const fonctionnairesUrl = `${baseApiUrl}/options/fonctionnaires`;
 
         console.log(`Visualisation AO: Fetching AO from ${appelOffreUrl}`);
         console.log(`Visualisation AO: Fetching Fonctionnaires from ${fonctionnairesUrl}`);

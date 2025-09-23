@@ -1,0 +1,12 @@
+/* Example CSS for your main layout's content area */
+.main-content-area { /* Use your actual class name */
+    height: calc(100vh - 56px); /* Adjust 56px to your header height */
+    overflow-y: auto; /* Enable scrollbar when needed */
+    padding: 1rem; /* Optional padding */
+    /* Add margin-left if needed for a sidebar */
+  }
+  
+  /* Optional: Prevent double scrollbars */
+  body {
+    overflow: hidden;
+  }

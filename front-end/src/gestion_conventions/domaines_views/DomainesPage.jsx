@@ -28,8 +28,8 @@ const DomainesPage = () => {
                 dataKey="domaines" // <<< Key in JSON response holding domaine array (adjust if needed)
                 deleteUrlBase="/domaines" // <<< Base URL for DELETE /domaines/{id}
                 columns={domaineColumns}
-                itemName="Domaine" // <<< Singular name
-                itemNamePlural="Domaines" // <<< Plural name
+                itemName="Axe stratégique" // <<< Singular name
+                itemNamePlural="Axes stratégiques" // <<< Plural name
                 // --- Optional ---
                 identifierKey="Id" // <<< Primary Key column name
                 displayKeyForDelete="Description" // Field to show in delete confirmation

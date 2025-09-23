@@ -73,7 +73,7 @@ const UserForm = ({
              try {
                  // *** CHANGED: Use baseApiUrl ***
                  // Assumes baseApiUrl includes /api
-                 const response = await axios.get(`${baseApiUrl}/fonctionnaires`);
+                 const response = await axios.get(`${baseApiUrl}/options/fonctionnaires`);
                  const data = response.data.fonctionnaires || response.data || [];
                  if (isMounted) {
                      setFonctionnaireOptions(data.map(f => ({ value: f.id, label: f.nom_complet || `ID: ${f.id}` })));
@@ -290,7 +290,7 @@ const UserForm = ({
                 <div className="d-flex justify-content-between align-items-center mb-4 flex-shrink-0">
                                         <div>
                                             <h5 className="text-uppercase fw-bold text-secondary mb-1">{isEditing ? 'Modifier la' : 'Créer un nouveau'}</h5>
-                                            <h2 className="mb-0 fw-bold">Utilisateur {isEditing ? `(ID: ${formData.id
+                                            <h2 className="mb-0 fw-bold">Utilisateur {isEditing ? `(ID: ${itemId                                                    
                                             })` : ''}</h2>
                                         </div>
                                         <Button variant="light" className='btn rounded-5 px-5 py-2 bg-warning shadow-sm' onClick={onClose} size="sm" title="Retour">

@@ -345,7 +345,7 @@ function AppContent() {
                         <Route path='/partenaire' element={isAuthenticated ? <PartenairesPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
                         <Route path='/chantier' element={isAuthenticated ? <ChantiersPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
                         <Route path='/programme' element={isAuthenticated ? <ProgrammesPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
-                        <Route path='/domaine' element={isAuthenticated ? <DomainesPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
+                        <Route path='/axes-strategiques' element={isAuthenticated ? <DomainesPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
                         <Route path='/projet' element={isAuthenticated ? <ProjetsPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
                         <Route path='/sousprojet' element={isAuthenticated ? <SousProjetsPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
                         <Route path='/commune' element={isAuthenticated ? <CommunesPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />

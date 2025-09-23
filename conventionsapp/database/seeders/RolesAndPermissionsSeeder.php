@@ -22,14 +22,14 @@ class RolesAndPermissionsSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
         $this->command->info('Permission cache cleared.');
 
-        // --- Define Permissions (Existing + NEW AppelOffre) ---
+        // --- Define Permissions (Removed 'view details' permissions) ---
         $permissions = [
             // Dashboard
             'view dashboard',
             // Conventions
-            'view conventions', 'create conventions', 'update conventions', 'delete conventions', 'view convention details',
+            'view conventions', 'create conventions', 'update conventions', 'delete conventions', // 'view convention details' REMOVED
             // Partenaires
-            'view partenaires', 'create partenaires', 'update partenaires', 'delete partenaires', 'view partenaire details',
+            'view partenaires', 'create partenaires', 'update partenaires', 'delete partenaires', // 'view partenaire details' REMOVED
             'view partenaire summary',
             // Chantiers
             'view chantiers', 'create chantiers', 'update chantiers', 'delete chantiers',
@@ -59,7 +59,7 @@ class RolesAndPermissionsSeeder extends Seeder
             // Versements CP (Keep existing for VersementCPController if still used)
             'view versements_cp', 'create versements_cp', 'update versements_cp', 'delete versements_cp',
 
-            // --- Other NEW Permissions ---
+            // --- Other Permissions ---
             // Ordres de Service
             'view ordres_service', 'create ordres_service', 'update ordres_service', 'delete ordres_service',
             // Engagements Financiers (If distinct from 'engagements')
@@ -69,12 +69,12 @@ class RolesAndPermissionsSeeder extends Seeder
             // Reporting
             'download report',
 
-            // --- NEW Permissions for AppelOffre ---
-            'view appeloffres',         // For index method
+            // --- Permissions for AppelOffre (Removed 'view details') ---
+            'view appeloffres',         // For index & show methods
             'create appeloffres',       // For store method
             'update appeloffres',       // For update method
             'delete appeloffres',       // For destroy method
-            'view appeloffre details',  // For show method
+            // 'view appeloffre details',  // REMOVED
             // --------------------------------------
 
             // --- Admin Area Permissions ---
@@ -88,29 +88,26 @@ class RolesAndPermissionsSeeder extends Seeder
         foreach ($permissions as $permissionName) {
             try {
                  Permission::firstOrCreate(['name' => $permissionName, 'guard_name' => $guardName]);
-                 // Log::info("Permission ensured: {$permissionName}"); // Optional: more verbose logging
             } catch (Exception $e) {
                 $this->command->error("Error creating/verifying permission '$permissionName': " . $e->getMessage());
-                 Log::error("Failed to ensure permission '{$permissionName}' for guard '{$guardName}'. Error: " . $e->getMessage()); // More detailed log
+                 Log::error("Failed to ensure permission '{$permissionName}' for guard '{$guardName}'. Error: " . $e->getMessage());
             }
         }
         $this->command->info('Permissions created/verified.');
 
 
-        // --- Define Roles ---
+        // --- Define Roles (Removed 'Viewer') ---
         $this->command->info('Creating/Verifying Roles...');
-        $adminRole = null; $viewerRole = null;
+        $adminRole = null;
         try {
             $adminRole = Role::firstOrCreate(['name' => 'Admin', 'guard_name' => $guardName]);
-            $viewerRole = Role::firstOrCreate(['name' => 'Viewer', 'guard_name' => $guardName]);
-            // Consider adding other roles like 'Editor' if needed
-            // $editorRole = Role::firstOrCreate(['name' => 'Editor', 'guard_name' => $guardName]);
+            // Consider adding other roles like 'Editor' if needed here
         } catch (Exception $e) {
              $this->command->error("Error creating/verifying roles: " . $e->getMessage());
              Log::error("Failed to create/verify roles. Error: " . $e->getMessage());
              return; // Stop seeding if roles can't be created
         }
-        $this->command->info('Roles created/verified (Admin, Viewer).');
+        $this->command->info('Role created/verified (Admin).'); // Updated message
 
 
         // --- Assign Permissions to ADMIN Role ---
@@ -131,68 +128,20 @@ class RolesAndPermissionsSeeder extends Seeder
         }
 
 
-        // --- Assign Specific Permissions to VIEWER Role ---
-        $this->command->info('Assigning permissions to Viewer role...');
-        // Define only the permissions a Viewer should have (INCLUDING NEW VIEW PERMISSIONS)
-        $viewerPermissionNames = [
-             'view dashboard',
-             'view conventions', 'view convention details',
-             'view partenaires', 'view partenaire details',
-             'view partenaire summary',
-             'view chantiers',
-             'view programmes',
-             'view domaines',
-             'view projets',
-             'view sousprojets',
-             'view communes',
-             'view marches',
-             'download fichiers',
-             'view provinces',
-             'view engagements', // Assuming this is still relevant
-             'view bon_commande',
-             'view contrat_droit_commun',
-             'view avenants', // Add if needed
-             'view versements_cp',
-             // --- Add NEW view permissions ---
-             'view ordres_service',
-             'view engagements_financiers', // Add if distinct
-             'view versements_pp', // Add if distinct
-             'download report',
-             // --- Add AppelOffre view permissions ---
-             'view appeloffres',
-             'view appeloffre details',
-             // ------------------------------------
-        ];
-        try {
-            $viewerPermissions = Permission::where('guard_name', $guardName)
-                                ->whereIn('name', $viewerPermissionNames)->get();
-            if ($viewerRole) {
-                $viewerRole->syncPermissions($viewerPermissions);
-                $this->command->info('Viewer role permissions assigned (' . $viewerPermissions->count() . ' permissions).');
-            } else {
-                $this->command->error("Role 'Viewer' not found. Cannot assign permissions.");
-                 Log::error("Viewer role object is null, cannot assign permissions.");
-            }
-        } catch (Exception $e) {
-            $this->command->error("Error assigning permissions to Viewer role: " . $e->getMessage());
-            Log::error("Failed assigning permissions to Viewer role. Error: " . $e->getMessage());
-        }
+        // --- VIEWER Role Assignment Block REMOVED ---
+
 
         // --- USER CREATION / ROLE ASSIGNMENT REMOVED ---
-        // This section is intentionally left out as per the original code's comment.
-        // You should handle user creation and role assignment separately,
-        // perhaps in a different seeder (e.g., UserSeeder) or through your application's admin interface.
         $this->command->info('Skipping user creation/assignment in this seeder.');
 
 
         // --- Final Steps ---
-        // Clear cache again after changes
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
         $this->command->info('Permission cache cleared again for immediate effect.');
         $this->command->info('Roles and Permissions definition/assignment finished.');
         $this->command->warn('-----------------------------------------------------------');
         $this->command->warn("REMEMBER: Ensure Gate::before is setup in AuthServiceProvider if relying on it for Admin full access.");
-        $this->command->warn("REMEMBER: Assign roles ('Admin', 'Viewer', etc.) to your existing users manually or via the application UI/another seeder.");
+        $this->command->warn("REMEMBER: Assign the 'Admin' role to your existing users manually or via the application UI/another seeder."); // Updated warning
         $this->command->warn('-----------------------------------------------------------');
     }
 }

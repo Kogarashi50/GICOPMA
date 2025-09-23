@@ -83,7 +83,7 @@ class AvenantController extends Controller
             Log::info('Successfully fetched ' . $avenants->count() . ' avenants.');
 
             // --- Manually add URLs and format partners for the response ---
-            $appBaseUrl = rtrim(config('app.url', 'http://localhost:8000'), '/'); // Ensure port if needed
+            $appBaseUrl = rtrim(config('app.url', 'http://localhost:8000:80'), '/'); // Ensure port if needed
 
             $avenants->each(function ($avenant) use ($appBaseUrl) {
                 // Add 'fichier_url' to each document
@@ -150,6 +150,11 @@ class AvenantController extends Controller
                 'convention_id' => 'required|integer|exists:convention,id',
                 'numero_avenant' => ['required', 'string', 'max:50', Rule::unique('avenants')->where(fn ($query) => $query->where('convention_id', $request->input('convention_id')))],
                 'date_signature' => 'required|date_format:Y-m-d',
+                'annee_avenant' => 'required|integer|digits:4',
+                'session' => 'required|integer|between:1,12',
+                'numero_approbation' => 'required|string|max:100',
+                'statut' => 'required|string|max:50',
+                'date_visa' => ['nullable', 'date_format:Y-m-d', 'required_if:statut,visé'],
                 'objet' => 'nullable|string', // MERGED: Changed from 'required' to 'nullable'
                 'type_modification' => ['required', Rule::in($this->modificationTypes)],
                 'montant_modifie' => ['nullable', 'numeric', 'min:0', Rule::requiredIf(fn () => $request->input('type_modification') === 'montant')],
@@ -169,6 +174,12 @@ class AvenantController extends Controller
                 'digits'   => ':attribute doit avoir :digits chiffres.',
                 'unique'   => ':attribute déjà utilisé pour cette convention.',
                 'exists'   => ':attribute invalide.',
+                 'annee_avenant.required' => 'L\'année de l\'avenant est obligatoire.',
+            'annee_avenant.digits' => 'L\'année doit être au format AAAA.',
+            'session.required' => 'La session est obligatoire.',
+            'numero_approbation.required' => 'Le numéro d\'approbation est obligatoire.',
+            'statut.required' => 'Le statut est obligatoire.',
+            'date_visa.required_if' => 'La date de visa est obligatoire quand le statut est "visé".',
                 'array'    => ':attribute doit être une liste.',
                 'file'     => ':attribute doit être un fichier valide.',
                 'mimes'    => 'Type fichier :attribute invalide (:values).',
@@ -200,12 +211,19 @@ class AvenantController extends Controller
 
         $avenant = null;
         $createdDocumentsInfo = []; // Track relative PUBLIC paths for rollback
-
+        $sessionFormatted = str_pad($validatedData['session'], 2, '0', STR_PAD_LEFT);
+        $generatedCode = sprintf(
+        '%s/%s/%s',
+        $validatedData['numero_approbation'],
+        $sessionFormatted,
+        $validatedData['annee_avenant']
+    );
         DB::beginTransaction();
         Log::info('Transaction DB démarrée (avenant store - direct public).');
         try {
             // 1. Create Avenant Record FIRST
             $avenantData = Arr::except($validatedData, ['fichiers', 'avenant_partner_commitments']);
+            $avenantData['code'] = $generatedCode;
             Log::info('Création enregistrement Avenant...', $avenantData);
             $avenant = Avenant::create($avenantData);
             Log::info("Avenant créé: ID {$avenant->id}");
@@ -272,7 +290,7 @@ class AvenantController extends Controller
             // --- Return Success Response ---
             $avenant->load(['convention', 'documents', 'partnerCommitments.partenaire']);
             // Manually construct URLs
-            $appBaseUrl = rtrim(config('app.url', 'http://localhost:8000'), '/');
+            $appBaseUrl = rtrim(config('app.url', 'http://localhost:8000:80'), '/');
             $responseData = $avenant->toArray();
              if (isset($responseData['documents'])) {
                  foreach ($responseData['documents'] as &$doc) { $doc['fichier_url'] = $doc['file_path'] ? $appBaseUrl . '/' . ltrim($doc['file_path'], '/') : null; } unset($doc);
@@ -302,115 +320,131 @@ class AvenantController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     * GET /api/avenants/{id}
-     * MERGED: Formats response to match AvenantForm state expectations.
-     * Includes id_fonctionnaire. Includes Description_Arr for partners.
-     * Uses direct public file paths.
-     */
-    public function show(Request $request, string $id)
-    {
-        Log::info("Fetching avenant with ID: {$id} (direct public)...");
-        try {
-            // Eager load necessary relationships
-            $defaultRelations = ['convention', 'documents', 'partnerCommitments.partenaire'];
-            $relationsToLoad = $defaultRelations;
-            // Basic include logic (can be expanded if needed)
-            if ($request->filled('include')) {
-                $includes = explode(',', $request->input('include'));
-                $potentialRelations = $defaultRelations;
-                $requestedRelations = array_filter($potentialRelations, function ($relation) use ($includes) { $baseRelation = explode('.', $relation)[0]; return in_array($relation, $includes) || in_array($baseRelation, $includes); });
-                if (!empty($requestedRelations)) { $relationsToLoad = array_values($requestedRelations); }
-                else { Log::warning('Includes non reconnus, chargement défauts.', ['requested' => $includes]); }
+public function show(Request $request, string $id)
+{
+    Log::info("Fetching avenant with ID: {$id}...");
+    try {
+        // Eager load necessary relationships
+        $defaultRelations = ['convention', 'documents', 'partnerCommitments.partenaire'];
+        $relationsToLoad = $defaultRelations;
+
+        // Basic include logic to allow frontend to request specific relations
+        if ($request->filled('include')) {
+            $includes = explode(',', $request->input('include'));
+            $potentialRelations = $defaultRelations; // Define potential relations for security
+            $requestedRelations = array_filter($potentialRelations, function ($relation) use ($includes) {
+                $baseRelation = explode('.', $relation)[0];
+                return in_array($relation, $includes) || in_array($baseRelation, $includes);
+            });
+
+            if (!empty($requestedRelations)) {
+                $relationsToLoad = array_values($requestedRelations);
+            } else {
+                Log::warning('Includes non reconnus, chargement des relations par défaut.', ['requested' => $includes]);
             }
-            $relationsToLoad = array_unique($relationsToLoad);
-            Log::debug("Chargement relations: " . implode(', ', $relationsToLoad));
-
-            $avenant = Avenant::with($relationsToLoad)->find($id);
-
-            if (!$avenant) {
-                Log::warning("Avenant non trouvé: ID {$id}");
-                return response()->json(['message' => 'Avenant non trouvé.'], 404);
-            }
-            Log::info("Avenant trouvé: ID {$id}");
-
-            // --- Format the response data to match Frontend expectations ---
-            $responseData = [
-                'id' => $avenant->id,
-                'convention_id' => $avenant->convention_id,
-                'numero_avenant' => $avenant->numero_avenant,
-                'date_signature' => $avenant->date_signature ? $avenant->date_signature->format('Y-m-d') : null, // Ensure correct date format
-                'objet' => $avenant->objet,
-                'type_modification' => $avenant->type_modification,
-                'montant_modifie' => $avenant->montant_modifie, // Send as is (number/null)
-                'nouvelle_date_fin' => $avenant->nouvelle_date_fin ? $avenant->nouvelle_date_fin->format('Y-m-d') : null, // Ensure correct date format
-                'id_fonctionnaire' => $avenant->id_fonctionnaire, // MERGED: Ensure this is included
-                'remarques' => $avenant->remarques,
-                'date_creation' => $avenant->date_creation ? $avenant->date_creation->toIso8601String() : null, // Example format
-                // Include convention data if loaded
-                'convention' => $avenant->relationLoaded('convention') ? $avenant->convention : null,
-            ];
-
-            // Format Documents
-            $appBaseUrl = rtrim(config('app.url', 'http://localhost:8000'), '/');
-            $responseData['documents'] = [];
-            if ($avenant->relationLoaded('documents')) {
-                $responseData['documents'] = $avenant->documents->map(function ($doc) use ($appBaseUrl) {
-                    return [
-                        'Id_Doc' => $doc->Id_Doc,
-                        'Intitule' => $doc->Intitule,
-                        'file_name' => $doc->file_name,
-                        'file_type' => $doc->file_type,
-                        'file_size' => $doc->file_size,
-                        'file_path' => $doc->file_path, // Keep original path if needed
-                        // Construct the URL the frontend needs
-                        'fichier_url' => $doc->file_path ? $appBaseUrl . '/' . ltrim($doc->file_path, '/') : null,
-                    ];
-                })->all();
-            }
-
-            // Format Partner Commitments to match EXACT frontend expectation
-            $responseData['partner_commitments'] = []; // Use the key 'partner_commitments'
-            if ($avenant->relationLoaded('partnerCommitments')) {
-                $responseData['partner_commitments'] = $avenant->partnerCommitments->map(function ($pc) {
-                     // Basic check if the nested partenaire relationship loaded correctly
-                     $partnerData = null;
-                     if ($pc->relationLoaded('partenaire') && $pc->partenaire) {
-                         $partnerData = [
-                             'Id' => $pc->partenaire->Id, // Key 'Id'
-                             'Description' => $pc->partenaire->Description, // Key 'Description'
-                             'Description_Arr' => $pc->partenaire->Description_Arr, // MERGED: Include Description_Arr
-                             // Include other partner fields if needed by the frontend later
-                         ];
-                     } else {
-                         Log::warning("Partenaire non chargé pour ConvPart ID: " . ($pc->Id_CP ?? 'N/A') . " Avenant ID: " . $pc->avenant_id);
-                     }
-
-                     return [
-                        // Use EXACT keys expected by the frontend form's mapping logic
-                        'Id_Partenaire' => $pc->Id_Partenaire,
-                        'Montant_Convenu' => $pc->Montant_Convenu, // Send as is (number/null)
-                        'is_signatory' => (bool) $pc->is_signatory, // Ensure boolean
-                        'date_signature' => $pc->date_signature ? $pc->date_signature->format('Y-m-d') : null, // Format date or null
-                        'details_signature' => $pc->details_signature, // Send as is (string/null)
-                        'partenaire' => $partnerData, // Include the nested partner object
-                        // Include the ConvPart primary key if useful for frontend/debugging
-                         'Id_CP' => $pc->Id_CP ?? null,
-                    ];
-                })->values()->all();
-            }
-
-            Log::debug("Avenant données formatées AVANT réponse JSON:", $responseData);
-            // Return the MANUALLY FORMATTED data structure
-            return response()->json(['avenant' => $responseData]);
-
-        } catch (\Exception $e) {
-            Log::error("Erreur récup avenant ID {$id}:", ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return response()->json(['message' => 'Erreur serveur lors de la récupération de l\'avenant.'], 500);
         }
-     }
 
+        $relationsToLoad = array_unique($relationsToLoad);
+        Log::debug("Chargement des relations: " . implode(', ', $relationsToLoad));
+
+        $avenant = Avenant::with($relationsToLoad)->find($id);
+
+        if (!$avenant) {
+            Log::warning("Avenant non trouvé: ID {$id}");
+            return response()->json(['message' => 'Avenant non trouvé.'], 404);
+        }
+        Log::info("Avenant trouvé: ID {$id}");
+
+        // --- Format the response data to match Frontend expectations ---
+        $responseData = [
+            'id' => $avenant->id,
+
+            // --- MERGED: LIFECYCLE FIELDS ---
+            'code' => $avenant->code,
+            'annee_avenant' => $avenant->annee_avenant,
+            'session' => $avenant->session,
+            'numero_approbation' => $avenant->numero_approbation,
+            'statut' => $avenant->statut,
+            'date_visa' => $avenant->date_visa ? $avenant->date_visa->format('Y-m-d') : null,
+            // --- END LIFECYCLE FIELDS ---
+
+            'convention_id' => $avenant->convention_id,
+            'numero_avenant' => $avenant->numero_avenant,
+            'date_signature' => $avenant->date_signature ? $avenant->date_signature->format('Y-m-d') : null,
+            'objet' => $avenant->objet,
+            'type_modification' => $avenant->type_modification,
+            'montant_modifie' => $avenant->montant_modifie,
+            'nouvelle_date_fin' => $avenant->nouvelle_date_fin ? $avenant->nouvelle_date_fin->format('Y-m-d') : null,
+            'id_fonctionnaire' => $avenant->id_fonctionnaire,
+            'remarques' => $avenant->remarques,
+            'date_creation' => $avenant->date_creation ? $avenant->date_creation->toIso8601String() : null,
+
+            // Include convention data if loaded
+            'convention' => $avenant->relationLoaded('convention') ? $avenant->convention : null,
+        ];
+
+        // Format Documents
+        $appBaseUrl = rtrim(config('app.url', 'http://localhost:8000'), '/');
+        $responseData['documents'] = [];
+        if ($avenant->relationLoaded('documents')) {
+            $responseData['documents'] = $avenant->documents->map(function ($doc) use ($appBaseUrl) {
+                return [
+                    'Id_Doc' => $doc->Id_Doc,
+                    'Intitule' => $doc->Intitule,
+                    'file_name' => $doc->file_name,
+                    'file_type' => $doc->file_type,
+                    'file_size' => $doc->file_size,
+                    'file_path' => $doc->file_path, // Original path
+                    // Construct the full, accessible URL for the frontend
+                    'fichier_url' => $doc->file_path ? $appBaseUrl . '/' . ltrim($doc->file_path, '/') : null,
+                ];
+            })->all();
+        }
+
+        // Format Partner Commitments to match EXACT frontend expectation
+        $responseData['partner_commitments'] = [];
+        if ($avenant->relationLoaded('partnerCommitments')) {
+            $responseData['partner_commitments'] = $avenant->partnerCommitments->map(function ($pc) {
+                // Basic check if the nested partenaire relationship loaded correctly
+                $partnerData = null;
+                if ($pc->relationLoaded('partenaire') && $pc->partenaire) {
+                    $partnerData = [
+                        'Id' => $pc->partenaire->Id,
+                        'Description' => $pc->partenaire->Description,
+                        'Description_Arr' => $pc->partenaire->Description_Arr,
+                        // Include other partner fields here if needed
+                    ];
+                } else {
+                    Log::warning("Partenaire non chargé pour ConvPart ID: " . ($pc->Id_CP ?? 'N/A') . " Avenant ID: " . $pc->avenant_id);
+                }
+
+                return [
+                    // Use EXACT keys expected by the frontend form's mapping logic
+                    'Id_Partenaire' => $pc->Id_Partenaire,
+                    'Montant_Convenu' => $pc->Montant_Convenu,
+                    'is_signatory' => (bool) $pc->is_signatory, // Ensure boolean type
+                    'date_signature' => $pc->date_signature ? $pc->date_signature->format('Y-m-d') : null,
+                    'details_signature' => $pc->details_signature,
+                    'partenaire' => $partnerData, // Include the nested partner object
+                    // Include the ConvPart primary key if useful for the frontend
+                    'Id_CP' => $pc->Id_CP ?? null,
+                ];
+            })->values()->all();
+        }
+
+        Log::debug("Avenant données formatées AVANT réponse JSON:", $responseData);
+
+        // Return the manually formatted data structure, wrapped in an 'avenant' key
+        return response()->json(['avenant' => $responseData]);
+
+    } catch (\Exception $e) {
+        Log::error("Erreur de récupération de l'avenant ID {$id}:", [
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        return response()->json(['message' => 'Erreur serveur lors de la récupération de l\'avenant.'], 500);
+    }
+}
     /**
      * Update the specified resource in storage.
      * POST /api/avenants/{id} (with _method: 'PUT')
@@ -440,6 +474,11 @@ class AvenantController extends Controller
                 'montant_modifie' => ['nullable', 'numeric', 'min:0', Rule::requiredIf(fn () => $request->input('type_modification') === 'montant')],
                 'nouvelle_date_fin' => ['nullable', 'date_format:Y-m-d', Rule::requiredIf(fn () => $request->input('type_modification') === 'durée')],
                 'remarques' => 'nullable|string',
+                'annee_avenant' => 'required|integer|digits:4',
+            'session' => 'required|integer|between:1,12',
+            'numero_approbation' => 'required|string|max:100',
+            'statut' => 'required|string|max:50',
+            'date_visa' => ['nullable', 'date_format:Y-m-d', 'required_if:statut,visé'],
                 'id_fonctionnaire'=>'nullable|string', // MERGED: Ensure validation rule is present
                 'fichiers' => 'nullable|array', // New files optional
                 'fichiers.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,xls,xlsx|max:10240', // Validate IF provided
@@ -503,7 +542,13 @@ class AvenantController extends Controller
             }
             Log::info("Fichiers valides à supprimer identifiés: IDs " . implode(', ', $validFilesToDeleteIds));
         }
-
+         $sessionFormatted = str_pad($validatedData['session'], 2, '0', STR_PAD_LEFT);
+    $generatedCode = sprintf(
+        '%s/%s/%s',
+        $validatedData['numero_approbation'],
+        $sessionFormatted,
+        $validatedData['annee_avenant']
+         );
         DB::beginTransaction(); Log::info('Transaction DB démarrée (avenant update - direct public).');
         try {
             // Define target directory
@@ -551,6 +596,8 @@ class AvenantController extends Controller
             // 3. Update Avenant Basic Data
             // Use Arr::except on $validatedData which now includes id_fonctionnaire if provided
             $avenantUpdateData = Arr::except($validatedData, ['fichiers', 'fichiers_to_delete', 'avenant_partner_commitments']);
+            $avenantUpdateData['code'] = $generatedCode;
+
             Log::info('MAJ enregistrement Avenant data...', $avenantUpdateData); // Log the data being updated
             $avenant->update($avenantUpdateData);
             Log::info("Enregistrement Avenant MAJ: ID {$avenant->id}");
@@ -592,7 +639,7 @@ class AvenantController extends Controller
             // --- Return Success Response ---
             $avenant->refresh()->load(['convention', 'documents', 'partnerCommitments.partenaire']);
             // Manually construct URLs
-            $appBaseUrl = rtrim(config('app.url', 'http://localhost:8000'), '/');
+            $appBaseUrl = rtrim(config('app.url', 'http://localhost:8000:80'), '/');
             $responseData = $avenant->toArray();
             if (isset($responseData['documents'])) { foreach ($responseData['documents'] as &$doc) { $doc['fichier_url'] = $doc['file_path'] ? $appBaseUrl . '/' . ltrim($doc['file_path'], '/') : null; } unset($doc); }
              // Manually format partners

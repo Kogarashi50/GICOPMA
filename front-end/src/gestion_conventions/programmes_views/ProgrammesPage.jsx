@@ -28,16 +28,15 @@ const ProgrammesPage = () => {
         },
         {
             // Display related Chantier Description (using accessorFn)
-            id: 'Chantier_Description', // Unique ID for the column
-            header: 'Chantier Associé',
-            // Access nested data: programme.chantier.description
-            // Fallback to id_chantier (which is Code_Chantier) if relation not loaded
-            accessorFn: row => row.chantier?.Description || row.Id_Chantier || '-',
-            cell: info => <div className="text-truncate" style={{ minWidth:'350px',maxWidth: '500px', width:'450px' }} title={info.getValue()}>{info.getValue()}</div>,
-            meta: { enableGlobalFilter: true },
-            maxSize: 500,
-            size:450,
-            minSize:350,
+            id: 'Domaine_Description', // NEW unique ID
+    header: 'Axe stratégique Associé',
+    // Access nested data: programme.domaine.Description
+    accessorFn: row => row.domaine?.Description || '-', // NEW accessor
+    cell: info => <div className="text-truncate" style={{ minWidth:'350px',maxWidth: '500px', width:'450px' }} title={info.getValue()}>{info.getValue()}</div>,
+    meta: { enableGlobalFilter: true },
+    maxSize: 500,
+    size: 450,
+    minSize: 350,
             // Allow searching by Chantier description
         },
         {
@@ -51,8 +50,8 @@ const ProgrammesPage = () => {
     ], []);
 
     // --- DynamicTable Configuration ---
-    const defaultCols = useMemo(() => [ 'Code_Programme', 'Description', 'Chantier_Description', 'created_at', 'actions' ], []);
-    const searchExclusions = useMemo(() => [ 'Id', 'Id_Chantier', 'updated_at' ], []);
+    const defaultCols = useMemo(() => [ 'Code_Programme', 'Description', 'Domaine_Description', 'created_at', 'actions' ], []);
+    const searchExclusions = useMemo(() => [ 'Id', 'domaine_id', 'updated_at' ], []);
 
     return (
         <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>

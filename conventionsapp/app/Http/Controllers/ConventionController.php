@@ -134,7 +134,12 @@ class ConventionController extends Controller
         Log::debug('Données brutes:', $request->all());
         if ($request->hasFile('fichiers')) { Log::info(count($request->file('fichiers')) . ' fichier(s) reçu(s).'); }
         else { Log::info('Aucun fichier reçu (optionnel).'); }
-
+        if ($request->has('membres_comite_technique') && is_string($request->input('membres_comite_technique'))) {
+    $request->merge(['membres_comite_technique' => json_decode($request->input('membres_comite_technique'), true)]);
+}
+if ($request->has('membres_comite_pilotage') && is_string($request->input('membres_comite_pilotage'))) {
+    $request->merge(['membres_comite_pilotage' => json_decode($request->input('membres_comite_pilotage'), true)]);
+}
         $partnerCommitmentsInput = json_decode($request->input('partner_commitments', '[]'), true);
         if (json_last_error() !== JSON_ERROR_NONE) { Log::error('Échec décodage JSON engagements.', ['error' => json_last_error_msg()]); return response()->json(['message' => 'Format invalide pour les engagements partenaires.'], 400); }
         Log::debug('Engagements partenaires décodés:', $partnerCommitmentsInput);
@@ -142,31 +147,39 @@ class ConventionController extends Controller
         // --- Validation Adjusted Based on Frontend Requirements ---
         try {
             $validatedData = $request->validate([
-                'code' => 'required|integer|unique:convention,code', // Required (*)
+                'numero_approbation' => 'required|string|max:100',
+                'session' => 'required|integer|between:1,12',
                 'classification_prov' => 'nullable|string',          // Required (*)
                 'categorie' => 'nullable|string',                    // Required (*)
                 'intitule' => 'required|string',                     // Required (*)
                 'reference' => 'nullable|string',                    // Required (*)
                 'annee_convention' => 'required|integer|digits:4',   // Required (*)
-                'objet' => 'nullable|string',                        // Required (*)
+                'objet' => 'nullable|string',   
+                 'type' => ['required', Rule::in(['cadre', 'specifique'])],
                 'objectifs' => 'nullable|string',                    // Required (*)
                 'localisation' => 'nullable|string',                 // Required (*) (semicolon separated string)
                 'maitre_ouvrage' => 'nullable|string',               // Required (*)
                 'partenaire' => 'nullable|string',                   // Not Required (simple list)
                 'id_fonctionnaire' => 'nullable|string',             // Not Required
                 'cout_global' => 'nullable|numeric|min:0',           // Required (*)
-                'cout_cr' => 'nullable|numeric|min:0',               // Required (*)
-                'statut' => 'required|string',                       // Required (*)
-                'operationalisation' => 'nullable|string',           // Required (*)
-                'id_programme' => 'nullable|integer|exists:programme,Id', // Required (*)
+                'statut' => 'required|string', 
+                'date_visa' => 'nullable|date', // <-- ADD THIS LINE
+                'date_reception_vise' => ['nullable', 'date'],
+                'duree_convention' => 'nullable|integer|min:0',
+                'maitre_ouvrage_delegue' => 'nullable|string',
+                'operationalisation' => ['nullable', Rule::in(['Oui', 'Non'])],
+                'Id_Programme' => 'nullable|integer|exists:programme,Id', // Required (*)
                 'id_projet' => 'nullable|integer|exists:projet,ID_Projet', // *** CHANGED TO REQUIRED *** (*)
                 'groupe' => 'nullable|integer',                      // Required (*)
                 'rang' => 'nullable|string',                         // Not Required
                 'observations' => 'nullable|string|max:20000',       // Not Required
-
+                'membres_comite_technique' => 'nullable|array',
+                'membres_comite_technique.*' => 'string|max:255', // Validates each item in the array
+                'membres_comite_pilotage' => 'nullable|array',
+                'membres_comite_pilotage.*' => 'string|max:255',
                 'fichiers' => 'nullable|array',                      // Not Required
                 'fichiers.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,xls,xlsx|max:5120', // Max 5MB
-                'partner_commitments' => ['required', 'string'],     // Required on store (*) (JSON string)
+                'partner_commitments' => ['nullable', 'string'],     // Required on store (*) (JSON string)
             ],
             [ // French Messages (Keep existing, add if needed)
                 'required' => 'Le champ :attribute est obligatoire.',
@@ -183,12 +196,11 @@ class ConventionController extends Controller
                 'mimes'    => 'Type de fichier invalide (:values).',
                 'code.unique' => 'Ce code de convention existe déjà.',
                 'annee_convention.digits' => 'L\'année doit être AAAA.',
-                'id_programme.exists' => 'Le programme est invalide.',
+                'Id_Programme.exists' => 'Le programme est invalide.',
                 'id_projet.exists' => 'Le projet est invalide.', // Message exists, rule changed to required
                 'fichiers.*.file' => 'Chaque fichier doit être valide.',
                 'fichiers.*.mimes' => 'Type de fichier invalide. Acceptés: PDF, DOC, DOCX, JPG, PNG, XLS, XLSX.',
                 'fichiers.*.max' => 'Chaque fichier ne doit pas dépasser :max Ko (5Mo).',
-                'partner_commitments.required' => 'Les engagements partenaires sont requis.',
                 'observations.max' => 'Les observations ne doivent pas dépasser :max caractères.',
             ]);
             Log::info('Validation principale réussie (store).');
@@ -196,21 +208,43 @@ class ConventionController extends Controller
             Log::error('Échec validation principale (store):', ['errors' => $e->errors()]);
             return response()->json(['message' => 'Données invalides.', 'errors' => $e->errors()], 422);
         }
+               $sessionValue = $validatedData['session'] ?? 'NS';
+    $sessionFormatted = is_numeric($sessionValue) ? str_pad($sessionValue, 2, '0', STR_PAD_LEFT) : 'NS';
+
+    $validatedData['code'] = sprintf(
+        '%s/%s/%s',
+        $validatedData['numero_approbation'] ?? 'NA',
+        $sessionFormatted,
+        $validatedData['annee_convention']
+    );
 
         // --- Partner Commitment Detail Validation ---
         if (!is_array($partnerCommitmentsInput)) { return response()->json(['message' => 'Format invalide pour les engagements (doit être une liste).'], 422); }
-        if (empty($partnerCommitmentsInput)) { return response()->json(['message' => 'Au moins un engagement partenaire est requis.'], 422); } // Matches 'required' rule above
 
         Log::info('Validation détaillée engagements partenaires...');
-        foreach ($partnerCommitmentsInput as $index => $commitment) {
-            if (!is_array($commitment) || !isset($commitment['Id_Partenaire'], $commitment['Montant_Convenu'], $commitment['is_signatory'])) { return response()->json(['message' => "Données manquantes pour l'engagement #" . ($index + 1) . "."], 422); }
-            $commitmentValidator = Validator::make($commitment, [
-                'Id_Partenaire' => 'required|integer|exists:partenaire,Id',
-                'Montant_Convenu' => 'required|numeric|min:0', // Required based on frontend check logic
-                'is_signatory' => 'required|boolean',
-                'date_signature' => [ Rule::requiredIf(fn() => ($commitment['is_signatory'] ?? false)), 'nullable', 'date_format:Y-m-d' ], // Required if signatory
-                'details_signature' => ['nullable', 'string', 'max:1000'],
-            ], [ /* Messages... */ ]);
+foreach ($partnerCommitmentsInput as $index => $commitment) {
+    // We only check for the fields that are ALWAYS required.
+    // The detailed check for Montant vs. Autre is handled by the Validator below.
+    if (!is_array($commitment) || !isset($commitment['Id_Partenaire'], $commitment['is_signatory'])) {
+         return response()->json(['message' => "Données de base manquantes pour l'engagement #" . ($index + 1) . "."], 422);
+    }
+           $commitmentValidator = Validator::make($commitment, [
+        'Id_Partenaire' => 'required|integer|exists:partenaire,Id',
+        
+        // If Montant is provided, it must be numeric. It's only required if autre_engagement is missing.
+        'Montant_Convenu' => 'required_if:autre_engagement,null|nullable|numeric|min:0',
+
+    // This says: Autre Engagement is required IF Montant_Convenu is NULL or empty. It must also be a string.
+    'autre_engagement' => 'required_if:Montant_Convenu,null|nullable|string|max:5000',
+
+        'is_signatory' => 'required|boolean',
+        'date_signature' => ['required_if:is_signatory,true', 'nullable', 'date_format:Y-m-d'],
+        'details_signature' => ['nullable', 'string', 'max:1000'],
+    ], [
+        // Add custom messages for the new rules
+        'Montant_Convenu.required_without' => 'Un montant ou une description de l\'engagement est requis.',
+        'autre_engagement.required_without' => 'Une description ou un montant de l\'engagement est requis.',
+    ]);
             if ($commitmentValidator->fails()) { return response()->json(['message' => "Erreur validation engagement #" . ($index + 1) . ".", 'errors' => $commitmentValidator->errors()], 422); }
         }
         Log::info('Validation détaillée engagements partenaires terminée.');
@@ -227,6 +261,7 @@ class ConventionController extends Controller
 
             // --- Create Convention ---
             $conventionDataForCreate = Arr::except($validatedData, ['fichiers', 'partner_commitments']);
+            
             // Ensure foreign keys are passed correctly (already handled by validation mapping)
             Log::info('Création enregistrement Convention...', $conventionDataForCreate);
             $convention = Convention::create($conventionDataForCreate);
@@ -255,13 +290,15 @@ class ConventionController extends Controller
             Log::info('Création enregistrements ConvPart...');
             if (!empty($partnerCommitmentsInput)) {
                 foreach ($partnerCommitmentsInput as $commitment) {
-                    if (!isset($commitment['Id_Partenaire'], $commitment['Montant_Convenu'], $commitment['is_signatory'])) continue;
                     ConvPart::create([
-                        'Id_Convention' => $convention->id, 'Id_Partenaire' => $commitment['Id_Partenaire'],
-                        'Montant_Convenu' => $commitment['Montant_Convenu'], 'is_signatory' => $commitment['is_signatory'],
-                        'date_signature' => ($commitment['is_signatory'] && !empty($commitment['date_signature'])) ? $commitment['date_signature'] : null,
-                        'details_signature' => ($commitment['is_signatory'] && !empty($commitment['details_signature'])) ? $commitment['details_signature'] : null,
-                    ]);
+            'Id_Convention' => $convention->id,
+            'Id_Partenaire' => $commitment['Id_Partenaire'],
+            'Montant_Convenu' => $commitment['Montant_Convenu'],
+            'autre_engagement' => $commitment['autre_engagement'] ?? null,
+            'is_signatory' => $commitment['is_signatory'],
+            'date_signature' => ($commitment['is_signatory'] && !empty($commitment['date_signature'])) ? $commitment['date_signature'] : null,
+            'details_signature' => ($commitment['is_signatory'] && !empty($commitment['details_signature'])) ? $commitment['details_signature'] : null,
+        ]);
                 }
                 Log::info(count($partnerCommitmentsInput) . " enregistrement(s) ConvPart créé(s).");
             } // Empty case already handled by validation
@@ -276,6 +313,7 @@ class ConventionController extends Controller
             $responseData = $convention->toArray();
             $responseData['documents'] = $convention->documents->map(function ($doc) use ($appBaseUrl) { $d = $doc->toArray(); $d['url'] = $doc->file_path ? "{$appBaseUrl}/" . ltrim($doc->file_path, '/') : null; return $d; })->all();
             $responseData['partner_commitments'] = $convention->convParts->map(function (ConvPart $cp) { $sDate = optional($cp->date_signature)->format('Y-m-d'); $p = $cp->partenaire; $l = optional($p)->Description_Arr ?: (optional($p)->Description ?: "ID:{$cp->Id_Partenaire}"); if (optional($p)->Code) { $l = "{$p->Code} - {$l}"; } return ['Id_Partenaire' => $cp->Id_Partenaire, 'label' => $l, 'Montant_Convenu' => $cp->Montant_Convenu, 'is_signatory' => (bool)$cp->is_signatory, 'date_signature' => $sDate, 'details_signature' => $cp->details_signature]; })->values()->all();
+            Log::info('loubna - Convention Stored', $responseData);
             return response()->json([ "success" => "Convention ajoutée!", "message" => "Convention ajoutée!", "convention" => $responseData ], 201);
 
         // --- Catch Blocks ---
@@ -302,11 +340,16 @@ class ConventionController extends Controller
         try {
             $convention->load([
                 'documents', 'programme', 'projet', 'avenants',
-                'convParts' => function ($query) {
-                    // Keep the select for now, it SHOULD be efficient and correct
-                    $query->with('partenaire:Id,Description,Description_Arr,Code')
-                          ->withSum('versements as Montant_Verse', 'montant_verse');
-                }
+               'convParts' => function ($query) {
+    // We add `autre_engagement` to the select list
+    $query->with('partenaire:Id,Description,Description_Arr,Code')
+          ->select([
+              'Id_CP', 'Id_Convention', 'Id_Partenaire', 'Montant_Convenu', 
+              'autre_engagement', // <-- ADD THIS
+              'is_signatory', 'date_signature', 'details_signature'
+          ])
+          ->withSum('versements as Montant_Verse', 'montant_verse');
+}
             ]);
 
             // --- Debugging point 1: Directly check the loaded Eloquent relationship ---
@@ -382,6 +425,8 @@ class ConventionController extends Controller
                         'Id_Partenaire'   => $c['Id_Partenaire'] ?? null,
                         'label'           => $partnerLabel, // Use the calculated label
                         'Montant_Convenu' => $c['Montant_Convenu'] ?? null,
+                        'autre_engagement' => $c['autre_engagement'] ?? null,
+
                         'Montant_Verse'   => $c['Montant_Verse'] ?? '0.00',
                         'is_signatory'    => (bool)($c['is_signatory'] ?? false),
                         'date_signature'  => $c['date_signature'] ?? null,
@@ -428,34 +473,48 @@ class ConventionController extends Controller
         // --- Decode Inputs ---
         $partnerCommitmentsInput = json_decode($request->input('partner_commitments', '[]'), true);
         if (json_last_error() !== JSON_ERROR_NONE) { Log::error('Échec décodage JSON engagements (update).'); return response()->json(['message' => 'Format JSON engagements invalide.'], 400); }
-
+if ($request->has('membres_comite_technique') && is_string($request->input('membres_comite_technique'))) {
+    $request->merge(['membres_comite_technique' => json_decode($request->input('membres_comite_technique'), true)]);
+}
+if ($request->has('membres_comite_pilotage') && is_string($request->input('membres_comite_pilotage'))) {
+    $request->merge(['membres_comite_pilotage' => json_decode($request->input('membres_comite_pilotage'), true)]);
+}
         $documentIdsToDeleteInput = json_decode($request->input('deleted_document_ids', '[]'), true);
         if (json_last_error() !== JSON_ERROR_NONE || !is_array($documentIdsToDeleteInput)) { Log::error('Échec décodage JSON IDs suppression (update).'); return response()->json(['message' => 'Format JSON IDs suppression invalide.'], 400); }
 
         // --- Validation Rules Adjusted ---
         $validationRules = [
-            'code' => ['required','integer', Rule::unique('convention', 'code')->ignore($convention->id)], // Required (*)
+
+            'numero_approbation' => 'required|string|max:100',
+            'session' => 'required|integer|between:1,12',
             'classification_prov' => 'nullable|string',          // Required (*)
             'categorie' => 'nullable|string',                    // Required (*)
             'intitule' => 'required|string',                     // Required (*)
             'reference' => 'nullable|string',                    // Required (*)
             'annee_convention' => 'required|integer|digits:4',   // Required (*)
-            'objet' => 'nullable|string',                        // Required (*)
+            'objet' => 'nullable|string',
+            'type' => ['required', Rule::in(['cadre', 'specifique'])],
             'objectifs' => 'nullable|string',                    // Required (*)
             'localisation' => 'nullable|string',                 // Required (*)
             'maitre_ouvrage' => 'nullable|string',               // Required (*)
             'partenaire' => 'nullable|string',                   // Not Required (simple list)
             'id_fonctionnaire' => 'nullable|string',             // Not Required
             'cout_global' => 'nullable|numeric|min:0',           // Required (*)
-            'cout_cr' => 'nullable|numeric|min:0',               // Required (*)
-            'statut' => 'required|string',                       // Required (*)
-            'operationalisation' => 'nullable|string',           // Required (*)
-            'id_programme' => 'nullable|integer|exists:programme,Id', // Required (*)
+            'statut' => 'required|string',      
+            'date_visa' => 'nullable|date', 
+             'operationalisation' => ['nullable', Rule::in(['Oui', 'Non'])],
+            'Id_Programme' => 'nullable|integer|exists:programme,Id', // Required (*)
             'id_projet' => 'nullable|integer|exists:projet,ID_Projet', // *** CHANGED TO REQUIRED *** (*)
             'groupe' => 'nullable|integer',                      // Required (*)
             'rang' => 'nullable|string',                         // Not Required
             'observations' => 'nullable|string|max:20000',       // Not Required
-
+            'date_reception_vise' => ['nullable', 'date'],
+            'duree_convention' => 'nullable|integer|min:0',
+            'maitre_ouvrage_delegue' => 'nullable|string',
+            'membres_comite_technique' => 'nullable|array',
+            'membres_comite_technique.*' => 'string|max:255', // Validates each item in the array
+            'membres_comite_pilotage' => 'nullable|array',
+            'membres_comite_pilotage.*' => 'string|max:255',
             'fichiers' => 'nullable|array',                      // Not Required
             'fichiers.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,xls,xlsx|max:5120',
             'partner_commitments' => ['nullable', 'string'],     // *** CHANGED TO NULLABLE *** (JSON string)
@@ -469,6 +528,17 @@ class ConventionController extends Controller
         $validator = Validator::make($request->all(), $validationRules, $validationMessages);
         if ($validator->fails()) { Log::error('Échec validation principale (Convention update):', ['errors' => $validator->errors()]); return response()->json(['message' => 'Données invalides.', 'errors' => $validator->errors()], 422); }
         $validatedData = $validator->validated();
+
+    
+      $sessionValue = $validatedData['session'] ?? 'NS';
+        $sessionFormatted = is_numeric($sessionValue) ? str_pad($sessionValue, 2, '0', STR_PAD_LEFT) : 'NS';
+
+        $validatedData['code'] = sprintf(
+            '%s/%s/%s',
+            $validatedData['numero_approbation'] ?? 'NA',
+            $sessionFormatted,
+            $validatedData['annee_convention']
+        );
         $confirmDeleteCommitments = $validatedData['confirm_delete_commitments'] ?? false;
 
         // --- Detailed Partner Commitment Validation ---
@@ -476,17 +546,29 @@ class ConventionController extends Controller
         // Allow empty array for update (to remove all partners)
 
         Log::info('Validation détaillée engagements partenaires (update)...');
-        foreach ($partnerCommitmentsInput as $index => $commitment) {
-            if (!is_array($commitment)) { return response()->json(['message' => "Format invalide pour l'engagement #".($index+1)."."], 422); }
+foreach ($partnerCommitmentsInput as $index => $commitment) {
+    // We only check for the fields that are ALWAYS required.
+    // The detailed check for Montant vs. Autre is handled by the Validator below.
+    if (!is_array($commitment) || !isset($commitment['Id_Partenaire'], $commitment['is_signatory'])) {
+         return response()->json(['message' => "Données de base manquantes pour l'engagement #" . ($index + 1) . "."], 422);
+    }
             $commitmentValidator = Validator::make($commitment, [
-                // Validate id_cp ONLY if present (backend uses this key)
-                'id_cp' => ['sometimes', 'required', 'integer', Rule::exists('convention_partenaire', 'Id_CP')->where('Id_Convention', $id)],
-                'Id_Partenaire' => 'required|integer|exists:partenaire,Id',
-                'Montant_Convenu' => 'required|numeric|min:0',
-                'is_signatory' => 'required|boolean',
-                'date_signature' => [ Rule::requiredIf(fn() => ($commitment['is_signatory'] ?? false)), 'nullable', 'date_format:Y-m-d' ],
-                'details_signature' => ['nullable', 'string', 'max:1000'],
-            ], [ /* ... Add specific messages ... */ ]);
+        'Id_Partenaire' => 'required|integer|exists:partenaire,Id',
+        
+        // If Montant is provided, it must be numeric. It's only required if autre_engagement is missing.
+        'Montant_Convenu' => 'required_if:autre_engagement,null|nullable|numeric|min:0',
+
+    // This says: Autre Engagement is required IF Montant_Convenu is NULL or empty. It must also be a string.
+    'autre_engagement' => 'required_if:Montant_Convenu,null|nullable|string|max:5000',
+
+        'is_signatory' => 'required|boolean',
+        'date_signature' => ['required_if:is_signatory,true', 'nullable', 'date_format:Y-m-d'],
+        'details_signature' => ['nullable', 'string', 'max:1000'],
+    ], [
+        // Add custom messages for the new rules
+        'Montant_Convenu.required_without' => 'Un montant ou une description de l\'engagement est requis.',
+        'autre_engagement.required_without' => 'Une description ou un montant de l\'engagement est requis.',
+    ]);
             if ($commitmentValidator->fails()) { Log::error("Update: Échec validation engagement #".($index + 1).".", ['errors' => $commitmentValidator->errors()]); return response()->json(['message' => "Erreur validation engagement #" . ($index + 1) . ".", 'errors' => $commitmentValidator->errors()], 422); }
         }
         Log::info('Validation détaillée engagements partenaires (update) OK.');
@@ -506,7 +588,7 @@ class ConventionController extends Controller
         // --- Start DB Transaction ---
         DB::beginTransaction();
         Log::info("Transaction DB démarrée (Convention update ID: {$id}). Confirmation: " . ($confirmDeleteCommitments ? 'Oui' : 'Non'));
-
+        
         try {
             // --- File/Directory Checks ---
             if (!File::isDirectory($targetDirAbsolute)) { if (!File::makeDirectory($targetDirAbsolute, 0775, true, true)) { throw new \Exception("Impossible créer dossier: {$targetDirAbsolute}"); } }
@@ -579,6 +661,7 @@ class ConventionController extends Controller
                 $dataToSync = [
                     'Montant_Convenu'   => $commitmentData['Montant_Convenu'], 'is_signatory' => $commitmentData['is_signatory'],
                     'date_signature'    => ($commitmentData['is_signatory'] && !empty($commitmentData['date_signature'])) ? $commitmentData['date_signature'] : null,
+                    'autre_engagement' => $commitmentData['autre_engagement'] ?? null,
                     'details_signature' => ($commitmentData['is_signatory'] && !empty($commitmentData['details_signature'])) ? $commitmentData['details_signature'] : null,
                 ];
                 $convPart = ConvPart::updateOrCreate(
@@ -611,6 +694,7 @@ class ConventionController extends Controller
                 $updatedConventionData['partner_commitments'] = array_map(function ($c) { $p=$c['partenaire']??null; $l=$p['Description_Arr']??($p['Description']?? "ID:{$c['Id_Partenaire']}"); if($p&&$p['Code']){$l="{$p['Code']} - {$l}";} return ['Id_CP'=>$c['Id_CP']??null, 'Id_Partenaire'=>$c['Id_Partenaire']??null, 'label'=>$l, 'Montant_Convenu'=>$c['Montant_Convenu']??null, 'Montant_Verse'=>$c['Montant_Verse']??'0.00', 'is_signatory'=>(bool)($c['is_signatory']??false), 'date_signature'=>$c['date_signature']??null, 'details_signature'=>$c['details_signature']??null]; }, $updatedConventionData['conv_parts']);
                  unset($updatedConventionData['conv_parts']);
              } else { $updatedConventionData['partner_commitments'] = []; }
+            Log::info('loubna - Convention Updated', $updatedConventionData);
             return response()->json(['success' => 'Convention Modifiée!', 'message' => 'Convention Modifiée!', 'convention' => $updatedConventionData], 200);
 
         // --- Catch Blocks ---
@@ -638,10 +722,7 @@ class ConventionController extends Controller
     }
 
 
-    /**
-     * Remove the specified convention.
-     * DELETE /api/conventions/{id}
-     */
+ 
      public function destroy(string $id): JsonResponse
     {
         Log::info("Tentative suppression Convention ID: {$id}...");
@@ -678,5 +759,7 @@ class ConventionController extends Controller
             return response()->json(['message' => 'Erreur serveur lors de la tentative de suppression.', 'error_details' => config('app.debug') ? $e->getMessage() : null], 500);
         }
     }
+
+    
 
 } // End of Controller Class

@@ -18,8 +18,10 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException; // For specific exception handling
+use Illuminate\Database\QueryException; 
 use Exception; // General Exception
 use Throwable; // Catch broader errors
+use Illuminate\Http\JsonResponse;
 
 class MarchePublicController extends Controller
 {
@@ -125,7 +127,7 @@ class MarchePublicController extends Controller
             'date_debut_execution' => 'nullable|date_format:Y-m-d|after_or_equal:date_notification',
             'duree_marche' => 'nullable|integer|min:0',
             'statut' => ['nullable', Rule::in(['En préparation', 'En cours', 'Terminé', 'Résilié'])],
-            'id_convention' => ['nullable', 'integer', Rule::exists('convention', 'id')],
+            'id_convention' => ['nullable', 'integer'],
             'ref_appelOffre' => ['nullable', 'integer', Rule::exists('appel_offre', 'id')],
             'date_ouverture_plis' => 'nullable|date_format:Y-m-d',
             'date_fin_ouverture' => 'nullable|date_format:Y-m-d',
@@ -289,51 +291,282 @@ class MarchePublicController extends Controller
      */
     public function update(Request $request, MarchePublic $marches_public)
     {
-        Log::info("--- MarchePublic Update Request Received for ID: {$marches_public->id} (Direct Public Storage - Manual URL) ---");
-        // Validation remains the same...
-        $validator = Validator::make($request->all(), [ /* ... rules ... */ ]);
-        if ($validator->fails()) { /* ... handle validation error ... */ return response()->json(['message' => 'Erreurs de validation.', 'errors' => $validator->errors()], 422); }
+        Log::info("--- MarchePublic Update Request Received for ID: {$marches_public->id} (Direct Public Storage - Manual URL - FIXED) ---");
+        Log::debug('Update Request - Raw Data:', $request->all()); // Log raw data first
 
-        // Prepare Data & Decode JSON (remains the same)
-        $marcheData = $request->except(['lots_data', 'lot_files', 'general_files', '_method', 'general_fichiers_to_delete_ids']);
-        $lotsInputData = []; /* Decode lots_data */
-        $generalFilesToDeleteIds = []; /* Decode general_fichiers_to_delete_ids */
-        // ... (decoding logic remains the same) ...
+        // --- Validation Rules ---
+        $validationRules = [
+            'numero_marche' => ['required','string','max:50', Rule::unique('marche_public','numero_marche')->ignore($marches_public->id)],
+            'intitule' => 'required|string',
+            'type_marche' => ['required', Rule::in(['Travaux', 'Fournitures', 'Services','Etudes'])],
+            'procedure_passation' => 'nullable|string|max:100', // Make required if needed
+            'mode_passation' => 'nullable|string|max:100', // Make required if needed
+            'budget_previsionnel' => 'nullable|numeric|min:0',
+            'montant_attribue' => 'nullable|numeric|min:0',
+            'source_financement' => 'nullable|string|max:255',
+            'attributaire' => 'nullable|string',
+            'date_publication' => 'nullable|date_format:Y-m-d',
+            'date_limite_offres' => 'nullable|date_format:Y-m-d|after_or_equal:date_publication',
+            'date_notification' => 'nullable|date_format:Y-m-d|after_or_equal:date_limite_offres',
+            'date_debut_execution' => 'nullable|date_format:Y-m-d|after_or_equal:date_notification',
+            'duree_marche' => 'nullable|integer|min:0',
+            'statut' => ['nullable', Rule::in(['En préparation', 'En cours', 'Terminé', 'Résilié'])],
+            'id_convention' => ['nullable', 'integer'],
+            'ref_appelOffre' => ['nullable', 'integer', Rule::exists('appel_offre', 'id')],
+            'date_ouverture_plis' => 'nullable|date_format:Y-m-d',
+            'date_fin_ouverture' => 'nullable|date_format:Y-m-d',
+            'avancement_physique' => 'nullable|numeric|min:0|max:100',
+            'avancement_financier' => 'nullable|numeric|min:0|max:100',
+            'date_engagement_tresorerie' => 'nullable|date_format:Y-m-d',
+            'lots_data' => 'nullable|string',
+            'lot_files' => 'nullable|array',
+            'lot_files.*' => 'nullable|array', // Array for each lot index
+            'lot_files.*.*' => ['nullable','file','mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,dwg,zip,rar','max:20480'], // Files within each lot index
+            'general_files' => 'nullable|array',
+            'general_files.*' => ['nullable','file','mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,dwg,zip,rar','max:20480'],
+            'general_fichiers_to_delete_ids' => 'nullable|string',
+            'id_fonctionnaire' => 'nullable|string',
+        ];
+        $validator = Validator::make($request->all(), $validationRules);
+        if ($validator->fails()) {
+             Log::error("Update validation failed (Laravel) for ID {$marches_public->id}:", $validator->errors()->toArray());
+             return response()->json(['message' => 'Erreurs de validation.', 'errors' => $validator->errors()], 422);
+        }
+        Log::info("Update validation passed (Laravel) for ID: {$marches_public->id}");
+        $validatedData = $validator->validated(); // Use validated data
 
-        $newlyCreatedFilePathsRelative = [];
-        $pathsToDeletePhysicallyRelative = [];
+        // --- Prepare Data & Decode JSON ---
+        $marcheUpdateData = Arr::except($validatedData, [
+            'lots_data', 'lot_files', 'general_files',
+            'general_fichiers_to_delete_ids', '_method' // _method is handled by Laravel routing
+        ]);
+        Log::debug('Update Request - Marche Data Prepared:', $marcheUpdateData);
 
-        // Collect Files to Delete (remains the same)
-        // ... (logic to populate $pathsToDeletePhysicallyRelative is identical) ...
+        // Decode lots_data
+        $lotsInputData = [];
+        $lotsString = $validatedData['lots_data'] ?? null; // Use validated data
+        if ($lotsString) {
+            $decodedLots = json_decode($lotsString, true);
+            if (json_last_error() !== JSON_ERROR_NONE) { Log::error('Update Request - Invalid JSON for lots_data.'); return response()->json(['message'=>'Erreurs de validation.', 'errors'=>['lots_data'=>['Format JSON invalide.']]], 422); }
+            if (!is_array($decodedLots)) { Log::error('Update Request - Decoded lots_data is not an array.'); return response()->json(['message'=>'Erreurs de validation.', 'errors'=>['lots_data'=>['Doit être une liste.']]], 422); }
+            $lotsInputData = $decodedLots;
+            Log::debug('Update Request - Decoded lots_data:', ['count' => count($lotsInputData)]);
+        }
+
+        // Decode general_fichiers_to_delete_ids
+        $generalFilesToDeleteIds = [];
+        $generalFilesToDeleteIdsJson = $validatedData['general_fichiers_to_delete_ids'] ?? null; // Use validated data
+        if ($generalFilesToDeleteIdsJson) {
+            $decodedIds = json_decode($generalFilesToDeleteIdsJson, true);
+            if (json_last_error() !== JSON_ERROR_NONE) { Log::error('Update Request - Invalid JSON for general_fichiers_to_delete_ids.'); return response()->json(['message'=>'Erreurs de validation.', 'errors'=>['general_fichiers_to_delete_ids'=>['Format JSON invalide.']]], 422); }
+            if (!is_array($decodedIds)) { Log::error('Update Request - Decoded general_fichiers_to_delete_ids is not an array.'); return response()->json(['message'=>'Erreurs de validation.', 'errors'=>['general_fichiers_to_delete_ids'=>['Doit être une liste d\'IDs.']]], 422); }
+            $generalFilesToDeleteIds = $decodedIds;
+            Log::debug('Update Request - Decoded general_fichiers_to_delete_ids:', $generalFilesToDeleteIds);
+        }
+
+        // --- Tracking Arrays ---
+        $newlyCreatedFilePathsRelative = []; // Track NEW relative paths for rollback
+        $pathsToDeletePhysicallyRelative = []; // Track OLD relative paths for deletion on commit
+
+        // --- Collect Paths of Files Marked for Deletion (BEFORE Transaction) ---
+         Log::debug('Update Request - Collecting file paths marked for deletion...');
+         $fichierJointIdsToDelete = []; // Collect DB IDs too
+
+         // General Files marked by ID
+         if (!empty($generalFilesToDeleteIds)) {
+             $generalFilesToDelete = FichierJoint::where('marche_id', $marches_public->id) ->whereNull('lot_id') ->whereIn('id', $generalFilesToDeleteIds)->get(['id', 'chemin_fichier']);
+             $pathsToDeletePhysicallyRelative = array_merge($pathsToDeletePhysicallyRelative, $generalFilesToDelete->pluck('chemin_fichier')->filter()->all());
+             $fichierJointIdsToDelete = array_merge($fichierJointIdsToDelete, $generalFilesToDelete->pluck('id')->all());
+         }
+
+         // Lot Files marked by ID within lots_data
+         $lotFileDeleteClauses = [];
+         foreach ($lotsInputData as $lotData) {
+             if (is_array($lotData) && !empty($lotData['id']) && !empty($lotData['fichiers_to_delete']) && is_array($lotData['fichiers_to_delete'])) {
+                 $lotId = $lotData['id'];
+                 $lotFilesToDeleteIds = $lotData['fichiers_to_delete'];
+                 if (!empty($lotFilesToDeleteIds)) {
+                     $lotFilesToDelete = FichierJoint::where('lot_id', $lotId)->whereIn('id', $lotFilesToDeleteIds)->get(['id', 'chemin_fichier']);
+                     $pathsToDeletePhysicallyRelative = array_merge($pathsToDeletePhysicallyRelative, $lotFilesToDelete->pluck('chemin_fichier')->filter()->all());
+                     $fichierJointIdsToDelete = array_merge($fichierJointIdsToDelete, $lotFilesToDelete->pluck('id')->all());
+                 }
+             }
+         }
+         // --- End Collect Marked Files ---
+
 
         DB::beginTransaction();
+        Log::info("Update transaction started for ID: {$marches_public->id}");
         try {
-            // Update Marche Public Data (remains the same)
-            $marches_public->update($marcheData);
+            // --- Update Marche Public Data ---
+            Log::debug('Update Request - Updating MarchePublic model...');
+            $marches_public->update($marcheUpdateData); // Use filtered data
+            Log::info("MarchePublic record updated.");
 
-            // Handle Deletion of FichierJoint DB Records (remains the same)
-            // ... (logic to delete based on $generalFilesToDeleteIds and lots_data['fichiers_to_delete'] is identical) ...
+            // --- Handle Deletion of FichierJoint DB Records ---
+            if (!empty($fichierJointIdsToDelete)) {
+                 $uniqueIdsToDelete = array_unique($fichierJointIdsToDelete);
+                 Log::debug('Update Request - Deleting FichierJoint DB records by ID:', $uniqueIdsToDelete);
+                 $deletedDbCount = FichierJoint::whereIn('id', $uniqueIdsToDelete)->delete();
+                 Log::info("Deleted {$deletedDbCount} FichierJoint DB records based on request IDs.");
+            }
 
-            // Sync Lots (Update/Create/Delete) (remains the same)
-            // ... (logic to delete old lots, update existing, create new is identical) ...
+            // --- Sync Lots (Update/Create/Delete) ---
+            Log::debug('Update Request - Syncing Lots...');
+            $existingLotIds = $marches_public->lots()->pluck('id')->toArray();
+            $inputLotDataById = collect($lotsInputData)->keyBy('id'); // Key by existing ID for easier lookup
+            $inputLotIds = $inputLotDataById->keys()->filter()->toArray(); // Get IDs provided in input
 
-            // Process NEW Lot File Uploads (remains the same)
-            // ... (logic to move new lot files is identical) ...
+            // 1. Lots to Delete
+            $lotsToDeleteIds = array_diff($existingLotIds, $inputLotIds);
+            if (!empty($lotsToDeleteIds)) {
+                Log::info("Lots to delete (not in input):", $lotsToDeleteIds);
+                // *** IMPORTANT: Collect paths of files associated with these DELETED lots ***
+                $filesFromDeletedLots = FichierJoint::whereIn('lot_id', $lotsToDeleteIds)->pluck('chemin_fichier')->filter()->toArray();
+                $pathsToDeletePhysicallyRelative = array_merge($pathsToDeletePhysicallyRelative, $filesFromDeletedLots);
+                Log::debug("Added paths from deleted lots for physical deletion:", $filesFromDeletedLots);
 
-            // Handle NEW General File Uploads (remains the same)
-            // ... (logic to move new general files is identical) ...
+                // Now delete the Lot records (assuming FichierJoint cascade delete is set up, otherwise delete FichierJoints first)
+                // If no cascade: FichierJoint::whereIn('lot_id', $lotsToDeleteIds)->delete();
+                $deletedLotCount = Lot::whereIn('id', $lotsToDeleteIds)->delete();
+                Log::info("Deleted {$deletedLotCount} Lot records no longer present in input.");
+            }
+
+            // 2. Update Existing / Create New Lots
+            $uploadedLotFiles = $request->file('lot_files', []); // Get uploaded files keyed by index
+            Log::debug('Update Request - Uploaded Lot Files structure:', array_keys($uploadedLotFiles)); // See keys
+
+            foreach ($lotsInputData as $index => $lotData) { // Iterate using original index
+                if (!is_array($lotData)) { Log::warning("Skipping invalid lot data at index {$index}."); continue; }
+
+                $lotDataFiltered = Arr::only($lotData, ['numero_lot', 'objet', 'montant_attribue', 'attributaire']);
+                $lotId = $lotData['id'] ?? null;
+                $currentLot = null;
+
+                if ($lotId && in_array($lotId, $existingLotIds)) {
+                    // Update Existing Lot
+                    Log::debug("Updating existing Lot ID {$lotId} at index {$index}...");
+                    $currentLot = Lot::find($lotId); // Assumes lot exists because we checked existingLotIds
+                    if ($currentLot) {
+                        $currentLot->update($lotDataFiltered);
+                        Log::info("Updated Lot ID: {$currentLot->id}");
+                    } else { Log::error("Consistency error: Lot ID {$lotId} not found despite being in existingLotIds."); continue; }
+                } else {
+                    // Create New Lot (only if it has data OR new files for its index)
+                    if (Arr::first($lotDataFiltered, fn($v) => $v !== null && $v !== '') !== null || isset($uploadedLotFiles[$index])) {
+                        Log::debug("Creating new Lot from data at index {$index}...");
+                        $currentLot = $marches_public->lots()->create($lotDataFiltered);
+                        Log::info("Created new Lot ID: {$currentLot->id}");
+                    } else {
+                        Log::debug("Skipping creation of empty new Lot at index {$index}.");
+                        continue; // Skip to next lot in input
+                    }
+                }
+
+                // --- Process NEW Lot File Uploads for this specific lot (using original index) ---
+                if ($currentLot && isset($uploadedLotFiles[$index]) && is_array($uploadedLotFiles[$index])) {
+                     Log::info("Processing NEW files for Lot ID {$currentLot->id} from input index {$index}");
+                     $targetDirRelative = 'uploads/lots/' . $currentLot->id;
+                     $targetDirAbsolute = public_path($targetDirRelative);
+                     // Ensure directory exists
+                     if (!File::isDirectory($targetDirAbsolute)) { if (!File::makeDirectory($targetDirAbsolute, 0775, true, true)) throw new Exception("Cannot create lot directory update: {$targetDirAbsolute}"); }
+                     if (!File::isWritable($targetDirAbsolute)) throw new Exception("Lot directory update not writable: {$targetDirAbsolute}");
+
+                     foreach ($uploadedLotFiles[$index] as $fileKey => $file) {
+                         if ($file instanceof \Illuminate\Http\UploadedFile && $file->isValid()) {
+                             $originalName = $file->getClientOriginalName(); $mimeType = $file->getClientMimeType() ?: 'application/octet-stream';
+                             $safeOriginalName = preg_replace('/[^A-Za-z0-9\._-]/', '_', $originalName); $generatedFilename = date('Ymd-His') . '_' . Str::random(5) . '_' . $safeOriginalName;
+                             Log::debug("Moving NEW lot file '{$originalName}' to '{$targetDirAbsolute}/{$generatedFilename}'");
+                             try {
+                                 $file->move($targetDirAbsolute, $generatedFilename); // MOVE to public path
+                                 $storedRelativePublicPath = $targetDirRelative . '/' . $generatedFilename;
+                                 $newlyCreatedFilePathsRelative[] = $storedRelativePublicPath; // Track for rollback
+                                 Log::info("New lot file moved to public: {$storedRelativePublicPath}");
+                                 // Create DB record for the new file
+                                 FichierJoint::create([
+                                     'marche_id' => $marches_public->id, 'lot_id' => $currentLot->id,
+                                     'nom_fichier' => $originalName, 'chemin_fichier' => $storedRelativePublicPath,
+                                     'type_fichier' => $mimeType,
+                                 ]);
+                                  Log::info("Created FichierJoint DB record for new lot file.");
+                             } catch (\Symfony\Component\HttpFoundation\File\Exception\FileException $e) {
+                                  Log::error("Failed move() for new lot file '{$originalName}' (update): " . $e->getMessage());
+                                  throw new Exception("Failed move new lot file '{$originalName}'. Check permissions.");
+                              }
+                         } else { Log::warning("Invalid NEW lot file received for update at index {$index}, key {$fileKey}."); }
+                     }
+                } else {
+                     Log::debug("No NEW files found for Lot ID {$currentLot->id} at input index {$index}.");
+                }
+                // --- End Process NEW Lot Files ---
+
+            } // End foreach lotsInputData
+            Log::debug('Update Request - Finished Lot Sync.');
+
+            // --- Handle NEW General File Uploads ---
+            Log::debug('Update Request - Processing NEW General Files...');
+            $uploadedGeneralFiles = $request->file('general_files', []); // Get general files
+            Log::debug('Update Request - $uploadedGeneralFiles content check:', [ // Pass an array as the second argument
+                'is_array' => is_array($uploadedGeneralFiles),
+                'count_or_type' => is_array($uploadedGeneralFiles) ? count($uploadedGeneralFiles) : gettype($uploadedGeneralFiles) // Value associated with a key
+            ]);
+            if (!empty($uploadedGeneralFiles) && is_array($uploadedGeneralFiles)) {
+                 Log::info("Found " . count($uploadedGeneralFiles) . " NEW general files to process.");
+                 $targetDirRelative = 'uploads/marches/' . $marches_public->id;
+                 $targetDirAbsolute = public_path($targetDirRelative);
+                 // Ensure directory exists
+                 if (!File::isDirectory($targetDirAbsolute)) { if (!File::makeDirectory($targetDirAbsolute, 0775, true, true)) throw new Exception("Cannot create general dir update: {$targetDirAbsolute}"); }
+                 if (!File::isWritable($targetDirAbsolute)) throw new Exception("General dir update not writable: {$targetDirAbsolute}");
+
+                 foreach ($uploadedGeneralFiles as $fileKey => $file) {
+                     if ($file instanceof \Illuminate\Http\UploadedFile && $file->isValid()) {
+                          $originalName = $file->getClientOriginalName(); $mimeType = $file->getClientMimeType() ?: 'application/octet-stream';
+                          $safeOriginalName = preg_replace('/[^A-Za-z0-9\._-]/', '_', $originalName); $generatedFilename = date('Ymd-His') . '_' . Str::random(5) . '_' . $safeOriginalName;
+                          Log::debug("Moving NEW general file '{$originalName}' to '{$targetDirAbsolute}/{$generatedFilename}'");
+                         try {
+                             $file->move($targetDirAbsolute, $generatedFilename); // MOVE to public path
+                             $storedRelativePublicPath = $targetDirRelative . '/' . $generatedFilename;
+                             $newlyCreatedFilePathsRelative[] = $storedRelativePublicPath; // Track for rollback
+                             Log::info("New general file moved to public: {$storedRelativePublicPath}");
+                             // Create DB record
+                             FichierJoint::create([
+                                 'marche_id' => $marches_public->id, 'lot_id' => null,
+                                 'nom_fichier' => $originalName, 'chemin_fichier' => $storedRelativePublicPath,
+                                 'type_fichier' => $mimeType,
+                             ]);
+                              Log::info("Created FichierJoint DB record for new general file.");
+                         } catch (\Symfony\Component\HttpFoundation\File\Exception\FileException $e) {
+                              Log::error("Failed move() for new general file '{$originalName}' (update): " . $e->getMessage());
+                              throw new Exception("Failed move new general file '{$originalName}'. Check permissions.");
+                         }
+                     } else { Log::warning("Invalid NEW general file received during update at key {$fileKey}."); }
+                 }
+            } else { Log::info("No NEW general files uploaded during update."); }
+            // --- END NEW General File Handling ---
 
             DB::commit();
+            Log::info("Update transaction committed successfully for ID: {$marches_public->id}");
 
-            // Delete Queued OLD Physical Files AFTER Commit (remains the same)
-            // ... (logic to delete files from $uniquePathsToDelete is identical) ...
+            // --- Delete Queued OLD Physical Files AFTER Commit ---
+            $uniquePathsToDelete = array_unique($pathsToDeletePhysicallyRelative); // Ensure uniqueness
+            Log::debug("Attempting deletion of " . count($uniquePathsToDelete) . " OLD physical files from public storage:", $uniquePathsToDelete);
+            foreach ($uniquePathsToDelete as $relativePath) {
+                 if(empty($relativePath)) continue; // Skip empty paths
+                $absolutePath = public_path($relativePath);
+                try {
+                    if (File::exists($absolutePath)) {
+                        if (File::delete($absolutePath)) { Log::info("Deleted OLD public file: {$absolutePath}"); }
+                        else { Log::error("File::delete failed for OLD public file: {$absolutePath}"); }
+                    } else { Log::warning("OLD public file path not found or empty for deletion: '{$absolutePath}' from relative '{$relativePath}'"); }
+                } catch (Exception $storageEx) { Log::error("Error deleting OLD public file: {$absolutePath}", ['exception' => $storageEx]); }
+            }
+            // --- End Delete OLD Files ---
 
-            // Reload relations for response
-            $marches_public->load('lots.fichiersJoints', 'fichiersJointsGeneraux', 'convention', 'appelOffre');
-
-            // --- Add Public URLs Manually to response --- <<< MODIFIED HERE
+            // --- Prepare & Return Response ---
+            Log::debug('Update Request - Preparing success response...');
+            $marches_public->load('lots.fichiersJoints', 'fichiersJointsGeneraux', 'convention', 'appelOffre'); // Reload fresh data
              $appBaseUrl = rtrim(config('app.url', 'http://localhost:8000'), '/');
-             // Add URLs to the loaded Eloquent models *before* converting to array
+             // Add URLs Manually before converting to array
              if ($marches_public->relationLoaded('fichiersJointsGeneraux')) {
                  $marches_public->fichiersJointsGeneraux->each(fn($f) => $f->url = $f->chemin_fichier ? "{$appBaseUrl}/" . ltrim($f->chemin_fichier, '/') : null);
              }
@@ -344,21 +577,41 @@ class MarchePublicController extends Controller
                      }
                  });
              }
-             $responseData = $marches_public->toArray(); // Now convert to array
-             // --- End Add Public URLs ---
+             $responseData = $marches_public->toArray();
 
             return response()->json(['message' => 'Marché, lots et fichiers mis à jour.', 'marche_public' => $responseData]);
 
-        } catch (Throwable $e) {
+        } catch (Throwable $e) { // Catch Throwable
             DB::rollBack();
-            Log::error("Error updating Marche Public ID {$marches_public->id} (Direct Public): " . $e->getMessage() . "\nTrace: " . $e->getTraceAsString());
-            // Cleanup logic remains the same...
-            foreach ($newlyCreatedFilePathsRelative as $relativePath) { /* ... cleanup ... */ }
+            Log::error("!!! CATCH BLOCK HIT in Update !!! Error updating Marche Public ID {$marches_public->id}: " . $e->getMessage(), [
+                 'exception_type' => get_class($e),
+                 'trace_snippet' => substr($e->getTraceAsString(), 0, 1000) // Log first part of trace
+            ]);
+
+            // Attempt cleanup of NEWLY created public files
+            Log::info("Rolling back update transaction. Attempting cleanup of newly stored public files:", $newlyCreatedFilePathsRelative);
+            foreach (array_unique($newlyCreatedFilePathsRelative) as $relativePath) { // Ensure unique paths
+                 if(empty($relativePath)) continue;
+                $absolutePath = public_path($relativePath);
+                try {
+                    if (File::exists($absolutePath)) {
+                        if (File::delete($absolutePath)) { Log::info("Rollback cleanup: Deleted new public file {$absolutePath}"); }
+                        else { Log::error("Rollback cleanup: File::delete failed for new public file {$absolutePath}"); }
+                    }
+                } catch (Exception $fsEx) { Log::error("Rollback cleanup: Failed to delete stored new public file: {$absolutePath}", ['exception' => $fsEx]); }
+            }
+
             $statusCode = ($e instanceof ValidationException) ? 422 : 500;
-            return response()->json([ /* ... error response ... */ ], $statusCode);
+            $userMessage = 'Erreur serveur lors de la mise à jour.';
+            if ($e instanceof \Exception && str_contains($e->getMessage(), 'directory update not writable')) { $userMessage = "Erreur de permission lors de l'écriture du fichier."; } // Example specific message
+
+            return response()->json([
+                'message' => $userMessage,
+                'error_details' => config('app.debug') ? $e->getMessage() : 'Détail non disponible.',
+                'errors' => ($e instanceof ValidationException) ? $e->errors() : null
+            ], $statusCode);
         }
     }
-
 
     /**
      * Remove the specified resource from storage using direct public storage.
@@ -377,7 +630,6 @@ class MarchePublicController extends Controller
             // Lot files
             foreach ($marches_public->lots as $lot) {
                 foreach ($lot->fichiersJoints as $fichier) {
-                    // --- Correction: Collect the relative path, not the asset URL ---
                     if ($fichier->chemin_fichier) $pathsToDeletePhysicallyRelative[] = $fichier->chemin_fichier;
                 }
             }
@@ -385,47 +637,115 @@ class MarchePublicController extends Controller
             $generalFiles = FichierJoint::where('marche_id', $marches_public->id)->whereNull('lot_id')->pluck('chemin_fichier')->filter()->toArray();
             $pathsToDeletePhysicallyRelative = array_merge($pathsToDeletePhysicallyRelative, $generalFiles);
 
-            $uniquePathsToDelete = array_unique($pathsToDeletePhysicallyRelative); // Contains relative paths like 'uploads/...'
+            $uniquePathsToDelete = array_unique($pathsToDeletePhysicallyRelative);
             Log::info("Collected " . count($uniquePathsToDelete) . " unique relative public file paths to delete.");
 
             // Define directory paths (remains the same)
-            $generalMarcheDirRelative = 'uploads/marches/' . $marches_public->id;
-            $lotDirRelatives = $marches_public->lots()->pluck('id')->map(fn($id) => 'uploads/lots/' . $id)->toArray();
+            $generalMarcheDirRelative = 'uploads/marches/' . $marches_public->id; // Example
+            $lotDirRelatives = $marches_public->lots()->pluck('id')->map(fn($id) => 'uploads/lots/' . $id)->toArray(); // Example
 
-            // Delete MarchePublic record (remains the same)
-            Log::info("Deleting MarchePublic record ID: {$marches_public->id}...");
-            $deleted = $marches_public->delete();
+            Log::info("Attempting to delete MarchePublic record ID: {$marches_public->id} from database...");
+            $deleted = $marches_public->delete(); // This is where the QueryException for #1451 can be thrown
 
             if ($deleted) {
                 DB::commit();
-                Log::info("Destroy transaction committed (Direct Public Storage).");
+                Log::info("Destroy transaction committed for MarchePublic ID {$marches_public->id}.");
 
-                // Delete files from PUBLIC storage AFTER successful commit (remains the same)
+                // Delete files from PUBLIC storage AFTER successful commit
                 Log::info("Attempting deletion of associated physical public files...");
                 $deletedStorageCount = 0;
-                foreach ($uniquePathsToDelete as $relativePath) { // Use the collected relative paths
-                    $absolutePath = public_path($relativePath); // Get absolute path from relative path
+                foreach ($uniquePathsToDelete as $relativePath) {
+                    $absolutePath = public_path($relativePath);
                     try {
                         if ($relativePath && File::exists($absolutePath)) {
-                            if (File::delete($absolutePath)) { $deletedStorageCount++; /* log success */ }
-                            else { /* log failure */ }
-                        } else { /* log not found */ }
-                    } catch (Exception $storageEx) { /* log exception */ }
+                            if (File::delete($absolutePath)) {
+                                $deletedStorageCount++;
+                                Log::info("Physical file deleted: {$absolutePath}");
+                            } else {
+                                Log::error("File::delete failed for physical file: {$absolutePath}");
+                            }
+                        } else {
+                             Log::warning("Physical file not found or path empty for deletion: '{$absolutePath}'");
+                        }
+                    } catch (Exception $storageEx) {
+                        Log::error("Exception deleting physical file {$absolutePath}: " . $storageEx->getMessage());
+                    }
                 }
                 Log::info("Completed public storage deletion phase. Deleted {$deletedStorageCount} files.");
 
-                // Attempt to delete EMPTY directories (remains the same)
-                 foreach ($lotDirRelatives as $lotDirRel) { /* ... delete empty dir ... */ }
-                 $generalMarcheDirAbs = public_path($generalMarcheDirRelative); /* ... delete empty dir ... */
+                // Attempt to delete EMPTY directories
+                foreach ($lotDirRelatives as $lotDirRel) {
+                    $lotDirAbs = public_path($lotDirRel);
+                    if (File::isDirectory($lotDirAbs) && count(File::allFiles($lotDirAbs)) === 0) {
+                        try { File::deleteDirectory($lotDirAbs); Log::info("Deleted empty lot directory: {$lotDirAbs}"); }
+                        catch (Exception $dirEx) { Log::error("Error deleting empty lot directory {$lotDirAbs}: " . $dirEx->getMessage());}
+                    }
+                }
+                $generalMarcheDirAbs = public_path($generalMarcheDirRelative);
+                if (File::isDirectory($generalMarcheDirAbs) && count(File::allFiles($generalMarcheDirAbs)) === 0) {
+                     try { File::deleteDirectory($generalMarcheDirAbs); Log::info("Deleted empty general marche directory: {$generalMarcheDirAbs}"); }
+                     catch (Exception $dirEx) { Log::error("Error deleting empty general marche directory {$generalMarcheDirAbs}: " . $dirEx->getMessage());}
+                }
 
                 return response()->json(['message' => 'Marché et fichiers associés supprimés avec succès.'], 200);
             } else {
-                 DB::rollBack(); /* ... handle DB delete failure ... */
-                 return response()->json(['message' => 'La suppression (DB) a échoué.'], 500);
+                 DB::rollBack();
+                 Log::error("MarchePublic deletion (DB operation) returned false for ID: {$marches_public->id}. This usually indicates an issue before an exception, like a model event returning false.");
+                 return response()->json(['message' => 'La suppression du marché public a échoué de manière inattendue.'], 500);
             }
-        } catch (Throwable $e) {
-             DB::rollBack(); /* ... handle general error ... */
-             return response()->json(['message' => 'Erreur serveur lors de la suppression.', /* ... */ ], 500);
+        } catch (QueryException $e) { // <<< CATCH QueryException SPECIFICALLY
+            DB::rollBack();
+            Log::error("QueryException during MarchePublic deletion ID {$marches_public->id}: " . $e->getMessage(), ['sql_error_code' => $e->errorInfo[1] ?? null]);
+
+            // Check for the specific foreign key constraint error code (MySQL)
+            if (isset($e->errorInfo[1]) && $e->errorInfo[1] == 1451) {
+                return response()->json([
+                    'message' => 'Impossible de supprimer ce marché public car il est lié à des bons de commande. Veuillez d\'abord dissocier ou supprimer ces bons de commande.'
+                ], 409); // 409 Conflict
+            }
+
+            // For other database query errors
+            return response()->json([
+                'message' => 'Erreur de base de données lors de la suppression du marché public.',
+                'error_details' => config('app.debug') ? $e->getMessage() : 'Détail non disponible.'
+            ], 500);
+
+        } catch (Throwable $e) { // <<< General fallback catch
+             DB::rollBack();
+             Log::error("General Throwable during MarchePublic deletion ID {$marches_public->id}: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+             return response()->json([
+                'message' => 'Erreur serveur lors de la tentative de suppression.',
+                'error_details' => config('app.debug') ? $e->getMessage() : 'Détail non disponible.'
+            ], 500);
+        }
+    }
+    public function getOptions(Request $request): JsonResponse
+    {
+        Log::info("API: Fetching MarchePublic options for dropdown.");
+        try {
+            // You might want to order them or filter by status if needed
+            // For now, let's get ID, numero_marche, and intitule
+            $marches = MarchePublic::orderBy('numero_marche', 'asc') // Or by 'intitule' or 'created_at'
+                                    ->get(['id', 'numero_marche', 'intitule']); // Assuming PK is 'id'
+
+            $options = $marches->map(function ($marche) {
+                // Construct a label. Prioritize numero_marche + intitule if both exist.
+                $label = $marche->intitule; // Default to intitule
+                if (!empty($marche->numero_marche) && !empty($marche->intitule)) {
+                    $label = $marche->numero_marche . ' - ' . $marche->intitule;
+                } elseif (empty($label) && !empty($marche->numero_marche)) { // Only numero_marche is available
+                    $label = $marche->numero_marche;
+                } elseif (empty($label)) { // Fallback if both are empty
+                    $label = "Marché ID: {$marche->id}";
+                }
+                return ['value' => $marche->id, 'label' => $label];
+            });
+
+            return response()->json($options); // Directly return the array of options
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching MarchePublic options: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return response()->json(['message' => 'Erreur serveur lors du chargement des options de marchés publics.'], 500);
         }
     }
 

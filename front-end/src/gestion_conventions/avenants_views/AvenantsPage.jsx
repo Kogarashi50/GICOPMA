@@ -13,7 +13,14 @@ import Badge from 'react-bootstrap/Badge';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperclip, faUsers } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
-
+const getStatusColor = (statusValue) => {
+    // This can be a shared helper file
+    const statuses = {
+        "en cours d'approbation": "warning", "approuvé": "success", "non visé": "danger",
+        "en cours de visa": "warning", "visé": "info", "signé": "primary"
+    };
+    return statuses[statusValue] || "light";
+};
 // --- Helpers ---
 const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -109,6 +116,11 @@ const AvenantsPage = () => {
     // --- Column Definition (Using Code 2's objet cell) ---
     const avenantColumns = useMemo(() => [
         {
+            accessorKey: 'code', // ADD THIS COLUMN
+            header: 'Code Avenant',
+            size: 120,
+            meta: { enableGlobalFilter: true }
+        },{
             id: 'convention',
             header: 'Convention Parent',
             accessorFn: row => row.convention ? `${row.convention?.Code} - ${row.convention?.Intitule}` : `ID: ${row.convention_id}`,
@@ -119,6 +131,18 @@ const AvenantsPage = () => {
         {
              accessorKey: 'numero_avenant', header: 'N° Avenant', size: 110,
              meta: { enableGlobalFilter: true }
+        },
+        {
+            accessorKey: 'statut', // ADD THIS COLUMN
+            header: 'Statut',
+            size: 150,
+            filterFn: 'equalsString',
+            cell: info => {
+                const status = info.getValue();
+                const color = getStatusColor(status);
+                return status ? <Badge bg={color} text={color === 'warning' || color === 'light' ? 'dark' : 'white'} className="w-100 text-truncate">{status}</Badge> : '-';
+            },
+            meta: { enableGlobalFilter: true }
         },
         {
              accessorKey: 'objet', header: 'Objet', size: 200,
@@ -248,8 +272,8 @@ const AvenantsPage = () => {
 
     // --- DynamicTable Configuration ---
     // Define default visible columns
-    const defaultCols = useMemo(() => [
-        'convention', 'numero_avenant', 'objet', 'type_modification',
+    const defaultCols = useMemo(() => [     
+        'code', 'convention', 'numero_avenant', 'objet', 'type_modification','statut',
         'date_signature', 'files_count', 'partners_count', 'actions' // Standard set
     ], []);
     // Define all possible columns that can be shown/hidden

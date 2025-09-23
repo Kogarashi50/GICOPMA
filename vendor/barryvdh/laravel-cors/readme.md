@@ -92,7 +92,7 @@ php artisan vendor:publish --tag="cors"
 
 > **Note:** Because of [http method overriding](http://symfony.com/doc/current/reference/configuration/framework.html#http-method-override) in Laravel, allowing POST methods will also enable the API users to perform PUT and DELETE requests as well.
 
-> **Note:** Sometimes it's necessary to specify the port _(when you're coding your app in a local environment for example)_. You can specify the port or using a wildcard here too, eg. `localhost:3000`, `localhost:*` or even using a FQDN `app.mydomain.com:8080`
+> **Note:** Sometimes it's necessary to specify the port _(when you're coding your app in a local environment for example)_. You can specify the port or using a wildcard here too, eg. `localhost:8000:3000`, `localhost:8000:*` or even using a FQDN `app.mydomain.com:8080`
 
 ### Lumen
 

@@ -42,7 +42,22 @@ const formatCurrency = (amount) => {
 };
 // Use V1's displayData with trim check
 const displayData = (data, fallback = '-') => (data !== null && data !== undefined && String(data).trim() !== '') ? data : fallback;
-
+const getStatusColor = (statusValue) => {
+    // This can be a shared helper file
+    const statuses = {
+        "en cours d'approbation": "warning", "approuvé": "success", "non visé": "danger",
+        "en cours de visa": "warning", "visé": "info", "signé": "primary"
+    };
+    return statuses[statusValue] || "light";
+};
+const STATUT_OPTIONS = [
+    { value: "en cours d'approbation", label: "En Cours d'Approbation" },
+    { value: "approuvé", label: "Approuvé" },
+    { value: "non visé", label: "Non Visé" },
+    { value: "en cours de visa", label: "En Cours de Visa" },
+    { value: "visé", label: "Visé" },
+    { value: "signé", label: "Signé" },
+];
 // Define Type Modification Options (needed for label lookup)
 const typeModificationOptions = [
     { value: 'montant', label: 'Modification Montant' },
@@ -86,7 +101,12 @@ const AvenantVisualisation = ({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [fonctionnairesList, setFonctionnairesList] = useState([]); // Keep from V1
-
+const statusLabel = STATUT_OPTIONS.find(opt => opt.value === avenantData?.statut)?.label || avenantData?.statut;
+    const statusInfo = { // You can create a helper for this
+        label: displayData(statusLabel),
+        color: getStatusColor(avenantData?.statut),
+        textColor: ['warning', 'light'].includes(getStatusColor(avenantData?.statut)) ? 'dark' : 'white'
+    };
     // --- Derive App Base URL (Using V1 approach) ---
     const appBaseUrl = useMemo(() => {
         if (!baseApiUrl) { console.error("AvenantVisualisation: baseApiUrl prop is missing!"); return ''; }
@@ -122,8 +142,10 @@ const AvenantVisualisation = ({
                  // 2. Fetch Fonctionnaires (from V1)
                  try {
                      console.log("[Avenant Visu] Fetching fonctionnaires list...");
-                     const foncRes = await axios.get(`${baseApiUrl}/fonctionnaires`, { withCredentials: true });
+                     const foncRes = await axios.get(`${baseApiUrl}/options/fonctionnaires`, { withCredentials: true })
                      const foncData = foncRes.data.fonctionnaires || foncRes.data || [];
+                     console.log(foncData)
+
                      setFonctionnairesList(foncData.map(f => ({ value: f.id, label: f.nom_complet || `ID: ${f.id}` })));
                      console.log(`[Avenant Visu] Fetched ${foncData.length} fonctionnaires.`); // Log actual count fetched
                  } catch (foncError) {
@@ -137,7 +159,7 @@ const AvenantVisualisation = ({
         } catch (err) {
              console.error(`[Avenant Visu] API Error fetching ID ${itemId}:`, err.response || err);
              const errorMsg = err.response?.data?.message || err.response?.statusText || err.message || `Erreur de chargement (ID: ${itemId}).`;
-             setError(errorMsg + (err.response ? ` (Status: ${err.response.status})` : ''));
+             setError(errorMsg + (err.response ? ` (Status: ${err.response?.status})` : ''));
         } finally {
             setLoading(false);
         }
@@ -159,7 +181,7 @@ const AvenantVisualisation = ({
                 {ids.map(id => {
                     const fonctionnaire = fonctionnairesList.find(f => String(f.value).toLowerCase() === String(id).toLowerCase());
                     return (
-                        <Badge key={id} pill bg="info" text="dark" className="border me-1 mb-1 fw-normal">
+                        <Badge key={id} pill bg="warning" text="dark" className="border me-1 mb-1 fw-normal">
                             {fonctionnaire?.label || `ID ${id}`}
                         </Badge>
                     );
@@ -251,6 +273,14 @@ const AvenantVisualisation = ({
                         </Card.Header>
                         <Card.Body className="pt-2">
                             <ListGroup variant="flush">
+                                {renderDetail("Code Avenant", avenantData.code, faInfoCircle)}
+                            {renderDetail("N° Approbation", avenantData.numero_approbation, faInfoCircle)}
+                            {renderDetail("Session", new Date(0, avenantData.session - 1).toLocaleString('fr', { month: 'long' }), faCalendarAlt)}
+                            {renderDetail("Année", avenantData.annee_avenant, faCalendarAlt)}
+                            {renderDetail("Statut", <Badge bg={statusInfo.color} text={statusInfo.textColor} pill>{statusInfo.label}</Badge>, faCheckCircle)}
+                            {/* Conditionally render date_visa */}
+                            {renderDetail("Date Visa", avenantData.date_visa, faCalendarAlt, { formatFunc: formatDate, conditionalCheck: () => avenantData?.statut === 'visé', highlight: true })}
+                            <hr className="my-2"/>
                                 {renderDetail("Convention Parent", avenantData.convention ? `${avenantData.convention?.Code} - ${avenantData.convention?.Intitule}` : '-', faFileSignature)}
                                 {renderDetail("N° Avenant", avenantData.numero_avenant, faListAlt)}
                                 {renderDetail("Date Signature", avenantData.date_signature, faCalendarAlt, { formatFunc: formatDate })}

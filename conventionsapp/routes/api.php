@@ -9,7 +9,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ConventionController;
 use App\Http\Controllers\PartenaireController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardController; // Ensure this is present
 use App\Http\Controllers\ChantierController;
 use App\Http\Controllers\CommuneController;
 use App\Http\Controllers\DomaineController;
@@ -25,69 +25,69 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\BonDeCommandeController;
 use App\Http\Controllers\ContratDroitCommunController;
 use App\Http\Controllers\AvenantController;
-use App\Http\Controllers\EngagementController; // Review if needed
-use App\Http\Controllers\VersementCPController; // For Convention Payments
+use App\Http\Controllers\VersementCPController;
 use App\Http\Controllers\FonctionnaireController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\EngagementFinancierController; // For Project Engagements
-use App\Http\Controllers\VersementController;       // For Project Payments (PP)
+use App\Http\Controllers\EngagementFinancierController;
+use App\Http\Controllers\VersementController;
 use App\Http\Controllers\OrdreServiceController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\AppelOffreController; // Import from Api 1 & 2
-use App\Http\Controllers\Api\ActivityLogController; // <<<--- ADDED Import from Api 2
+use App\Http\Controllers\AppelOffreController;
+use App\Http\Controllers\Api\ActivityLogController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| is assigned the "api" middleware group. Enjoy building your API!
+|
 */
 
 // --- Public Routes (No Authentication Required) ---
 Route::post('/login', [LoginController::class, 'login'])->name('api.login');
 
 // --- Public Helper Routes (Consider if they need protection later) ---
-Route::get('/conventions/options', [ConventionController::class, 'getOptions'])->name('conventions.options');
 Route::get('/conventions/{convention_id}/commitment-details', [ConvPartController::class, 'getCommitmentsForConvention']);
 Route::get('/convparts/lookup', [ConvPartController::class, 'lookupDetails'])->name('convparts.lookup');
-Route::get('/convparts/options', [ConvPartController::class, 'getOptions'])->name('convparts.options');
+
+Route::get('/projets/unique/{field}', [ProjetController::class, 'getUniqueFieldValues']);
 
 // --- Protected Routes (Require Sanctum Authentication & Permissions) ---
 Route::middleware('auth:sanctum')->group(function () {
 
     // --- Appel Offres Routes ---
-    Route::get('/appel-offres', [AppelOffreController::class, 'index'])
-        ->middleware('permission:view appeloffres');
-    Route::post('/appel-offres', [AppelOffreController::class, 'store'])
-        ->middleware('permission:create appeloffres');
-    Route::get('/appel-offres/{appel_offre}', [AppelOffreController::class, 'show'])
-        ->middleware('permission:view appeloffre details');
-    Route::put('/appel-offres/{appel_offre}', [AppelOffreController::class, 'update']) // Using PUT explicitly
-        ->middleware('permission:update appeloffres');
-    Route::delete('/appel-offres/{appel_offre}', [AppelOffreController::class, 'destroy'])
-        ->middleware('permission:delete appeloffres'); // <<< CORRECTED Permission (no  )
+    Route::get('/appel-offres', [AppelOffreController::class, 'index'])->middleware('permission:view appeloffres');
+    Route::post('/appel-offres', [AppelOffreController::class, 'store'])->middleware('permission:create appeloffres');
+    Route::get('/appel-offres/{appel_offre}', [AppelOffreController::class, 'show'])->middleware('permission:view appeloffres'); // Consider singular permission
+    Route::put('/appel-offres/{appel_offre}', [AppelOffreController::class, 'update'])->middleware('permission:update appeloffres');
+    Route::delete('/appel-offres/{appel_offre}', [AppelOffreController::class, 'destroy'])->middleware('permission:delete appeloffres');
 
     // --- Auth Related ---
     Route::post('/logout', [LoginController::class, 'logout'])->name('api.logout');
     Route::get('/user', function (Request $request) {
         $user = $request->user();
-        $user->loadMissing('fonctionnaire');
-        $responseData = $user->toArray();
-        $responseData['roles'] = $user->getRoleNames()->toArray();
-        $responseData['permissions'] = $user->getAllPermissions()->pluck('name')->toArray();
-        return response()->json($responseData);
+        if ($user) {
+            $user->loadMissing(['fonctionnaire', 'roles', 'permissions']); // Eager load relations
+            $responseData = $user->toArray();
+            // Ensure roles and permissions are correctly formatted if not already by toArray() with Spatie package
+            $responseData['roles'] = $user->getRoleNames()->toArray();
+            $responseData['permissions'] = $user->getAllPermissions()->pluck('name')->toArray();
+            return response()->json($responseData);
+        }
+        return response()->json(['message' => 'Unauthenticated.'], 401);
      })->name('api.user.details');
 
     // --- User & Role Management ---
-    Route::get('/users/options', [UserController::class, 'getOptions']) // <<<--- ADDED from Api 2
-         ->name('api.users.options'); // Add permission if needed
+    Route::get('/users/options', [UserController::class, 'getOptions'])->name('api.users.options')->middleware('permission:manage users');
     Route::apiResource('users', UserController::class)->middleware('permission:manage users');
     Route::get('/roles', [RoleController::class, 'index'])->middleware('permission:manage roles');
     Route::apiResource('roles', RoleController::class)->middleware('permission:manage roles');
     Route::get('/permissions', [PermissionController::class, 'index'])->middleware('permission:manage roles');
-    Route::get('/fonctionnaires', [FonctionnaireController::class, 'indexForDropdown'])->middleware('permission:manage users');
-    Route::put('/user/password', [UserController::class, 'updatePassword']) // <<<--- INCLUDED from Api 1
-        ->name('api.user.password.update');
+    Route::put('/user/password', [UserController::class, 'updatePassword'])->name('api.user.password.update');
 
     //---- logs history---/
     Route::middleware('permission:view history')->group(function(){
@@ -95,17 +95,22 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/activity-log/event-types', [ActivityLogController::class, 'getEventTypes'])->name('api.activity_log.event_types');
         Route::get('/activity-log/{id}', [ActivityLogController::class, 'show'])->where('id', '[0-9]+')->name('api.activity_log.show');
     });
+
     // --- Dashboard ---
-    Route::prefix('dashboard')->middleware('permission:view dashboard')->group(function () {
-        Route::get('/', [DashboardController::class, 'index']);
-        Route::get('/stats', [DashboardController::class, 'getStats']);
-        Route::get('/project-status', [DashboardController::class, 'getProjectStatusDistribution']);
-        Route::get('/budget-distribution', [DashboardController::class, 'getBudgetDistribution']);
-        Route::get('/alerts', [DashboardController::class, 'getAlerts']);
-        Route::get('/deadlines', [DashboardController::class, 'getUpcomingDeadlines']);
-        Route::get('/convention-status-summary', [DashboardController::class, 'getConventionStatusSummary']);
-        Route::get('/recent-convention-summaries', [DashboardController::class, 'getRecentConventionSummaries']);
+    // All routes within this group will have the prefix '/api/dashboard' and the middleware 'permission:view dashboard'
+    Route::prefix('dashboard')->name('dashboard.')->middleware('permission:view dashboard')->group(function () {
+        Route::get('/stats', [DashboardController::class, 'getStats'])->name('stats');
+        Route::get('/project-status', [DashboardController::class, 'getProjectStatusDistribution'])->name('project-status'); // Mapped to getProjectStatusDistribution
+        Route::get('/deadlines', [DashboardController::class, 'getUpcomingDeadlines'])->name('deadlines');       // Mapped to getUpcomingDeadlines
+        Route::get('/alerts', [DashboardController::class, 'getAlerts'])->name('alerts');
+        Route::get('/recent-convention-summaries', [DashboardController::class, 'getRecentConventionSummaries'])->name('recent-convention-summaries');
+
+        // Optional: Uncomment if you plan to use these from the frontend dashboard
+        // Route::get('/budget-distribution', [DashboardController::class, 'getBudgetDistribution'])->name('budget-distribution');
+        // Route::get('/convention-status-summary', [DashboardController::class, 'getConventionStatusSummary'])->name('convention-status-summary');
     });
+Route::get('/projets/{projet_code}/locations', [ProjetController::class, 'getLocations'])
+     ->name('projets.locations');
 
     // --- Conventions ---
     Route::get('/conventions', [ConventionController::class, 'index'])->middleware('permission:view conventions');
@@ -113,152 +118,244 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/conventions/{convention}', [ConventionController::class, 'show'])->middleware('permission:view conventions');
     Route::put('/conventions/{convention}', [ConventionController::class, 'update'])->middleware('permission:update conventions');
     Route::delete('/conventions/{convention}', [ConventionController::class, 'destroy'])->middleware('permission:delete conventions');
-    Route::get('/conventions/{convention}/details', [ConventionController::class, 'details'])->middleware('permission:view convention details');
-    Route::get('/conventions/{convention}/partenaire-options', [ConventionController::class, 'getPartenaireOptions'])->middleware('permission:view conventions|update conventions|create conventions');
+    Route::get('/conventions/{convention}/partenaire-options', [ConventionController::class, 'getPartenaireOptions'])
+        ->middleware('permission:view conventions|update conventions|create conventions|create versements_cp|update versements_cp');
 
     // --- Partenaires ---
-    Route::get('/partenaires', [PartenaireController::class, 'index'])->middleware('permission:view partenaires');
-    Route::post('/partenaires', [PartenaireController::class, 'store'])->middleware('permission:create partenaires');
-    Route::get('/partenaires/{partenaire}', [PartenaireController::class, 'show'])->middleware('permission:view partenaires');
-    Route::put('/partenaires/{partenaire}', [PartenaireController::class, 'update'])->middleware('permission:update partenaires');
-    Route::delete('/partenaires/{partenaire}', [PartenaireController::class, 'destroy'])->middleware('permission:delete partenaires');
-    Route::get('/partenaires/{partenaire}/details', [PartenaireController::class, 'details'])->middleware('permission:view partenaire details');
+    Route::apiResource('partenaires', PartenaireController::class)
+        ->parameters(['partenaires' => 'partenaire'])
+        ->middleware([
+            'index'   => 'permission:view partenaires',
+            'store'   => 'permission:create partenaires',
+            'show'    => 'permission:view partenaires',
+            'update'  => 'permission:update partenaires',
+            'destroy' => 'permission:delete partenaires',
+        ]);
     Route::get('/partenaires/summary', [PartenaireController::class, 'getFinancialSummary'])->name('partenaires.financialSummary')->middleware('permission:view partenaire summary');
     Route::get('/partenaires/{id}/details-with-summary', [PartenaireController::class, 'getDetailsWithSummary'])
         ->name('partenaires.detailsWithSummary')->where('id', '[0-9]+')->middleware('permission:view partenaire summary');
 
     // --- Marches Publics & Related ---
-    Route::get('/marches-publics', [MarchePublicController::class, 'index'])->middleware('permission:view marches');
-    Route::post('/marches-publics', [MarchePublicController::class, 'store'])->middleware('permission:create marches');
-    Route::get('/marches-publics/{marches_public}', [MarchePublicController::class, 'show'])->middleware('permission:view marches');
-    Route::put('/marches-publics/{marches_public}', [MarchePublicController::class, 'update'])->middleware('permission:update marches');
-    Route::delete('/marches-publics/{marches_public}', [MarchePublicController::class, 'destroy'])->middleware('permission:delete marches');
+    Route::apiResource('marches-publics', MarchePublicController::class)
+        ->parameters(['marches-publics' => 'marches_public'])
+        ->middleware([
+            'index'   => 'permission:view marches',
+            'store'   => 'permission:create marches',
+            'show'    => 'permission:view marches',
+            'update'  => 'permission:update marches',
+            'destroy' => 'permission:delete marches',
+        ]);
     Route::get('/marches-publics/{marche}/lots', [LotController::class, 'indexForMarche'])->middleware('permission:view marches');
     Route::get('/marches-publics/{marche}/fichiers', [FichierJointController::class, 'indexForMarche'])->middleware('permission:view marches');
     Route::get('/fichiers-telecharger/{fichier_joint}', [FichierJointController::class, 'download'])->middleware('permission:download fichiers');
 
     // --- Ordre de Service ---
-    Route::get('/ordres-service', [OrdreServiceController::class, 'index'])->name('ordres-service.index')->middleware('permission:view ordres_service');
-    Route::post('/ordres-service', [OrdreServiceController::class, 'store'])->name('ordres-service.store')->middleware('permission:create ordres_service');
-    Route::get('/ordres-service/{ordre_service}', [OrdreServiceController::class, 'show'])->where('ordre_service', '[0-9]+')->name('ordres-service.show')->middleware('permission:view ordres_service');
-    Route::put('/ordres-service/{ordre_service}', [OrdreServiceController::class, 'update'])->where('ordre_service', '[0-9]+')->name('ordres-service.update')->middleware('permission:update ordres_service');
-    Route::delete('/ordres-service/{ordre_service}', [OrdreServiceController::class, 'destroy'])->where('ordre_service', '[0-9]+')->name('ordres-service.destroy')->middleware('permission:delete ordres_service');
+    Route::apiResource('ordres-service', OrdreServiceController::class)
+        ->parameters(['ordres-service' => 'ordre_service'])
+        ->middleware([
+            'index'   => 'permission:view ordres_service',
+            'store'   => 'permission:create ordres_service',
+            'show'    => 'permission:view ordres_service',
+            'update'  => 'permission:update ordres_service',
+            'destroy' => 'permission:delete ordres_service',
+        ]);
 
     // --- Avenants ---
-    Route::get('/avenants', [AvenantController::class, 'index'])->middleware('permission:view avenants');
-    Route::post('/avenants', [AvenantController::class, 'store'])->middleware('permission:create avenants');
-    Route::get('/avenants/{avenant}', [AvenantController::class, 'show'])->middleware('permission:view avenants');
-    Route::put('/avenants/{avenant}', [AvenantController::class, 'update'])->middleware('permission:update avenants');
-    Route::delete('/avenants/{avenant}', [AvenantController::class, 'destroy'])->middleware('permission:delete avenants');
+    Route::apiResource('avenants', AvenantController::class)->middleware([
+        'index'   => 'permission:view avenants',
+        'store'   => 'permission:create avenants',
+        'show'    => 'permission:view avenants',
+        'update'  => 'permission:update avenants',
+        'destroy' => 'permission:delete avenants',
+    ]);
 
     // --- Bon de Commande ---
-    Route::get('/bon-de-commande', [BonDeCommandeController::class, 'index'])->middleware('permission:view bon_commande');
-    Route::post('/bon-de-commande', [BonDeCommandeController::class, 'store'])->middleware('permission:create bon_commande');
-    Route::get('/bon-de-commande/{bon_de_commande}', [BonDeCommandeController::class, 'show'])->middleware('permission:view bon_commande');
-    Route::put('/bon-de-commande/{bon_de_commande}', [BonDeCommandeController::class, 'update'])->middleware('permission:update bon_commande');
-    Route::delete('/bon-de-commande/{bon_de_commande}', [BonDeCommandeController::class, 'destroy'])->middleware('permission:delete bon_commande');
+    Route::apiResource('bon-de-commande', BonDeCommandeController::class)
+        ->parameters(['bon-de-commande' => 'bon_de_commande'])
+        ->middleware([
+            'index'   => 'permission:view bon_commande',
+            'store'   => 'permission:create bon_commande',
+            'show'    => 'permission:view bon_commande',
+            'update'  => 'permission:update bon_commande',
+            'destroy' => 'permission:delete bon_commande',
+        ]);
 
     // --- Contrat Droit Commun ---
-    Route::get('/contrat-droit-commun', [ContratDroitCommunController::class, 'index'])->middleware('permission:view contrat_droit_commun');
-    Route::post('/contrat-droit-commun', [ContratDroitCommunController::class, 'store'])->middleware('permission:create contrat_droit_commun');
-    Route::get('/contrat-droit-commun/{contrat_droit_commun}', [ContratDroitCommunController::class, 'show'])->middleware('permission:view contrat_droit_commun');
-    Route::put('/contrat-droit-commun/{contrat_droit_commun}', [ContratDroitCommunController::class, 'update'])->middleware('permission:update contrat_droit_commun');
-    Route::delete('/contrat-droit-commun/{contrat_droit_commun}', [ContratDroitCommunController::class, 'destroy'])->middleware('permission:delete contrat_droit_commun');
+    Route::apiResource('contrat-droit-commun', ContratDroitCommunController::class)
+        ->parameters(['contrat-droit-commun' => 'contrat_droit_commun'])
+        ->middleware([
+            'index'   => 'permission:view contrat_droit_commun',
+            'store'   => 'permission:create contrat_droit_commun',
+            'show'    => 'permission:view contrat_droit_commun',
+            'update'  => 'permission:update contrat_droit_commun',
+            'destroy' => 'permission:delete contrat_droit_commun',
+        ]);
 
     // --- Chantiers ---
-    Route::get('/chantiers', [ChantierController::class, 'index'])->middleware('permission:view chantiers');
-    Route::post('/chantiers', [ChantierController::class, 'store'])->middleware('permission:create chantiers');
-    Route::get('/chantiers/{chantier}', [ChantierController::class, 'show'])->middleware('permission:view chantiers');
-    Route::put('/chantiers/{chantier}', [ChantierController::class, 'update'])->middleware('permission:update chantiers');
-    Route::delete('/chantiers/{chantier}', [ChantierController::class, 'destroy'])->middleware('permission:delete chantiers');
+    Route::apiResource('chantiers', ChantierController::class)->middleware([
+        'index'   => 'permission:view chantiers',
+        'store'   => 'permission:create chantiers',
+        'show'    => 'permission:view chantiers',
+        'update'  => 'permission:update chantiers',
+        'destroy' => 'permission:delete chantiers',
+    ]);
 
     // --- Programmes ---
-    Route::get('/programmes', [ProgrammeController::class, 'index'])->middleware('permission:view programmes');
-    Route::post('/programmes', [ProgrammeController::class, 'store'])->middleware('permission:create programmes');
-    Route::get('/programmes/{programme}', [ProgrammeController::class, 'show'])->middleware('permission:view programmes');
-    Route::put('/programmes/{programme}', [ProgrammeController::class, 'update'])->middleware('permission:update programmes');
-    Route::delete('/programmes/{programme}', [ProgrammeController::class, 'destroy'])->middleware('permission:delete programmes');
+    Route::apiResource('programmes', ProgrammeController::class)->middleware([
+        'index'   => 'permission:view programmes',
+        'store'   => 'permission:create programmes',
+        'show'    => 'permission:view programmes',
+        'update'  => 'permission:update programmes',
+        'destroy' => 'permission:delete programmes',
+    ]);
 
     // --- Domaines ---
-    Route::get('/domaines', [DomaineController::class, 'index'])->middleware('permission:view domaines');
-    Route::post('/domaines', [DomaineController::class, 'store'])->middleware('permission:create domaines');
-    Route::get('/domaines/{domaine}', [DomaineController::class, 'show'])->middleware('permission:view domaines');
-    Route::put('/domaines/{domaine}', [DomaineController::class, 'update'])->middleware('permission:update domaines');
-    Route::delete('/domaines/{domaine}', [DomaineController::class, 'destroy'])->middleware('permission:delete domaines');
+    Route::apiResource('domaines', DomaineController::class)->middleware([
+        'index'   => 'permission:view domaines',
+        'store'   => 'permission:create domaines',
+        'show'    => 'permission:view domaines',
+        'update'  => 'permission:update domaines',
+        'destroy' => 'permission:delete domaines',
+    ]);
 
     // --- Communes ---
-    Route::get('/communes', [CommuneController::class, 'index'])->middleware('permission:view communes');
-    Route::post('/communes', [CommuneController::class, 'store'])->middleware('permission:create communes');
-    Route::get('/communes/{commune}', [CommuneController::class, 'show'])->middleware('permission:view communes');
-    Route::put('/communes/{commune}', [CommuneController::class, 'update'])->middleware('permission:update communes');
-    Route::delete('/communes/{commune}', [CommuneController::class, 'destroy'])->middleware('permission:delete communes');
+    Route::apiResource('communes', CommuneController::class)->middleware([
+        'index'   => 'permission:view communes',
+        'store'   => 'permission:create communes',
+        'show'    => 'permission:view communes',
+        'update'  => 'permission:update communes',
+        'destroy' => 'permission:delete communes',
+    ]);
 
     // --- Projets ---
-    Route::get('/projets', [ProjetController::class, 'index'])->middleware('permission:view projets');
-    Route::post('/projets', [ProjetController::class, 'store'])->middleware('permission:create projets');
-    Route::get('/projets/{projet}', [ProjetController::class, 'show'])->middleware('permission:view projets');
-    Route::put('/projets/{projet}', [ProjetController::class, 'update'])->middleware('permission:update projets');
-    Route::delete('/projets/{projet}', [ProjetController::class, 'destroy'])->middleware('permission:delete projets');
+    Route::apiResource('projets', ProjetController::class)->middleware([
+        'index'   => 'permission:view projets',
+        'store'   => 'permission:create projets',
+        'show'    => 'permission:view projets',
+        'update'  => 'permission:update projets',
+        'destroy' => 'permission:delete projets',
+    ]);
 
     // --- Provinces ---
-    Route::get('/provinces', [ProvinceController::class, 'index'])->middleware('permission:view provinces');
-    Route::post('/provinces', [ProvinceController::class, 'store'])->middleware('permission:create provinces');
-    Route::get('/provinces/{province}', [ProvinceController::class, 'show'])->middleware('permission:view provinces');
-    Route::put('/provinces/{province}', [ProvinceController::class, 'update'])->middleware('permission:update provinces');
-    Route::delete('/provinces/{province}', [ProvinceController::class, 'destroy'])->middleware('permission:delete provinces');
+    Route::apiResource('provinces', ProvinceController::class)->middleware([
+        'index'   => 'permission:view provinces',
+        'store'   => 'permission:create provinces',
+        'show'    => 'permission:view provinces',
+        'update'  => 'permission:update provinces',
+        'destroy' => 'permission:delete provinces',
+    ]);
 
     // --- SousProjets ---
-    Route::get('/sousprojets', [SousProjetController::class, 'index'])->middleware('permission:view sousprojets');
-    Route::post('/sousprojets', [SousProjetController::class, 'store'])->middleware('permission:create sousprojets');
-    Route::get('/sousprojets/{sousprojet}', [SousProjetController::class, 'show'])->middleware('permission:view sousprojets');
-    Route::put('/sousprojets/{sousprojet}', [SousProjetController::class, 'update'])->middleware('permission:update sousprojets');
-    Route::delete('/sousprojets/{sousprojet}', [SousProjetController::class, 'destroy'])->middleware('permission:delete sousprojets');
+    Route::apiResource('sousprojets', SousProjetController::class)->middleware([
+        'index'   => 'permission:view sousprojets',
+        'store'   => 'permission:create sousprojets',
+        'show'    => 'permission:view sousprojets',
+        'update'  => 'permission:update sousprojets',
+        'destroy' => 'permission:delete sousprojets',
+    ]);
 
     // --- ConvPart ---
-    Route::apiResource('convparts', ConvPartController::class)->middleware(['permission:view conventions']); // Adjust permissions as needed
+    Route::apiResource('convparts', ConvPartController::class)->middleware(['permission:view conventions|create conventions|update conventions']);
 
-    // --- Engagements Financiers ---
-    Route::get('/engagements-financiers', [EngagementFinancierController::class, 'index'])->middleware('permission:view engagements_financiers');
-    Route::post('/engagements-financiers', [EngagementFinancierController::class, 'store'])->middleware('permission:create engagements_financiers');
-    Route::get('/engagements-financiers/{engagements_financier}', [EngagementFinancierController::class, 'show'])->middleware('permission:view engagements_financiers');
-    Route::put('/engagements-financiers/{engagements_financier}', [EngagementFinancierController::class, 'update'])->middleware('permission:update engagements_financiers');
-    Route::delete('/engagements-financiers/{engagements_financier}', [EngagementFinancierController::class, 'destroy'])->middleware('permission:delete engagements_financiers');
+    // --- Engagements Financiers (for Projets) ---
+    Route::apiResource('engagements-financiers', EngagementFinancierController::class)
+        ->parameters(['engagements-financiers' => 'engagements_financier'])
+        ->middleware([
+            'index'   => 'permission:view engagements_financiers',
+            'store'   => 'permission:create engagements_financiers',
+            'show'    => 'permission:view engagements_financiers',
+            'update'  => 'permission:update engagements_financiers',
+            'destroy' => 'permission:delete engagements_financiers',
+        ]);
 
     // --- Versements (Convention Payments - CP) ---
-    Route::get('/versements', [VersementCPController::class, 'index'])->middleware('permission:view versements_cp');
-    Route::post('/versements', [VersementCPController::class, 'store'])->middleware('permission:create versements_cp');
-    Route::get('/versements/{versement}', [VersementCPController::class, 'show'])->middleware('permission:view versements_cp');
-    Route::put('/versements/{versement}', [VersementCPController::class, 'update'])->middleware('permission:update versements_cp');
-    Route::delete('/versements/{versement}', [VersementCPController::class, 'destroy'])->middleware('permission:delete versements_cp');
+    Route::apiResource('versements', VersementCPController::class)->middleware([
+        'index'   => 'permission:view versements_cp',
+        'store'   => 'permission:create versements_cp',
+        'show'    => 'permission:view versements_cp',
+        'update'  => 'permission:update versements_cp',
+        'destroy' => 'permission:delete versements_cp',
+    ]);
 
     // --- Versements (Project Payments - PP) ---
-    Route::prefix('versementspp')->middleware(['permission:view versements_pp|create versements_pp'])->group(function () {
-        Route::get('/project/{projetId}/engaged-partners', [VersementController::class, 'getEngagedPartnersForProject'])
-            ->name('versementspp.getEngagedPartnersForProject')->where('projetId', '[0-9]+');
-        Route::get('/get-engagement-id', [VersementController::class, 'getEngagementIdForProjectPartner'])
-            ->name('versementspp.getEngagementIdForProjectPartner');
+    Route::prefix('versementspp')->as('versementspp.')->group(function () {
+        Route::middleware(['permission:view versements_pp|create versements_pp'])->group(function () {
+            Route::get('/project/{projetId}/engaged-partners', [VersementController::class, 'getEngagedPartnersForProject'])
+                ->name('getEngagedPartnersForProject')->where('projetId', '[0-9]+');
+            Route::get('/get-engagement-id', [VersementController::class, 'getEngagementIdForProjectPartner'])
+                ->name('getEngagementIdForProjectPartner');
+        });
+        Route::get('/', [VersementController::class, 'index'])->name('index')->middleware('permission:view versements_pp');
+        Route::post('/', [VersementController::class, 'store'])->name('store')->middleware('permission:create versements_pp');
+        Route::get('/{versement_pp}', [VersementController::class, 'show'])->name('show')->middleware('permission:view versements_pp');
+        Route::put('/{versement_pp}', [VersementController::class, 'update'])->name('update')->middleware('permission:update versements_pp');
+        Route::delete('/{versement_pp}', [VersementController::class, 'destroy'])->name('destroy')->middleware('permission:delete versements_pp');
     });
-    Route::get('/versementspp', [VersementController::class, 'index'])->middleware('permission:view versements_pp');
-    Route::post('/versementspp', [VersementController::class, 'store'])->middleware('permission:create versements_pp');
-    Route::get('/versementspp/{id}', [VersementController::class, 'show'])->middleware('permission:view versements_pp');
-    Route::put('/versementspp/{id}', [VersementController::class, 'update'])->middleware('permission:update versements_pp');
-    Route::delete('/versementspp/{id}', [VersementController::class, 'destroy'])->middleware('permission:delete versements_pp');
 
     // --- Document View ---
-    Route::get('/document/{document}', [DocumentController::class, 'show']); // Add appropriate permission
+    Route::get('/document/{document}', [DocumentController::class, 'show'])->middleware('permission:view documents');
+    Route::get('/report/download', [ReportController::class, 'generatePdfReport'])->name('report.download')->middleware('permission:download report');
 
 
+    // --- OPTIONS ROUTES FOR DROPDOWNS ---
+    Route::prefix('options')->name('options.')->group(function () {
+        Route::get('/conventions', [ConventionController::class, 'getOptions'])
+             ->name('conventions')
+             ->middleware('permission:create projets|update projets|create avenants|update avenants|create marches|update marches|create ordres_service|update ordres_service|view conventions|update conventions|create conventions|create versements_cp|update versements_cp');
 
-}); // End auth:sanctum group
+        Route::get('/programmes', [ProgrammeController::class, 'getOptions'])
+             ->name('programmes')
+             ->middleware('permission:create conventions|update conventions|create projets|update projets');
 
-// --- Public Reporting Route ---
-Route::get('/report/download', [ReportController::class, 'generatePdfReport'])
-         ->name('report.download'); // Consider if this needs protection
+        Route::get('/projets', [ProjetController::class, 'getOptions'])
+             ->name('projets')
+             ->middleware('permission:create conventions|update conventions');
 
-// --- React Catch-all Route (Must be last) ---
+        Route::get('/partenaires', [PartenaireController::class, 'getOptions'])
+              ->name('partenaires')
+             ->middleware('permission:create projets|update projets|create avenants|update avenants|create conventions|update conventions|create versements_cp|update versements_cp|create versements_pp|update versements_pp');
+
+        Route::get('/fonctionnaires', [FonctionnaireController::class, 'indexForDropdown'])
+            ->name('fonctionnaires')
+            ->middleware('permission:create projets|update projets|create avenants|update avenants|create conventions|update conventions|create marches|update marches|create ordres_service|update ordres_service|create bon_commande|update bon_commande|manage users');
+
+        Route::get('/appel-offres', [AppelOffreController::class, 'getOptions'])
+             ->name('appeloffres')
+             ->middleware('permission:create marches|update marches');
+
+        Route::get('/convparts', [ConvPartController::class, 'getOptions'])
+              ->name('convparts')
+              ->middleware('permission:create versements_cp|update versements_cp');
+
+        Route::get('/provinces', [ProvinceController::class, 'getOptions'])
+            ->name('provinces')
+            ->middleware('permission:create conventions|update conventions|create projets|update projets');
+        Route::get('/communes', [CommuneController::class, 'getOptions'])
+        ->name('communes')
+        ->middleware('permission:create projets|update projets'); 
+        Route::get('/domaines', [DomaineController::class, 'getOptions'])
+            ->name('domaines')
+            ->middleware('permission:create projets|update projets|create conventions|update conventions');
+
+        Route::get('/chantiers', [ChantierController::class, 'getOptions'])
+            ->name('chantiers')
+            ->middleware('permission:create projets|update projets|create conventions|update conventions');
+        Route::get('/marches-publics', [MarchePublicController::class, 'getOptions'])
+            ->name('marches-publics') // Route name: options.marches-publics
+            ->middleware('permission:create bon_commande|update bon_commande|view bon_commande');
+    }); // End options prefix group
+
+}); // End auth:sanctum middleware group
+
+
+// --- React Catch-all Route (Must be last *after* all other specific routes) ---
+// This route should only be hit if no other route (especially API routes) matches.
+// It's primarily for SPA routing where the frontend handles different "pages".
 Route::get('/{any?}', function () {
+    Log::debug("React catch-all route hit for: " . request()->path()); // Log when this is hit
     if (file_exists(public_path('index.html'))) {
          return file_get_contents(public_path('index.html'));
     }
+    Log::error("React index.html not found in public path.");
     abort(404, 'React index.html not found.');
-})->where('any', '^(?!api\/)[\/\w\.-]*');
+})->where('any', '^(?!api\/)[\/\w\.-]*'); // Ensure it does NOT match /api/* paths

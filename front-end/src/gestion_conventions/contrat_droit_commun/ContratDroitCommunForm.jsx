@@ -84,7 +84,7 @@ const ContratDroitCommunForm = ({ itemId, onClose, onItemCreated, onItemUpdated,
     const fetchFonctionnaires = useCallback(async () => {
         setLoadingOptions(prev => ({ ...prev, fonctionnaires: true }));
         try {
-            const response = await axios.get(`${baseApiUrl}${apiPrefix}/fonctionnaires`, { withCredentials: true });
+            const response = await axios.get(`${baseApiUrl}/options/fonctionnaires`, { withCredentials: true });
             const foncData = response.data.fonctionnaires || response.data || [];
             setFonctionnairesOptions(foncData.map(f => ({ value: f.id, label: f.nom_complet || `ID ${f.id}` }))
                 .sort((a, b) => a.label.localeCompare(b.label)));

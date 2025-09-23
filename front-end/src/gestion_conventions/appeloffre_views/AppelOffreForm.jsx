@@ -104,7 +104,7 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
         setLoadingOptions(prev => ({ ...prev, fonctionnaires: true }));
         try {
             // Assuming API endpoint returns { fonctionnaires: [...] } or just [...]
-            const response = await axios.get(`${baseApiUrl}${apiPrefix}/fonctionnaires`, { withCredentials: true });
+            const response = await axios.get(`${baseApiUrl}/options/fonctionnaires`, { withCredentials: true });
             const foncData = response.data.fonctionnaires || response.data || []; // Handle both response structures
             // Map to { value, label } and sort
             setFonctionnairesOptions(foncData.map(f => ({ value: f.id, label: f.nom_complet || `ID ${f.id}` }))
