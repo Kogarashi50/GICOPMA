@@ -10,12 +10,13 @@ import {
     faEdit, faTags, faMoneyBillWave, faClock, faFileSignature, faListAlt,
     faAlignLeft, faComments, faPaperclip, faDownload, faBuilding, // Keep faBuilding
     faCheckCircle, faTimesCircle,
-    faUserTie, faUsers // Keep faUserTie & faUsers
+    faUserTie, faUsers, faChevronUp, faChevronDown, faGift // <<< ADD ICONS
 } from '@fortawesome/free-solid-svg-icons';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Collapse from 'react-bootstrap/Collapse'; // <<< ADD THIS IMPORT
 import Alert from 'react-bootstrap/Alert';
 import PropTypes from 'prop-types';
 import Spinner from 'react-bootstrap/Spinner';
@@ -101,7 +102,13 @@ const AvenantVisualisation = ({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [fonctionnairesList, setFonctionnairesList] = useState([]); // Keep from V1
-const statusLabel = STATUT_OPTIONS.find(opt => opt.value === avenantData?.statut)?.label || avenantData?.statut;
+    const [openPartnerId, setOpenPartnerId] = useState(null); // <<< ADD THIS STATE
+
+    const handleTogglePartner = (partnerId) => { // <<< ADD THIS HANDLER
+        setOpenPartnerId(currentOpenId => (currentOpenId === partnerId ? null : partnerId));
+    };
+
+    const statusLabel = STATUT_OPTIONS.find(opt => opt.value === avenantData?.statut)?.label || avenantData?.statut;
     const statusInfo = { // You can create a helper for this
         label: displayData(statusLabel),
         color: getStatusColor(avenantData?.statut),
@@ -126,7 +133,7 @@ const statusLabel = STATUT_OPTIONS.find(opt => opt.value === avenantData?.statut
         try {
             // 1. Fetch Avenant Data
             const avenantRes = await axios.get(`${baseApiUrl}/avenants/${itemId}`, {
-                 params: { include: 'convention,documents,partnerCommitments.partenaire' }, // Use correct include
+                 params: { include: 'convention,documents,partnerCommitments.partenaire,partnerCommitments.engagementsAnnuels' }, // Use correct include
                  withCredentials: true
             });
             const data = avenantRes.data.avenant || avenantRes.data;
@@ -192,6 +199,36 @@ const statusLabel = STATUT_OPTIONS.find(opt => opt.value === avenantData?.statut
 
 
     // --- Render Helpers (Using V1 versions) ---
+    const renderYearlyBreakdown = (engagements) => { // <<< ADD THIS FUNCTION
+        if (!engagements || engagements.length === 0) {
+            return (
+                <div className="text-center text-muted fst-italic small py-2">
+                    Aucune répartition annuelle prévisionnelle n'a été fournie.
+                </div>
+            );
+        }
+        const sortedEngagements = [...engagements].sort((a, b) => a.annee - b.annee);
+        return (
+           <div className="mt-2 yearly-breakdown-container pt-3">
+            <div className="d-flex justify-content-between border border-light border-1 px-3 py-2 mb-2 rounded-5 bg-white">
+                <h6 className="text-secondary small fw-bold mb-0">Année</h6>
+                <h6 className="text-secondary small fw-bold mb-0">Montant Prévisionnel</h6>
+            </div>
+            <div className=" rounded-4 border border-light bg-white ">
+                {sortedEngagements.map(({ annee, montant_prevu }, index) => (
+                    <React.Fragment key={annee}>
+                        <div className={`d-flex justify-content-between m-2 align-items-center px-2`}>
+                            <span className="fw-medium text-dark">{annee}</span>
+                            <span className="fw-bold text-dark">{formatCurrency(montant_prevu)}</span>
+                        </div>
+                        {index < sortedEngagements.length - 1 && <hr className="py-0 my-0 mx-4 px-2 text-light"/>}
+                    </React.Fragment>
+                ))}
+            </div>
+        </div>
+        );
+    };
+
     const renderDetail = (label, value, icon = faInfoCircle, options = {}) => {
         const { formatFunc, conditionalCheck = () => true, highlight = false, isRawHtml = false } = options;
         if (!conditionalCheck(value)) return null; // Use value in check
@@ -327,7 +364,7 @@ const statusLabel = STATUT_OPTIONS.find(opt => opt.value === avenantData?.statut
              {(avenantData.partnerCommitments && avenantData.partnerCommitments.length > 0) && (
                  <Row className="mt-4 pt-3 border-top mx-md-3">
                     <Col xs={12}>
-                        <h5 className="text-uppercase text-secondary fs-6 fw-semibold mb-3">
+                        <h5 className="text-uppercase text-secondary fs-6 fw-semibold mb-3 ">
                             <FontAwesomeIcon icon={faUsers} className='me-2 text-secondary'/>
                             {/* V1 Title Logic */}
                             {avenantData.type_modification === 'partenaire'
@@ -335,41 +372,81 @@ const statusLabel = STATUT_OPTIONS.find(opt => opt.value === avenantData?.statut
                                 : `Détails Partenaires Associés (${avenantData.partnerCommitments.length})`
                             }
                         </h5>
-                        <ListGroup variant="flush" className='partner-details-list'>
+                        <ListGroup variant="flush" className=' p-2 d-flex flex-column align-items-between'>
                             {avenantData.partnerCommitments.map((commit, index) => (
-                                <ListGroup.Item key={commit.Id_CP || `commit-${index}`} className="px-0 py-3 border-bottom-dashed"> {/* V1 dashed border */}
-                                     <Row className="g-2 align-items-center">
+                                <ListGroup.Item key={commit.Id_CP || `commit-${index}`} className="px-2 py-3 m-2  border border-1 rounded-3"> {/* V1 dashed border */}
+                                     <Row className="g-2 align-items-center p-2">
                                          {/* Partner Name (Added faBuilding from V2, added Desc_Arr fallback from V2) */}
                                          <Col xs={12} md={5} className="fw-bold text-dark">
                                              <FontAwesomeIcon icon={faBuilding} className="me-2 text-warning"/>
                                              {commit.partenaire?.Description || commit.partenaire?.Description_Arr || `ID Partenaire: ${commit.Id_Partenaire}`}
                                          </Col>
-                                         {/* Montant Convenu */}
-                                         <Col xs={6} md={3}>
-                                              <span className='text-muted small d-block'>Montant Convenu:</span>
-                                              {formatCurrency(commit.Montant_Convenu)}
-                                         </Col>
-                                         {/* Signatory Status & Date */}
-                                         <Col xs={6} md={4}>
-                                            <span className='text-muted small d-block'>Signataire:</span>
-                                            <FontAwesomeIcon
-                                                icon={commit.is_signatory ? faCheckCircle : faTimesCircle}
-                                                className={`me-1 ${commit.is_signatory ? 'text-success' : 'text-danger'}`}
-                                                title={commit.is_signatory ? 'Signataire' : 'Non Signataire'}
-                                            />
-                                            {commit.is_signatory ? 'Oui' : 'Non'}
-                                            {commit.is_signatory && commit.date_signature && (
-                                                <span className='text-muted small ms-2'>({formatDate(commit.date_signature)})</span>
+                                         {/* Montant Convenu / Autre Engagement */}
+                                         <Col xs={12} md={7}>
+                                            {commit.autre_engagement ? (
+                                                <div className="p-2 rounded-3 bg-light shadow-sm">
+                                                    <div className="d-flex align-items-center">
+                                                        <FontAwesomeIcon icon={faGift} className="me-2 text-info" />
+                                                        <span className="mb-0 fw-medium fst-italic text-dark">{commit.autre_engagement}</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <Row>
+                                                    <Col xs={6}>
+                                                        <span className='text-muted small d-block'>Montant Convenu:</span>
+                                                        {formatCurrency(commit.Montant_Convenu)}
+                                                    </Col>
+                                                    <Col xs={6}>
+                                                        <span className='text-muted small d-block'>Signataire:</span>
+                                                        <FontAwesomeIcon
+                                                            icon={commit.is_signatory ? faCheckCircle : faTimesCircle}
+                                                            className={`me-1 ${commit.is_signatory ? 'text-success' : 'text-danger'}`}
+                                                            title={commit.is_signatory ? 'Signataire' : 'Non Signataire'}
+                                                        />
+                                                        {commit.is_signatory ? 'Oui' : 'Non'}
+                                                        {commit.is_signatory && commit.date_signature && (
+                                                            <span className='text-muted small ms-2'>({formatDate(commit.date_signature)})</span>
+                                                        )}
+                                                    </Col>
+                                                </Row>
                                             )}
                                          </Col>
+                                         
+
                                          {/* Signature Details */}
                                          {commit.is_signatory && commit.details_signature && (
-                                             <Col xs={12} className='mt-1'>
-                                                <p className='mb-0 text-muted small fst-italic'>
+                                             <Col xs={12} className='mt-2'>
+                                                <p className='mb-0 text-muted small fst-italic bg-light p-2 rounded'>
                                                     <span className='fw-medium'>Détails Signature:</span> {commit.details_signature}
                                                 </p>
                                              </Col>
                                          )}
+
+                                        {/* Yearly Breakdown Section */}
+                                        {commit.engagements_annuels && commit.engagements_annuels.length > 0 && (
+                                            <Col xs={12} className="mt-3 border-top pt-2">
+                                                <Button
+                                                    onClick={() => handleTogglePartner(commit.Id_CP)}
+                                                    variant="link"
+                                                    className="d-flex justify-content-between align-items-center w-100 text-decoration-none p-0"
+                                                    aria-controls={`collapse-partner-${commit.Id_CP}`}
+                                                    aria-expanded={openPartnerId === commit.Id_CP}
+                                                >
+                                                    <h6 className="small fw-bold text-dark  mb-0">
+                                                        Répartition Annuelle
+                                                    </h6>
+                                                    <FontAwesomeIcon
+                                                        icon={openPartnerId === commit.Id_CP ? faChevronUp : faChevronDown}
+                                                        className="text-muted"
+                                                    />
+                                                </Button>
+                                                <Collapse in={openPartnerId === commit.Id_CP}>
+                                                    <div id={`collapse-partner-${commit.Id_CP}`}>
+                                                        {renderYearlyBreakdown(commit.engagements_annuels)}
+                                                    </div>
+                                                </Collapse>
+                                            </Col>
+                                        )}
                                      </Row>
                                 </ListGroup.Item>
                             ))}

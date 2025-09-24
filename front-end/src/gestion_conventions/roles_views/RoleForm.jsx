@@ -11,6 +11,18 @@ import {
     faShieldAlt, faCheckCircle, faListCheck // faSquareCheck, faSquare removed as not used
 } from '@fortawesome/free-solid-svg-icons';
 
+// --- Display Name Mapping ---
+const GROUP_NAME_MAP = {
+    'Domaines': 'Axes Stratégiques',
+    // You can add other name overrides here in the future
+    // e.g., 'Utilisateurs': 'Gestion des Accès'
+};
+
+// --- Helper to format permission labels for display ---
+const formatPermissionLabel = (permissionName) => {
+    return permissionName.replace(/\bdomaines\b/g, 'axes stratégiques');
+};
+
 // --- Sidebar Order Constant ---
 const SIDEBAR_ORDER = [ /* ... Keep your existing order ... */
     'Dashboard', 'Conventions', 'Partenaires', 'Chantiers', 'Programmes', 'Domaines',
@@ -213,7 +225,7 @@ const RoleForm = ({
                              {allPermissionNames.length > 0 && ( <FormCheck type="switch" id="global-select-all-switch" label="Tout Sélectionner" className="small global-select-all-switch" checked={areAllSelected} onChange={() => handleSelectAllPermissions(!areAllSelected)} title={areAllSelected ? "Désélectionner tout" : "Sélectionner tout"} /> )}
                          </div>
                          {/* Permissions Groups */}
-                         {orderedPermissionGroups.length > 0 ? ( orderedPermissionGroups.map(({ groupName, permissions: groupPermissions }, index) => { const allGroupSelected = groupPermissions.every(perm => selectedPermissions.has(perm.name)); const sanitizedGroupName = groupName.replace(/\s+/g, '-'); return ( <div key={groupName} className={`permission-group mb-3 pb-3 ${index < orderedPermissionGroups.length - 1 ? 'border-bottom-dashed' : ''}`}> <div className="d-flex justify-content-between align-items-center mb-2"> <h6 className="mb-0 fw-semibold permission-group-title">{groupName}</h6> <FormCheck type="switch" id={`select-all-${sanitizedGroupName}`} label="Tout" className="small select-all-perm-group" checked={allGroupSelected} onChange={(e) => handleSelectAllGroup(groupPermissions, e.target.checked)} title={`Tout ${groupName}`} /> </div> <Row xs={1} sm={2} md={3} lg={4} className="g-2 permission-list"> {groupPermissions.map(permission => ( <Col key={permission.id}> <FormCheck type="switch" id={`perm-${permission.id}`} label={permission.name} className="small permission-item" checked={selectedPermissions.has(permission.name)} onChange={(e) => handlePermissionChange(permission.name, e.target.checked)} title={permission.name} /> </Col> ))} </Row> </div> ); }) ) : ( <div className="text-muted text-center p-3 border rounded bg-light">Aucune permission disponible.</div> )}
+                         {orderedPermissionGroups.length > 0 ? ( orderedPermissionGroups.map(({ groupName, permissions: groupPermissions }, index) => { const allGroupSelected = groupPermissions.every(perm => selectedPermissions.has(perm.name)); const sanitizedGroupName = groupName.replace(/\s+/g, '-'); return ( <div key={groupName} className={`permission-group mb-3 pb-3 ${index < orderedPermissionGroups.length - 1 ? 'border-bottom-dashed' : ''}`}> <div className="d-flex justify-content-between align-items-center mb-2"> <h6 className="mb-0 fw-semibold permission-group-title">{GROUP_NAME_MAP[groupName] || groupName}</h6> <FormCheck type="switch" id={`select-all-${sanitizedGroupName}`} label="Tout" className="small select-all-perm-group" checked={allGroupSelected} onChange={(e) => handleSelectAllGroup(groupPermissions, e.target.checked)} title={`Tout ${groupName}`} /> </div> <Row xs={1} sm={2} md={3} lg={4} className="g-2 permission-list"> {groupPermissions.map(permission => ( <Col key={permission.id}> <FormCheck type="switch" id={`perm-${permission.id}`} label={formatPermissionLabel(permission.name)} className="small permission-item" checked={selectedPermissions.has(permission.name)} onChange={(e) => handlePermissionChange(permission.name, e.target.checked)} title={permission.name} /> </Col> ))} </Row> </div> ); }) ) : ( <div className="text-muted text-center p-3 border rounded bg-light">Aucune permission disponible.</div> )}
                          {formErrors.permissions && ( <div className="d-block invalid-feedback mt-1 small">{formErrors.permissions}</div> )}
                     </div>
                     {/* Footer Actions */}

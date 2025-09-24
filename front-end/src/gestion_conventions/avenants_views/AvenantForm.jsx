@@ -12,9 +12,11 @@ import {
 import Select from 'react-select';
 import {
     Form, Button, Row, Col, Card, Alert, Spinner,
-    InputGroup, FormCheck, ListGroup, Badge, Stack
+    InputGroup, FormCheck, ListGroup, Badge, Stack,
+    ToggleButtonGroup, ToggleButton
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
+
 const STATUT_OPTIONS = [
     { value: "en cours d'approbation", label: "En Cours d'Approbation" },
     { value: "approuvé", label: "Approuvé" },
@@ -23,6 +25,7 @@ const STATUT_OPTIONS = [
     { value: "visé", label: "Visé" },
     { value: "signé", label: "Signé" },
 ];
+
 // Styles for react-select
 const selectStyles = {
     control: (provided, state) => ({ ...provided, width: '100%', maxWidth: '100%', backgroundColor: '#f8f9fa', borderRadius: '1.5rem', border: state.isFocused ? '1px solid #86b7fe' : '1px solid #ced4da', boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13, 110, 253, 0.25)' : 'none', minHeight: '38px', fontSize: '0.875rem' }),
@@ -41,8 +44,27 @@ const selectStyles = {
     loadingMessage: (provided) => ({ ...provided, fontSize: '0.875rem', padding: '0.5rem 1rem' }),
 };
 
-const parseCurrency = (value) => { if (typeof value !== 'string') return Number(value) || null; const cleaned = value.replace(/[\s\u00A0]/g, '').replace(/[^0-9,.-]/g, '').replace(',', '.'); const number = parseFloat(cleaned); return isNaN(number) ? null : number; };
-const getFileIcon = (filenameOrMimeType) => { if (!filenameOrMimeType) return faFileAlt; const lowerCase = String(filenameOrMimeType).toLowerCase(); if (lowerCase.includes('pdf')) return faFilePdf; if (lowerCase.includes('doc') || lowerCase.includes('word')) return faFileWord; if (lowerCase.includes('xls') || lowerCase.includes('excel')) return faFileExcel; if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].some(ext => lowerCase.endsWith(ext)) || lowerCase.startsWith('image/')) return faFileImage; return faFileAlt; };
+// --- Helper Functions ---
+const calculateEngagementYears = (startYear, durationMonths) => {
+    if (!startYear || !durationMonths) return [];
+    const numYears = Math.ceil(durationMonths / 12);
+    return Array.from({ length: numYears }, (_, i) => parseInt(startYear, 10) + i);
+};
+const parseCurrency = (value) => { 
+    if (typeof value !== 'string') return Number(value) || null; 
+    const cleaned = value.replace(/[\s\u00A0]/g, '').replace(/[^0-9,.-]/g, '').replace(',', '.'); 
+    const number = parseFloat(cleaned); 
+    return isNaN(number) ? null : number; 
+};
+const getFileIcon = (filenameOrMimeType) => { 
+    if (!filenameOrMimeType) return faFileAlt; 
+    const lowerCase = String(filenameOrMimeType).toLowerCase(); 
+    if (lowerCase.includes('pdf')) return faFilePdf; 
+    if (lowerCase.includes('doc') || lowerCase.includes('word')) return faFileWord; 
+    if (lowerCase.includes('xls') || lowerCase.includes('excel')) return faFileExcel; 
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].some(ext => lowerCase.endsWith(ext)) || lowerCase.startsWith('image/')) return faFileImage; 
+    return faFileAlt; 
+};
 
 const TYPE_MODIFICATION_OPTIONS = [ { value: 'montant', label: 'Modification Montant' }, { value: 'durée', label: 'Modification Durée' }, { value: 'partenaire', label: 'Modification Partenaire(s)' }, { value: 'autre', label: 'Autre Modification' }, ];
 
@@ -78,6 +100,7 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
     const isEditing = useMemo(() => itemId !== null, [itemId]);
     const optionsFinishedLoading = useMemo(() => !loadingOptions.conventions && !loadingOptions.partenaires && !loadingOptions.fonctionnaires, [loadingOptions]);
     const storageBaseUrl = useMemo(() => baseApiUrl.replace('/api', ''), [baseApiUrl]);
+    const [selectedConventionDetails, setSelectedConventionDetails] = useState(null); // <<< ADD THIS LINE
 
     const fetchOptions = useCallback(async () => {
         console.log("AvenantForm: Fetching options using /api/options/...");
@@ -89,21 +112,18 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
                 axios.get(`${baseApiUrl}/options/fonctionnaires`, { withCredentials: true })
             ]);
 
-            // Conventions: Assumes /options/conventions returns [{value, label}]
             const conventionsData = convRes.data || [];
             const mappedConvOptions = Array.isArray(conventionsData) ? conventionsData
                 .filter(c => c?.value !== undefined && c?.label !== undefined)
                 .sort((a, b) => String(a.label).localeCompare(String(b.label), undefined, { sensitivity: 'base' })) : [];
             setConventionOptions(mappedConvOptions);
 
-            // Partenaires: Assumes /options/partenaires returns [{value, label}]
             const partenairesData = partRes.data || [];
             const mappedPartOptions = Array.isArray(partenairesData) ? partenairesData
                 .filter(p => p?.value !== undefined && p?.label !== undefined)
                 .sort((a, b) => String(a.label).localeCompare(String(b.label), undefined, { sensitivity: 'base' })) : [];
             setPartenaireOptions(mappedPartOptions);
 
-            // Fonctionnaires: Handles nested { "fonctionnaires": [{ id, nom_complet }] } or direct [{value, label}]
             const foncDataResponse = foncRes.data || {};
             let rawFoncData = [];
             if (foncDataResponse.fonctionnaires && Array.isArray(foncDataResponse.fonctionnaires)) {
@@ -112,7 +132,7 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
                 rawFoncData = foncDataResponse;
             }
             const mappedFoncOptions = rawFoncData.map(f => ({
-                value: f.id || f.value, // Prefer 'id' if from nested, 'value' if direct
+                value: f.id || f.value,
                 label: f.nom_complet || f.label || `Fonctionnaire ID ${f.id || f.value}`
             })).filter(f => f.value !== undefined && f.label !== undefined)
                .sort((a, b) => String(a.label).localeCompare(String(b.label)));
@@ -121,7 +141,7 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
         } catch (err) {
             console.error("AvenantForm: Erreur chargement options:", err.response || err);
             const errorMessage = err.response?.data?.message || "Erreur chargement des listes pour le formulaire.";
-            setSubmissionStatus(prev => ({ ...prev, error: errorMessage, loading: false })); // Ensure loading is false
+            setSubmissionStatus(prev => ({ ...prev, error: errorMessage, loading: false }));
             setConventionOptions([]); setPartenaireOptions([]); setFonctionnairesOptions([]);
         } finally {
             setLoadingOptions({ conventions: false, partenaires: false, fonctionnaires: false });
@@ -130,6 +150,8 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
     }, [baseApiUrl]);
 
     useEffect(() => { fetchOptions(); }, [fetchOptions]);
+// In AvenantForm.jsx, after your other useEffect hooks
+
 
     useEffect(() => {
         if (!isEditing || !itemId || !optionsFinishedLoading) { setLoadingData(false); return; }
@@ -140,9 +162,32 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
             setExistingFichiers([]); setFichiers([]); setFichiersToDelete([]); setAvenantPartnerDetails([]);
             setFormData(prev => ({ ...prev, fonctionnaires: [] }));
             try {
-                const response = await axios.get(`${baseApiUrl}/avenants/${itemId}`, { params: { include: 'convention,documents,partnerCommitments.partenaire' }, withCredentials: true });
+                const response = await axios.get(`${baseApiUrl}/avenants/${itemId}`, { params: { include: 'convention,documents,partnerCommitments.partenaire,partnerCommitments.engagementsAnnuels' }, withCredentials: true });
                 const data = response.data.avenant || response.data;
+
                 if (!isMounted || !data) { if(isMounted) throw new Error("Avenant non trouvé ou données invalides."); return; }
+                if (data.convention) {
+            setSelectedConventionDetails({
+                Annee_Convention: data.convention.Annee_Convention,
+                duree_convention: data.convention.duree_convention
+            });
+            console.log("Convention details set from included data.");
+        } 
+        // As a fallback, if it wasn't included, fetch it separately.
+        else if (data.convention_id) {
+            try {
+                const convResponse = await axios.get(`${baseApiUrl}/conventions/${data.convention_id}`, { withCredentials: true });
+                const details = convResponse.data.convention || convResponse.data;
+                setSelectedConventionDetails({
+                    Annee_Convention: details.Annee_Convention,
+                    duree_convention: details.duree_convention
+                });
+                console.log("Convention details fetched separately as fallback.");
+            } catch (convError) {
+                console.error("Fallback failed to fetch convention details:", convError);
+                setSelectedConventionDetails(null);
+            }
+        }
                 const findOption = (options, valueToFind, valueKey = 'value') => { if (valueToFind === null || valueToFind === undefined || !options || options.length === 0) return null; const valueStr = String(valueToFind).toLowerCase(); return options.find(opt => String(opt[valueKey]).toLowerCase() === valueStr) || null; };
                 const findMultiOptionsLocal = (options, valuesString) => { if (!valuesString || typeof valuesString !== 'string' || !options?.length) return []; const selectedValues = valuesString.split(';').map(v => String(v).trim().toLowerCase()).filter(v => v); return options.filter(opt => selectedValues.includes(String(opt.value).toLowerCase())); };
                 const selectedTypeOption = findOption(typeModificationOptions, data.type_modification);
@@ -150,7 +195,7 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
                 const selectedFonctionnaireOptions = findMultiOptionsLocal(fonctionnairesOptions, fonctionnaireIdString);
                 const selectedStatutOption = findOption(STATUT_OPTIONS, data.statut);
                 setFormData({
-                    convention_id: data.convention_id || initialFormData.convention_id, // Use initialConventionId if data.convention_id is null
+                    convention_id: data.convention_id || initialFormData.convention_id,
                     numero_avenant: data.numero_avenant || '',
                     date_signature: data.date_signature || '',
                     objet: data.objet || '',
@@ -171,7 +216,17 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
                 if (Array.isArray(fetchedCommitments) && selectedTypeOption?.value === 'partenaire') {
                     const initialPartnerDetails = fetchedCommitments.map((commit) => {
                         const partnerOption = partenaireOptions.find(opt => opt.value === commit.Id_Partenaire);
-                        return { id: commit.Id_Partenaire, label: partnerOption?.label || `Partenaire ID ${commit.Id_Partenaire}`, montant: String(commit.Montant_Convenu ?? ''), is_signatory: !!commit.is_signatory, date_signature: commit.date_signature || '', details_signature: commit.details_signature || '' };
+                        return {
+                            id: commit.Id_Partenaire,
+                            label: partnerOption?.label || `Partenaire ID ${commit.Id_Partenaire}`,
+                            engagement_type: commit.autre_engagement ? 'autre' : 'financier',
+                            montant: String(commit.Montant_Convenu ?? ''),
+                            autre_engagement: commit.autre_engagement || '',
+                            engagements_annuels: (commit.engagements_annuels || []).map(e => ({...e, montant_prevu: String(e.montant_prevu ?? '')})),
+                            is_signatory: !!commit.is_signatory,
+                            date_signature: commit.date_signature || '',
+                            details_signature: commit.details_signature || ''
+                        };
                     }).filter(p => p && p.id);
                     setAvenantPartnerDetails(initialPartnerDetails);
                 } else { setAvenantPartnerDetails([]); }
@@ -179,14 +234,49 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
             } catch (err) { console.error("Erreur chargement données avenant:", err.response?.data || err.message || err); if (isMounted) setSubmissionStatus({ loading: false, error: err.response?.data?.message || err.message || "Erreur chargement données.", success: false }); }
             finally { if (isMounted) setLoadingData(false); }
         };
-        if (optionsFinishedLoading) fetchAvenantData(); // Ensure options are loaded before fetching item data
+        if (optionsFinishedLoading) fetchAvenantData();
         return () => { isMounted = false; };
     }, [itemId, isEditing, baseApiUrl, optionsFinishedLoading, partenaireOptions, fonctionnairesOptions, typeModificationOptions, initialFormData.convention_id, storageBaseUrl]);
 
     useEffect(() => { if (!isEditing && optionsFinishedLoading) { setFormData(initialFormData); setFichiers([]); setExistingFichiers([]); setFichiersToDelete([]); setAvenantPartnerDetails([]); setFormErrors({}); setSubmissionStatus({ loading: false, error: null, success: false }); setLoadingData(false); } }, [isEditing, optionsFinishedLoading, initialFormData]);
+    
     const validateForm = useCallback(() => { 
-        const errors = {}; if (!formData.convention_id) errors.convention_id = "Convention requise."; if (!formData.numero_avenant?.trim()) errors.numero_avenant = "Numéro avenant requis."; if (!formData.date_signature) errors.date_signature = "Date signature requise."; if (!formData.type_modification) errors.type_modification = "Type modification requis."; const typeValue = formData.type_modification?.value; if (typeValue === 'montant') { const montant = parseCurrency(formData.montant_modifie); if (montant === null || isNaN(montant) || montant < 0) errors.montant_modifie = "Montant modifié valide est requis.";} if (typeValue === 'durée') { if (!formData.nouvelle_date_fin) errors.nouvelle_date_fin = "Nouvelle date fin requise.";} if (typeValue === 'partenaire') { if (!avenantPartnerDetails || avenantPartnerDetails.length === 0) errors.partenaires = "Au moins un partenaire requis."; else { avenantPartnerDetails.forEach((p) => { if (p.montant !== '' && p.montant !== null && p.montant !== undefined) { const amount = parseCurrency(String(p.montant)); if (amount === null || isNaN(amount) || amount < 0) errors[`montant_${p.id}`] = `Montant invalide pour ${p.label}.`;} if (p.is_signatory && !p.date_signature) errors[`date_sig_${p.id}`] = `Date signature requise pour ${p.label}.`; });}} setFormErrors(errors); return Object.keys(errors).length === 0; }, [formData, avenantPartnerDetails]);
-         const handleStatutChange = useCallback((selectedOption) => {
+        const errors = {}; 
+        if (!formData.convention_id) errors.convention_id = "Convention requise."; 
+        if (!formData.numero_avenant?.trim()) errors.numero_avenant = "Numéro avenant requis."; 
+        if (!formData.date_signature) errors.date_signature = "Date signature requise."; 
+        if (!formData.type_modification) errors.type_modification = "Type modification requis."; 
+        const typeValue = formData.type_modification?.value; 
+        if (typeValue === 'montant') { 
+            const montant = parseCurrency(formData.montant_modifie); 
+            if (montant === null || isNaN(montant) || montant < 0) errors.montant_modifie = "Montant modifié valide est requis.";
+        } 
+        if (typeValue === 'durée') { 
+            if (!formData.nouvelle_date_fin) errors.nouvelle_date_fin = "Nouvelle date fin requise.";
+        } 
+        if (typeValue === 'partenaire') { 
+            if (!avenantPartnerDetails || avenantPartnerDetails.length === 0) {
+                errors.partenaires = "Au moins un partenaire requis.";
+            } else { 
+                avenantPartnerDetails.forEach((p) => { 
+                    if (p.engagement_type === 'financier' && p.montant !== '' && p.montant !== null && p.montant !== undefined) { 
+                        const amount = parseCurrency(String(p.montant)); 
+                        if (amount === null || isNaN(amount) || amount < 0) errors[`montant_${p.id}`] = `Montant invalide pour ${p.label}.`;
+                    }
+                    if (p.engagement_type === 'autre' && !p.autre_engagement?.trim()) {
+                        errors[`autre_engagement_${p.id}`] = `Description requise pour ${p.label}.`;
+                    }
+                    if (p.is_signatory && !p.date_signature) {
+                        errors[`date_sig_${p.id}`] = `Date signature requise pour ${p.label}.`;
+                    }
+                });
+            }
+        } 
+        setFormErrors(errors); 
+        return Object.keys(errors).length === 0; 
+    }, [formData, avenantPartnerDetails]);
+
+    const handleStatutChange = useCallback((selectedOption) => {
         setFormData(prev => ({
             ...prev,
             statut: selectedOption,
@@ -194,26 +284,241 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
         }));
         if (formErrors.statut) setFormErrors(prev => ({ ...prev, statut: undefined }));
     }, [formErrors.statut]);
+
     const handleChange = useCallback((e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); if (formErrors[name]) setFormErrors(prev => { const next = {...prev}; delete next[name]; return next; }); }, [formErrors]);
-    const handleSelectChange = useCallback((selectedOption, actionMeta) => { const { name } = actionMeta; if (name === 'convention_id') { const conventionIdValue = selectedOption ? selectedOption.value : ''; setFormData(prev => ({ ...prev, convention_id: conventionIdValue })); if (formErrors.convention_id) setFormErrors(prev => ({ ...prev, convention_id: undefined })); } else if (name === 'type_modification') { const typeValue = selectedOption; setFormData(prev => ({ ...prev, type_modification: typeValue })); const selectedTypeValue = selectedOption?.value; setFormData(prevData => ({ ...prevData, montant_modifie: selectedTypeValue === 'montant' ? prevData.montant_modifie : '', nouvelle_date_fin: selectedTypeValue === 'durée' ? prevData.nouvelle_date_fin : '', })); if (selectedTypeValue !== 'partenaire') { setAvenantPartnerDetails([]); } setFormErrors(prev => { const nextErrors = { ...prev }; delete nextErrors.type_modification; if (selectedTypeValue !== 'montant') delete nextErrors.montant_modifie; if (selectedTypeValue !== 'durée') delete nextErrors.nouvelle_date_fin; if (selectedTypeValue !== 'partenaire') { delete nextErrors.partenaires; Object.keys(nextErrors).forEach(key => { if (key.startsWith('montant_') || key.startsWith('date_sig_')) delete nextErrors[key]; }); } return nextErrors; }); } }, [formErrors.convention_id]);
+    
+    const handleSelectChange = useCallback(async (selectedOption, actionMeta) => { 
+        const { name } = actionMeta; 
+        if (name === 'convention_id') { 
+            const conventionIdValue = selectedOption ? selectedOption.value : ''; 
+            setFormData(prev => ({ ...prev, convention_id: conventionIdValue }));
+            if (conventionIdValue) {
+            try {
+                const response = await axios.get(`${baseApiUrl}/conventions/${conventionIdValue}`, { withCredentials: true });
+                const details = response.data.convention || response.data;
+                setSelectedConventionDetails({
+                    Annee_Convention: details.Annee_Convention,
+                    duree_convention: details.duree_convention
+                });
+            } catch (error) {
+                console.error("Failed to fetch convention details on select:", error);
+                setSelectedConventionDetails(null);
+            }
+        } else {
+            setSelectedConventionDetails(null); // Clear details if convention is deselected
+        }
+            if (formErrors.convention_id) setFormErrors(prev => ({ ...prev, convention_id: undefined })); 
+        } else if (name === 'type_modification') { 
+            const typeValue = selectedOption; 
+            setFormData(prev => ({ ...prev, type_modification: typeValue })); 
+            const selectedTypeValue = selectedOption?.value; 
+            setFormData(prevData => ({ ...prevData, montant_modifie: selectedTypeValue === 'montant' ? prevData.montant_modifie : '', nouvelle_date_fin: selectedTypeValue === 'durée' ? prevData.nouvelle_date_fin : '', })); 
+            if (selectedTypeValue !== 'partenaire') { setAvenantPartnerDetails([]); } 
+            setFormErrors(prev => { 
+                const nextErrors = { ...prev }; 
+                delete nextErrors.type_modification; 
+                if (selectedTypeValue !== 'montant') delete nextErrors.montant_modifie; 
+                if (selectedTypeValue !== 'durée') delete nextErrors.nouvelle_date_fin; 
+                if (selectedTypeValue !== 'partenaire') { 
+                    delete nextErrors.partenaires; 
+                    Object.keys(nextErrors).forEach(key => { 
+                        if (key.startsWith('montant_') || key.startsWith('date_sig_') || key.startsWith('autre_engagement_')) delete nextErrors[key]; 
+                    }); 
+                } 
+                return nextErrors; 
+            }); 
+        } 
+    }, [formErrors.convention_id, baseApiUrl]);
+
     const handleFonctionnaireChange = useCallback((selectedOptions) => { setFormData(prev => ({ ...prev, fonctionnaires: selectedOptions || [] })); }, []);
-    const handleAvenantPartnerSelectionChange = useCallback((selectedOptions) => { const newSelectedPartners = selectedOptions || []; setAvenantPartnerDetails(prevDetails => { const prevMap = new Map(prevDetails.map(p => [p.id, p])); return newSelectedPartners.map(option => ({ id: option.value, label: option.label, montant: prevMap.get(option.value)?.montant ?? '', is_signatory: prevMap.get(option.value)?.is_signatory ?? false, date_signature: prevMap.get(option.value)?.date_signature ?? '', details_signature: prevMap.get(option.value)?.details_signature ?? '', })); }); if (formErrors.partenaires && newSelectedPartners.length > 0) setFormErrors(prev => ({ ...prev, partenaires: undefined })); }, [formErrors.partenaires]);
+    
+    const handleAvenantPartnerSelectionChange = useCallback((selectedOptions) => {
+        const newSelectedPartners = selectedOptions || [];
+        setAvenantPartnerDetails(prevDetails => {
+            const prevMap = new Map(prevDetails.map(p => [p.id, p]));
+            return newSelectedPartners.map(option => ({
+                id: option.value,
+                label: option.label,
+                engagement_type: prevMap.get(option.value)?.engagement_type ?? 'financier',
+                montant: prevMap.get(option.value)?.montant ?? '',
+                autre_engagement: prevMap.get(option.value)?.autre_engagement ?? '',
+                engagements_annuels: prevMap.get(option.value)?.engagements_annuels ?? [],
+                is_signatory: prevMap.get(option.value)?.is_signatory ?? false,
+                date_signature: prevMap.get(option.value)?.date_signature ?? '',
+                details_signature: prevMap.get(option.value)?.details_signature ?? '',
+            }));
+        });
+        if (formErrors.partenaires && newSelectedPartners.length > 0) setFormErrors(prev => ({ ...prev, partenaires: undefined }));
+    }, [formErrors.partenaires]);
+
     const handleAvenantCommitmentChange = useCallback((partnerId, value) => { setAvenantPartnerDetails(prev => prev.map(p => (p.id === partnerId ? { ...p, montant: value } : p))); const key = `montant_${partnerId}`; if (formErrors[key]) setFormErrors(prev => { const next = {...prev}; delete next[key]; return next; }); }, [formErrors]);
+    
     const handleAvenantSignatoryChange = useCallback((partnerId, isChecked) => { setAvenantPartnerDetails(prev => prev.map(p => (p.id === partnerId ? { ...p, is_signatory: isChecked, date_signature: isChecked ? p.date_signature : '', details_signature: isChecked ? p.details_signature : '' } : p))); const key = `date_sig_${partnerId}`; if (!isChecked && formErrors[key]) setFormErrors(prev => { const next = {...prev}; delete next[key]; return next; }); }, [formErrors]);
+    
     const handleAvenantSignatureDateChange = useCallback((partnerId, value) => { setAvenantPartnerDetails(prev => prev.map(p => (p.id === partnerId ? { ...p, date_signature: value } : p))); const key = `date_sig_${partnerId}`; if (formErrors[key]) setFormErrors(prev => { const next = {...prev}; delete next[key]; return next; }); }, [formErrors]);
+    
     const handleAvenantSignatureDetailsChange = useCallback((partnerId, value) => { setAvenantPartnerDetails(prev => prev.map(p => (p.id === partnerId ? { ...p, details_signature: value } : p))); }, []);
+    
+    const handleAvenantEngagementTypeChange = (partnerId, type) => {
+        setAvenantPartnerDetails(prevDetails =>
+            prevDetails.map(p => {
+                if (p.id === partnerId) {
+                    const updatedPartner = { ...p, engagement_type: type };
+                    if (type === 'financier') {
+                        updatedPartner.autre_engagement = '';
+                    } else {
+                        updatedPartner.montant = '';
+                        updatedPartner.engagements_annuels = [];
+                    }
+                    return updatedPartner;
+                }
+                return p;
+            })
+        );
+    };
+
+    const handleAvenantAutreEngagementChange = (partnerId, value) => {
+        setAvenantPartnerDetails(prevDetails =>
+            prevDetails.map(p => (p.id === partnerId ? { ...p, autre_engagement: value } : p))
+        );
+    };
+
+    const handleAvenantYearlyAmountChange = (partnerId, year, value) => {
+        setAvenantPartnerDetails(prevDetails =>
+            prevDetails.map(p => {
+                if (p.id === partnerId) {
+                    const updatedEngagements = p.engagements_annuels ? [...p.engagements_annuels] : [];
+                    const yearIndex = updatedEngagements.findIndex(e => Number(e.annee) === year);
+                    const numericValue = value.replace(/[^0-9.]/g, '');
+
+                    if (yearIndex > -1) {
+                        updatedEngagements[yearIndex].montant_prevu = numericValue;
+                    } else {
+                        updatedEngagements.push({ annee: year, montant_prevu: numericValue });
+                    }
+                    const finalEngagements = updatedEngagements.filter(e => e.montant_prevu && e.montant_prevu !== '');
+                    return { ...p, engagements_annuels: finalEngagements };
+                }
+                return p;
+            })
+        );
+    };
+
     const handleFileChange = useCallback((e) => { const filesToAdd = Array.from(e.target.files ?? []); if (!filesToAdd.length) return; setFichiers(prev => { const names = new Set(prev.map(f => f.name)); return [...prev, ...filesToAdd.filter(f => !names.has(f.name))]; }); e.target.value = null; if (formErrors.fichiers || formErrors['fichiers.*']) setFormErrors(prev => ({ ...prev, 'fichiers': undefined, 'fichiers.*': undefined })); }, [formErrors.fichiers, formErrors['fichiers.*']]);
+    
     const removeNewFile = useCallback((fileIndex) => { setFichiers(prev => prev.filter((_, idx) => idx !== fileIndex)); }, []);
+    
     const removeExistingFile = useCallback((fileId) => { setFichiersToDelete(prev => [...new Set([...prev, fileId])]); }, []);
+    
     const handleSubmit = useCallback(async (e) => { 
-     e.preventDefault(); if (!formData.convention_id) { setSubmissionStatus({ loading: false, error: "La sélection d'une convention parente est requise.", success: false }); document.getElementById('formConvention_id')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return;} if (!validateForm()) { setSubmissionStatus({ loading: false, error: "Veuillez corriger les erreurs indiquées.", success: false }); const firstErrorKey = Object.keys(formErrors)[0]; let errorElementId = firstErrorKey ? `form${firstErrorKey.charAt(0).toUpperCase() + firstErrorKey.slice(1)}` : null; if (firstErrorKey?.startsWith('montant_') || firstErrorKey?.startsWith('date_sig_')) { errorElementId = `formAvenantDetail_${firstErrorKey.split('_').pop()}`; } else if (firstErrorKey === 'partenaires') { errorElementId = 'formPartenaireSelectConditional'; } else if (firstErrorKey === 'fichiers') { errorElementId = 'avenantFileGroup'; } const elementToScroll = errorElementId ? document.getElementById(errorElementId) : document.querySelector('.is-invalid'); elementToScroll?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; } setSubmissionStatus({ loading: true, error: null, success: false }); const dataToSubmit = new FormData(); dataToSubmit.append('convention_id', formData.convention_id); dataToSubmit.append('numero_avenant', formData.numero_avenant); dataToSubmit.append('date_signature', formData.date_signature); dataToSubmit.append('annee_avenant', formData.annee_avenant);
+        e.preventDefault(); 
+        if (!formData.convention_id) { 
+            setSubmissionStatus({ loading: false, error: "La sélection d'une convention parente est requise.", success: false }); 
+            document.getElementById('formConvention_id')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+            return;
+        } 
+        if (!validateForm()) { 
+            setSubmissionStatus({ loading: false, error: "Veuillez corriger les erreurs indiquées.", success: false }); 
+            const firstErrorKey = Object.keys(formErrors)[0]; 
+            let errorElementId = firstErrorKey ? `form${firstErrorKey.charAt(0).toUpperCase() + firstErrorKey.slice(1)}` : null; 
+            if (firstErrorKey?.startsWith('montant_') || firstErrorKey?.startsWith('date_sig_') || firstErrorKey?.startsWith('autre_engagement_')) { 
+                errorElementId = `formAvenantDetail_${firstErrorKey.split('_').pop()}`; 
+            } else if (firstErrorKey === 'partenaires') { 
+                errorElementId = 'formPartenaireSelectConditional'; 
+            } else if (firstErrorKey === 'fichiers') { 
+                errorElementId = 'avenantFileGroup'; 
+            } 
+            const elementToScroll = errorElementId ? document.getElementById(errorElementId) : document.querySelector('.is-invalid'); 
+            elementToScroll?.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+            return; 
+        } 
+        setSubmissionStatus({ loading: true, error: null, success: false }); 
+        const dataToSubmit = new FormData(); 
+        dataToSubmit.append('convention_id', formData.convention_id); 
+        dataToSubmit.append('numero_avenant', formData.numero_avenant); 
+        dataToSubmit.append('date_signature', formData.date_signature); 
+        dataToSubmit.append('annee_avenant', formData.annee_avenant);
         dataToSubmit.append('session', formData.session);
         dataToSubmit.append('numero_approbation', formData.numero_approbation);
         dataToSubmit.append('statut', formData.statut?.value || '');
         if (formData.statut?.value === 'visé') {
             dataToSubmit.append('date_visa', formData.date_visa || '');
         }
-        dataToSubmit.append('objet', formData.objet); dataToSubmit.append('type_modification', formData.type_modification?.value || ''); if (formData.type_modification?.value === 'montant') { dataToSubmit.append('montant_modifie', parseCurrency(formData.montant_modifie) ?? ''); } if (formData.type_modification?.value === 'durée') { dataToSubmit.append('nouvelle_date_fin', formData.nouvelle_date_fin || ''); } dataToSubmit.append('remarques', formData.remarques || ''); const fonctionnaireIds = formData.fonctionnaires.map(f => f.value).join(';'); dataToSubmit.append('id_fonctionnaire', fonctionnaireIds); fichiers.forEach((file, index) => dataToSubmit.append(`fichiers[${index}]`, file, file.name)); if (isEditing && fichiersToDelete.length > 0) { fichiersToDelete.forEach((id) => dataToSubmit.append(`fichiers_to_delete[]`, id)); } if (formData.type_modification?.value === 'partenaire') { const partnerData = avenantPartnerDetails.map(p => ({ id: p.id, montant: parseCurrency(String(p.montant)) ?? null, is_signatory: p.is_signatory, date_signature: p.is_signatory && p.date_signature ? p.date_signature : null, details_signature: p.is_signatory && p.details_signature ? p.details_signature : null, })); dataToSubmit.append('avenant_partner_commitments', JSON.stringify(partnerData)); } if (isEditing) { dataToSubmit.append('_method', 'PUT'); } const url = isEditing ? `${baseApiUrl}/avenants/${itemId}` : `${baseApiUrl}/avenants`; const config = { headers: { 'Content-Type': 'multipart/form-data', 'Accept': 'application/json' }, withCredentials: true }; try { const response = await axios.post(url, dataToSubmit, config); setSubmissionStatus({ loading: false, error: null, success: true }); if (isEditing && onItemUpdated) onItemUpdated(response.data.avenant); else if (!isEditing && onItemCreated) onItemCreated(response.data.avenant); setTimeout(onClose, 1500); } catch (err) { const errorMsg = err.response?.data?.message || err.message || "Erreur serveur."; let serverErrors = err.response?.data?.errors || {}; const mappedErrors = {}; if (err.response?.status === 422 && typeof serverErrors === 'object') { for (const key in serverErrors) { if (key.startsWith('fichiers.')) mappedErrors['fichiers'] = (mappedErrors['fichiers'] || '') + serverErrors[key].join(' '); else if (key === 'fichiers_to_delete' || key.startsWith('fichiers_to_delete.')) mappedErrors['fichiers_delete'] = (mappedErrors['fichiers_delete'] || '') + serverErrors[key].join(' '); else if (key.startsWith('avenant_partner_commitments.')) { const match = key.match(/\.(\d+)\.?(.*)?/); const errMessage = serverErrors[key].join(' '); if (match && avenantPartnerDetails[match[1]]) { const partnerId = avenantPartnerDetails[match[1]].id; const fieldName = match[2]; if (fieldName === 'montant' || errMessage.toLowerCase().includes('montant')) mappedErrors[`montant_${partnerId}`] = errMessage; else if (fieldName === 'date_signature' || errMessage.toLowerCase().includes('date signature') || errMessage.toLowerCase().includes('date_signature')) mappedErrors[`date_sig_${partnerId}`] = errMessage; else mappedErrors['partenaires'] = (mappedErrors['partenaires'] || '') + `Erreur Part. ${match[1]+1}: ${errMessage} `; } else { mappedErrors['partenaires'] = (mappedErrors['partenaires'] || '') + errMessage + ' '; } } else if (key === 'id_fonctionnaire') mappedErrors['id_fonctionnaire'] = serverErrors[key].join(' '); else { const formKey = key === 'type_modification' ? 'type_modification' : (Object.keys(formData).find(fk => fk.toLowerCase() === key.toLowerCase()) || key); mappedErrors[formKey] = serverErrors[key].join(' '); } } setFormErrors(mappedErrors); } else { setFormErrors({}); } setSubmissionStatus({ loading: false, error: errorMsg, success: false }); } }, [isEditing, itemId, baseApiUrl, formData, fichiers, fichiersToDelete, avenantPartnerDetails, validateForm, onClose, onItemCreated, onItemUpdated]);
+        dataToSubmit.append('objet', formData.objet); 
+        dataToSubmit.append('type_modification', formData.type_modification?.value || ''); 
+        if (formData.type_modification?.value === 'montant') { 
+            dataToSubmit.append('montant_modifie', parseCurrency(formData.montant_modifie) ?? ''); 
+        } 
+        if (formData.type_modification?.value === 'durée') { 
+            dataToSubmit.append('nouvelle_date_fin', formData.nouvelle_date_fin || ''); 
+        } 
+        dataToSubmit.append('remarques', formData.remarques || ''); 
+        const fonctionnaireIds = formData.fonctionnaires.map(f => f.value).join(';'); 
+        dataToSubmit.append('id_fonctionnaire', fonctionnaireIds); 
+        fichiers.forEach((file, index) => dataToSubmit.append(`fichiers[${index}]`, file, file.name)); 
+        if (isEditing && fichiersToDelete.length > 0) { 
+            fichiersToDelete.forEach((id) => dataToSubmit.append(`fichiers_to_delete[]`, id)); 
+        } 
+        if (formData.type_modification?.value === 'partenaire') {
+            const partnerData = avenantPartnerDetails.map(p => ({
+                id: p.id,
+                montant: p.engagement_type === 'financier' && p.montant ? parseCurrency(String(p.montant)) : null,
+                autre_engagement: p.engagement_type === 'autre' && p.autre_engagement ? p.autre_engagement : null,
+                is_signatory: p.is_signatory,
+                date_signature: p.is_signatory && p.date_signature ? p.date_signature : null,
+                details_signature: p.is_signatory && p.details_signature ? p.details_signature : null,
+                engagements_annuels: p.engagements_annuels?.map(e => ({
+                    annee: e.annee,
+                    montant_prevu: parseCurrency(e.montant_prevu)
+                })) || []
+            }));
+            dataToSubmit.append('avenant_partner_commitments', JSON.stringify(partnerData));
+        }
+        if (isEditing) { 
+            dataToSubmit.append('_method', 'PUT'); 
+        } 
+        const url = isEditing ? `${baseApiUrl}/avenants/${itemId}` : `${baseApiUrl}/avenants`; 
+        const config = { headers: { 'Content-Type': 'multipart/form-data', 'Accept': 'application/json' }, withCredentials: true }; 
+        try { 
+            const response = await axios.post(url, dataToSubmit, config); 
+            setSubmissionStatus({ loading: false, error: null, success: true }); 
+            if (isEditing && onItemUpdated) onItemUpdated(response.data.avenant); 
+            else if (!isEditing && onItemCreated) onItemCreated(response.data.avenant); 
+            setTimeout(onClose, 1500); 
+        } catch (err) { 
+            const errorMsg = err.response?.data?.message || err.message || "Erreur serveur."; 
+            let serverErrors = err.response?.data?.errors || {}; 
+            const mappedErrors = {}; 
+            if (err.response?.status === 422 && typeof serverErrors === 'object') { 
+                for (const key in serverErrors) { 
+                    if (key.startsWith('fichiers.')) mappedErrors['fichiers'] = (mappedErrors['fichiers'] || '') + serverErrors[key].join(' '); 
+                    else if (key === 'fichiers_to_delete' || key.startsWith('fichiers_to_delete.')) mappedErrors['fichiers_delete'] = (mappedErrors['fichiers_delete'] || '') + serverErrors[key].join(' '); 
+                    else if (key.startsWith('avenant_partner_commitments.')) { 
+                        const match = key.match(/\.(\d+)\.?(.*)?/); 
+                        const errMessage = serverErrors[key].join(' '); 
+                        if (match && avenantPartnerDetails[match[1]]) { 
+                            const partnerId = avenantPartnerDetails[match[1]].id; 
+                            const fieldName = match[2]; 
+                            if (fieldName === 'montant' || errMessage.toLowerCase().includes('montant')) mappedErrors[`montant_${partnerId}`] = errMessage; 
+                            else if (fieldName === 'autre_engagement' || errMessage.toLowerCase().includes('engagement')) mappedErrors[`autre_engagement_${partnerId}`] = errMessage;
+                            else if (fieldName === 'date_signature' || errMessage.toLowerCase().includes('date signature') || errMessage.toLowerCase().includes('date_signature')) mappedErrors[`date_sig_${partnerId}`] = errMessage; 
+                            else mappedErrors['partenaires'] = (mappedErrors['partenaires'] || '') + `Erreur Part. ${match[1]+1}: ${errMessage} `; 
+                        } else { 
+                            mappedErrors['partenaires'] = (mappedErrors['partenaires'] || '') + errMessage + ' '; 
+                        } 
+                    } else if (key === 'id_fonctionnaire') mappedErrors['id_fonctionnaire'] = serverErrors[key].join(' '); 
+                    else { 
+                        const formKey = key === 'type_modification' ? 'type_modification' : (Object.keys(formData).find(fk => fk.toLowerCase() === key.toLowerCase()) || key); 
+                        mappedErrors[formKey] = serverErrors[key].join(' '); 
+                    } 
+                } 
+                setFormErrors(mappedErrors); 
+            } else { 
+                setFormErrors({}); 
+            } 
+            setSubmissionStatus({ loading: false, error: errorMsg, success: false }); 
+        } 
+    }, [isEditing, itemId, baseApiUrl, formData, fichiers, fichiersToDelete, avenantPartnerDetails, validateForm, onClose, onItemCreated, onItemUpdated]);
 
     const isSubmitDisabled = submissionStatus.loading || loadingData || !optionsFinishedLoading;
 
@@ -236,47 +541,46 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
                         </Col>
                     </Form.Group>
                     <Row className="g-3 mb-3">
-                <Form.Group as={Col} md={4} controlId="formNumeroApprobation">
-                    <Form.Label className="small mb-1 fw-medium">N° Approbation <span className="text-danger">*</span></Form.Label>
-                    <Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.numero_approbation} type="text" name="numero_approbation" value={formData.numero_approbation} onChange={handleChange} size="sm"/>
-                    <Form.Control.Feedback type="invalid">{formErrors.numero_approbation}</Form.Control.Feedback>
-                </Form.Group>
-                <Form.Group as={Col} md={4} controlId="formSession">
-                    <Form.Label className="small mb-1 fw-medium">Session (Mois) <span className="text-danger">*</span></Form.Label>
-                    <Form.Select className="p-2 rounded-pill shadow-sm bg-white border-1" name="session" value={formData.session} onChange={handleChange} isInvalid={!!formErrors.session} size="sm">
-                        <option value="">Sélectionner...</option>
-                        {[...Array(12).keys()].map(i => <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('fr', { month: 'long' })}</option>)}
-                    </Form.Select>
-                    <Form.Control.Feedback type="invalid">{formErrors.session}</Form.Control.Feedback>
-                </Form.Group>
-                <Form.Group as={Col} md={4} controlId="formAnneeAvenant">
-                    <Form.Label className="small mb-1 fw-medium">Année Avenant <span className="text-danger">*</span></Form.Label>
-                    <Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.annee_avenant} type="number" name="annee_avenant" value={formData.annee_avenant} onChange={handleChange} size="sm" placeholder="YYYY"/>
-                    <Form.Control.Feedback type="invalid">{formErrors.annee_avenant}</Form.Control.Feedback>
-                </Form.Group>
-            </Row>
+                        <Form.Group as={Col} md={4} controlId="formNumeroApprobation">
+                            <Form.Label className="small mb-1 fw-medium">N° Approbation <span className="text-danger">*</span></Form.Label>
+                            <Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.numero_approbation} type="text" name="numero_approbation" value={formData.numero_approbation} onChange={handleChange} size="sm"/>
+                            <Form.Control.Feedback type="invalid">{formErrors.numero_approbation}</Form.Control.Feedback>
+                        </Form.Group>
+                        <Form.Group as={Col} md={4} controlId="formSession">
+                            <Form.Label className="small mb-1 fw-medium">Session (Mois) <span className="text-danger">*</span></Form.Label>
+                            <Form.Select className="p-2 rounded-pill shadow-sm bg-white border-1" name="session" value={formData.session} onChange={handleChange} isInvalid={!!formErrors.session} size="sm">
+                                <option value="">Sélectionner...</option>
+                                {[...Array(12).keys()].map(i => <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('fr', { month: 'long' })}</option>)}
+                            </Form.Select>
+                            <Form.Control.Feedback type="invalid">{formErrors.session}</Form.Control.Feedback>
+                        </Form.Group>
+                        <Form.Group as={Col} md={4} controlId="formAnneeAvenant">
+                            <Form.Label className="small mb-1 fw-medium">Année Avenant <span className="text-danger">*</span></Form.Label>
+                            <Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.annee_avenant} type="number" name="annee_avenant" value={formData.annee_avenant} onChange={handleChange} size="sm" placeholder="YYYY"/>
+                            <Form.Control.Feedback type="invalid">{formErrors.annee_avenant}</Form.Control.Feedback>
+                        </Form.Group>
+                    </Row>
                     <Row className="g-3 mb-3">
                          <Form.Group as={Col} md={4} controlId="formNumero_avenant"><Form.Label className="small mb-1 fw-medium">N° Avenant <span className="text-danger">*</span></Form.Label><Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.numero_avenant} type="text" name="numero_avenant" value={formData.numero_avenant} onChange={handleChange} size="sm" placeholder="Ex: Avenant N°1"/><Form.Control.Feedback type="invalid">{formErrors.numero_avenant}</Form.Control.Feedback></Form.Group>
                          <Form.Group as={Col} md={4} controlId="formDate_signature"><Form.Label className="small mb-1 fw-medium">Date Signature<span className="text-danger">*</span></Form.Label><Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.date_signature} type="date" name="date_signature" value={formData.date_signature} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.date_signature}</Form.Control.Feedback></Form.Group>
                          <Form.Group as={Col} md={4} controlId="formType_modification"><Form.Label className="small mb-1 fw-medium">Type Modification <span className="text-danger">*</span></Form.Label><Select inputId='type-modif-select-input' name="type_modification" options={typeModificationOptions} value={formData.type_modification} onChange={handleSelectChange} styles={selectStyles} placeholder="- Sélectionner Type -" isClearable className={formErrors.type_modification ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body} menuPlacement="auto"/><Form.Control.Feedback type="invalid" style={{display: formErrors.type_modification ? 'block' : 'none'}}>{formErrors.type_modification}</Form.Control.Feedback></Form.Group>
                      </Row>
                      <Row className="g-3 mb-3">
-                <Form.Group as={Col} md={4} controlId="formStatut">
-                    <Form.Label className="small mb-1 fw-medium">Statut <span className="text-danger">*</span></Form.Label>
-                    <Select inputId='statut-select-input' name="statut" options={STATUT_OPTIONS} value={formData.statut} onChange={handleStatutChange} styles={selectStyles} placeholder="- Sélectionner Statut -" isClearable className={formErrors.statut ? 'is-invalid' : ''} classNamePrefix="react-select"/>
-                    <Form.Control.Feedback type="invalid" style={{display: formErrors.statut ? 'block' : 'none'}}>{formErrors.statut}</Form.Control.Feedback>
-                </Form.Group>
-                {/* Conditional Date Visa Field */}
-                {formData.statut?.value === 'visé' && (
-                    <Form.Group as={Col} md={4} controlId="formDateVisa">
-                        <Form.Label className="small mb-1 fw-medium">Date de visa <span className="text-danger">*</span></Form.Label>
-                        <Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.date_visa} required type="date" name="date_visa" value={formData.date_visa} onChange={handleChange} size="sm"/>
-                        <Form.Control.Feedback type="invalid">{formErrors.date_visa}</Form.Control.Feedback>
-                    </Form.Group>
-                )}
-            </Row>
+                        <Form.Group as={Col} md={4} controlId="formStatut">
+                            <Form.Label className="small mb-1 fw-medium">Statut <span className="text-danger">*</span></Form.Label>
+                            <Select inputId='statut-select-input' name="statut" options={STATUT_OPTIONS} value={formData.statut} onChange={handleStatutChange} styles={selectStyles} placeholder="- Sélectionner Statut -" isClearable className={formErrors.statut ? 'is-invalid' : ''} classNamePrefix="react-select"/>
+                            <Form.Control.Feedback type="invalid" style={{display: formErrors.statut ? 'block' : 'none'}}>{formErrors.statut}</Form.Control.Feedback>
+                        </Form.Group>
+                        {formData.statut?.value === 'visé' && (
+                            <Form.Group as={Col} md={4} controlId="formDateVisa">
+                                <Form.Label className="small mb-1 fw-medium">Date de visa <span className="text-danger">*</span></Form.Label>
+                                <Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.date_visa} required type="date" name="date_visa" value={formData.date_visa} onChange={handleChange} size="sm"/>
+                                <Form.Control.Feedback type="invalid">{formErrors.date_visa}</Form.Control.Feedback>
+                            </Form.Group>
+                        )}
+                    </Row>
                      <Form.Group className="mb-3" controlId="formObjet"><Form.Label className="small mb-1 fw-medium">Objet</Form.Label><Form.Control className="p-3 rounded-5 shadow-sm bg-white border-1" isInvalid={!!formErrors.objet} as="textarea" rows={2} name="objet" value={formData.objet} onChange={handleChange} size="sm" placeholder="Description modifications..."/><Form.Control.Feedback type="invalid">{formErrors.objet}</Form.Control.Feedback></Form.Group>
-                    <Form.Group as={Row} className="mb-3 align-items-center" controlId="formId_FonctionnaireAvenant"> {/* Unique controlId */}
+                    <Form.Group as={Row} className="mb-3 align-items-center" controlId="formId_FonctionnaireAvenant">
                         <Form.Label column sm={3} className="small fw-medium text-sm-end"> <FontAwesomeIcon icon={faUsers} className="me-1 text-secondary"/> Points Focaux </Form.Label>
                         <Col sm={9}>
                             <Select inputId='avenant-fonctionnaire-select' name="fonctionnaires" menuPlacement="auto" options={fonctionnairesOptions} value={formData.fonctionnaires} onChange={handleFonctionnaireChange} styles={selectStyles} placeholder="- Sélectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.fonctionnaires} className={formErrors.id_fonctionnaire ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body}/>
@@ -284,7 +588,124 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
                         </Col>
                      </Form.Group>
                     <Row className="g-3 mb-3">{formData.type_modification?.value === 'montant' && ( <Form.Group as={Col} md={6} controlId="formMontant_modifie"><Form.Label className="small mb-1 fw-medium">Nouveau Montant <span className="text-danger">*</span></Form.Label><InputGroup size="sm"><Form.Control className="p-2 rounded-start-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.montant_modifie} type="number" step="0.01" min="0" name="montant_modifie" value={formData.montant_modifie} onChange={handleChange} placeholder="0.00"/><InputGroup.Text className="rounded-end-pill">MAD</InputGroup.Text><Form.Control.Feedback type="invalid">{formErrors.montant_modifie}</Form.Control.Feedback></InputGroup></Form.Group> )} {formData.type_modification?.value === 'durée' && ( <Form.Group as={Col} md={6} controlId="formNouvelle_date_fin"><Form.Label className="small mb-1 fw-medium">Nouvelle Date Fin <span className="text-danger">*</span></Form.Label><Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.nouvelle_date_fin} type="date" name="nouvelle_date_fin" value={formData.nouvelle_date_fin} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.nouvelle_date_fin}</Form.Control.Feedback></Form.Group> )} </Row>
-                    {formData.type_modification?.value === 'partenaire' && ( <Card className="mb-3 shadow-sm border-light"><Card.Header className='bg-light py-2'><h6 className='mb-0 fw-semibold text-secondary'>Détails Modification Partenaires</h6></Card.Header><Card.Body className="pb-2 pt-3"><Form.Group as={Row} className="mb-3" controlId="formPartenaireSelectConditional"><Form.Label column sm={3} className="small pt-1 fw-medium text-sm-end"> Sélection Partenaires <span className="text-danger">*</span></Form.Label><Col sm={9}><Select inputId='avenant-partenaire-select-conditional' name="partenaireSelector" options={partenaireOptions} value={partenaireOptions.filter(opt => avenantPartnerDetails.some(p => p.id === opt.value))} onChange={handleAvenantPartnerSelectionChange} styles={selectStyles} placeholder="- Choisir partenaires concernés -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.partenaires} className={formErrors.partenaires ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body} menuPlacement="auto"/><Form.Control.Feedback type="invalid" style={{display: formErrors.partenaires ? 'block' : 'none'}}>{formErrors.partenaires}</Form.Control.Feedback></Col></Form.Group>{avenantPartnerDetails.length > 0 && ( <div className="mt-3 border-top pt-3">{avenantPartnerDetails.map((partner, index) => ( <div key={partner.id} id={`formAvenantDetail_${partner.id}`} className={`mb-3 ${index < avenantPartnerDetails.length - 1 ? 'border-bottom pb-3' : ''}`}><Row className="mb-2 align-items-center px-sm-3"><Col sm={12} md={4} className="small pt-1 fw-bold text-break"><Form.Label className="mb-0">{partner.label}</Form.Label></Col><Col sm={6} md={5} className="mt-2 mt-md-0"><InputGroup size="sm" className="flex-nowrap"><Form.Control type="number" step="0.01" min="0" value={partner.montant} onChange={(e) => handleAvenantCommitmentChange(partner.id, e.target.value)} placeholder="Montant" className="form-control-sm rounded-start-pill shadow-sm bg-white border-1" isInvalid={!!formErrors[`montant_${partner.id}`]}/><InputGroup.Text className="rounded-end-pill">MAD</InputGroup.Text><Form.Control.Feedback type="invalid" className="small w-100">{formErrors[`montant_${partner.id}`]}</Form.Control.Feedback></InputGroup></Col><Col sm={6} md={3} className="d-flex justify-content-start justify-content-md-center align-items-center pt-2 pt-md-1"><FormCheck type="switch" id={`avenant-signatory-check-${partner.id}`} label="Signataire?" checked={partner.is_signatory} onChange={(e) => handleAvenantSignatoryChange(partner.id, e.target.checked)} className="form-check-sm small" /></Col></Row>{partner.is_signatory && ( <Row className="mt-1 mb-1 px-sm-3"><Col md={4} className="d-none d-md-block"></Col><Col xs={12} sm={6} md={4} className="mb-2 mb-sm-0"><Form.Group controlId={`formAvenantDateSig_${partner.id}`}><Form.Label className="small mb-0 fw-medium text-muted">Date Signature</Form.Label><Form.Control type="date" size="sm" value={partner.date_signature} onChange={(e) => handleAvenantSignatureDateChange(partner.id, e.target.value)} className="form-control-sm rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors[`date_sig_${partner.id}`]} /><Form.Control.Feedback type="invalid" className="small">{formErrors[`date_sig_${partner.id}`]}</Form.Control.Feedback></Form.Group></Col><Col xs={12} sm={6} md={4}><Form.Group controlId={`formAvenantDetailsSig_${partner.id}`}><Form.Label className="small mb-0 fw-medium text-muted">Détails Signature</Form.Label><Form.Control type="text" size="sm" value={partner.details_signature} onChange={(e) => handleAvenantSignatureDetailsChange(partner.id, e.target.value)} placeholder="Lieu, obs..." className="form-control-sm rounded-pill shadow-sm bg-white border-1" /></Form.Group></Col></Row> )}</div> ))}</div> )} </Card.Body></Card> )}
+                    {formData.type_modification?.value === 'partenaire' && ( <Card className="mb-3 shadow-sm border-light"><Card.Header className='bg-light py-2'><h6 className='mb-0 fw-semibold text-secondary'>Détails Modification Partenaires</h6></Card.Header><Card.Body className="pb-2 pt-3"><Form.Group as={Row} className="mb-3" controlId="formPartenaireSelectConditional"><Form.Label column sm={3} className="small pt-1 fw-medium text-sm-end"> Sélection Partenaires <span className="text-danger">*</span></Form.Label><Col sm={9}><Select inputId='avenant-partenaire-select-conditional' name="partenaireSelector" options={partenaireOptions} value={partenaireOptions.filter(opt => avenantPartnerDetails.some(p => p.id === opt.value))} onChange={handleAvenantPartnerSelectionChange} styles={selectStyles} placeholder="- Choisir partenaires concernés -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.partenaires} className={formErrors.partenaires ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body} menuPlacement="auto"/><Form.Control.Feedback type="invalid" style={{display: formErrors.partenaires ? 'block' : 'none'}}>{formErrors.partenaires}</Form.Control.Feedback></Col></Form.Group>{avenantPartnerDetails.length > 0 && ( <div className="mt-3 border-top pt-3">{avenantPartnerDetails.map((partner, index) => (
+                        <div key={partner.id} id={`formAvenantDetail_${partner.id}`} className={`mb-3 ${index < avenantPartnerDetails.length - 1 ? 'border-bottom pb-3' : ''}`}>
+                            <Row className="mb-2 align-items-center px-sm-3">
+                                <Col sm={12} md={4} className="small pt-1 fw-bold text-break">
+                                    <Form.Label className="mb-0">{partner.label}</Form.Label>
+                                </Col>
+                                <Col sm={12} md={8}>
+                                    <ToggleButtonGroup
+                                        type="radio" name={`engagement-type-avenant-${partner.id}`}
+                                        value={partner.engagement_type}
+                                        onChange={(type) => handleAvenantEngagementTypeChange(partner.id, type)}
+                                        size="sm" className="d-flex mb-2">
+                                        <ToggleButton id={`type-financier-avenant-${partner.id}`} value="financier" variant="outline-secondary" className="w-100">Financier</ToggleButton>
+                                        <ToggleButton id={`type-autre-avenant-${partner.id}`} value="autre" variant="outline-secondary" className="w-100">Autre Nature</ToggleButton>
+                                    </ToggleButtonGroup>
+
+                                    {partner.engagement_type === 'financier' ? (
+                                        <InputGroup size="sm" className="flex-nowrap">
+                                            <Form.Control type="number" step="0.01" min="0" value={partner.montant} onChange={(e) => handleAvenantCommitmentChange(partner.id, e.target.value)} placeholder="Montant" className="form-control-sm rounded-start-pill" isInvalid={!!formErrors[`montant_${partner.id}`]}/>
+                                            <InputGroup.Text className="rounded-end-pill">MAD</InputGroup.Text>
+                                            <Form.Control.Feedback type="invalid">{formErrors[`montant_${partner.id}`]}</Form.Control.Feedback>
+                                        </InputGroup>
+                                    ) : (
+                                        <Form.Control as="textarea" rows={1} value={partner.autre_engagement} onChange={(e) => handleAvenantAutreEngagementChange(partner.id, e.target.value)} placeholder="Ex: Mise à disposition du terrain..." className="form-control-sm rounded-3" isInvalid={!!formErrors[`autre_engagement_${partner.id}`]}/>
+                                    )}
+                                    <Form.Control.Feedback type="invalid">{formErrors[`autre_engagement_${partner.id}`]}</Form.Control.Feedback>
+                                </Col>
+                            </Row>
+
+
+{partner.engagement_type === 'financier' && selectedConventionDetails && ( // <<< Check for selectedConventionDetails
+    (() => {
+                let durationInMonths = selectedConventionDetails.duree_convention;
+          if (!durationInMonths && formData.type_modification?.value === 'durée' && formData.nouvelle_date_fin && formData.annee_avenant) {
+            const startYear = parseInt(formData.annee_avenant, 10);
+            const endDate = new Date(formData.nouvelle_date_fin);
+            const endYear = endDate.getFullYear();
+            const endMonth = endDate.getMonth();
+            durationInMonths = (endYear - startYear) * 12 + endMonth + 1;
+        }
+
+        // vvv THIS IS THE FIX vvv
+        // Use real data from the fetched convention details
+         const engagementYears = calculateEngagementYears(
+            formData.annee_avenant,
+            durationInMonths
+        );
+
+if (engagementYears.length === 0) {
+            // If still no years, show a message instead of nothing
+            return (
+                 <Row className="mt-2 mb-2 px-sm-3 justify-content-end">
+                    <Col sm={12}>
+                         <div className="p-2 border rounded-3 bg-light">
+                            <p className="small text-muted mb-0 fst-italic">
+                                <FontAwesomeIcon icon={faExclamationTriangle} className="me-2 text-warning"/>
+                                La durée de la convention parente n'est pas définie. La répartition annuelle ne peut être affichée.
+                            </p>
+                        </div>
+                    </Col>
+                </Row>
+            );
+        }
+        // vvv THIS LOGIC IS NOW THE SAME AS IN ConventionForm vvv
+        const yearlyTotal = partner.engagements_annuels?.reduce((sum, item) => sum + parseCurrency(item.montant_prevu), 0) || 0;
+        const totalCommitment = parseCurrency(partner.montant);
+        const isTotalMismatch = yearlyTotal !== totalCommitment;
+
+        return (
+            <Row className="mt-2 mb-2 px-sm-3 justify-content-end">
+                <Col sm={12}>
+                    <div className="p-2 border rounded-3 bg-light">
+                        <p className="small fw-medium text-muted mb-2">Répartition annuelle prévisionnelle :</p>
+                        <Row className="g-2">
+                            {engagementYears.map(year => {
+                                const engagementForYear = partner.engagements_annuels?.find(e => Number(e.annee) === year);
+                                return (
+                                    <Col key={year} xs={6} sm={4} md={3}>
+                                        <InputGroup size="sm">
+                                            <InputGroup.Text>{year}</InputGroup.Text>
+                                            <Form.Control
+                                                type="number"
+                                                step="0.01"
+                                                placeholder="Montant"
+                                                value={engagementForYear?.montant_prevu || ''}
+                                                onChange={(e) => handleAvenantYearlyAmountChange(partner.id, year, e.target.value)}
+                                            />
+                                        </InputGroup>
+                                    </Col>
+                                );
+                            })}
+                        </Row>
+                        {/* The warning will now show up correctly */}
+                        {isTotalMismatch && totalCommitment > 0 && (
+                            <Alert variant="warning" className="mt-2 py-1 px-2 small mb-0">
+                                <FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/>
+                                La somme de la répartition ({yearlyTotal.toLocaleString('fr-MA')} MAD) ne correspond pas à l'engagement total ({totalCommitment.toLocaleString('fr-MA')} MAD).
+                            </Alert>
+                        )}
+                    </div>
+                </Col>
+            </Row>
+        );
+    })()
+)}
+                            <Row className="mt-1 mb-1 px-sm-3 align-items-center">
+                                <Col md={4} className="d-flex justify-content-start">
+                                     <FormCheck type="switch" id={`avenant-signatory-check-${partner.id}`} label="Signataire?" checked={partner.is_signatory} onChange={(e) => handleAvenantSignatoryChange(partner.id, e.target.checked)} className="form-check-sm small"/>
+                                </Col>
+                                {partner.is_signatory && (
+                                    <>
+                                        <Col xs={12} sm={6} md={4} className="mt-2 mt-md-0"><Form.Group><Form.Control type="date" size="sm" value={partner.date_signature} onChange={(e) => handleAvenantSignatureDateChange(partner.id, e.target.value)} isInvalid={!!formErrors[`date_sig_${partner.id}`]}/><Form.Control.Feedback type="invalid">{formErrors[`date_sig_${partner.id}`]}</Form.Control.Feedback></Form.Group></Col>
+                                        <Col xs={12} sm={6} md={4} className="mt-2 mt-md-0"><Form.Group><Form.Control type="text" size="sm" value={partner.details_signature} onChange={(e) => handleAvenantSignatureDetailsChange(partner.id, e.target.value)} placeholder="Détails signature..."/></Form.Group></Col>
+                                    </>
+                                )}
+                            </Row>
+                        </div>
+                    ))}</div> )} </Card.Body></Card> )}
                     <Form.Group className="mb-3" controlId="formRemarques"><Form.Label className="small mb-1 fw-medium">Remarques</Form.Label><Form.Control className="p-3 rounded-5 shadow-sm bg-white border-1" as="textarea" rows={2} name="remarques" value={formData.remarques} onChange={handleChange} size="sm" placeholder="Observations diverses..."/></Form.Group>
                     <Form.Group as={Row} className="mb-3" controlId="avenantFileGroup"><Form.Label column sm={3} className="small fw-medium text-sm-end"> Fichiers Joints </Form.Label><Col sm={9}><Card className="border-dashed rounded-3"><Card.Body className='p-3'><div className='mb-2'><Button variant="outline-warning" size="sm" className="me-2 rounded-pill px-3" onClick={() => document.getElementById('avenant_fichiers_hidden_input')?.click()}><FontAwesomeIcon icon={faPlus} className="me-1" /> Ajouter</Button><span className='small text-muted fst-italic'>Ajouter un ou plusieurs fichiers</span><Form.Control id="avenant_fichiers_hidden_input" type="file" multiple onChange={handleFileChange} style={{ display: 'none' }} isInvalid={!!formErrors.fichiers || !!formErrors['fichiers.*']} accept=".pdf,.doc,.docx,image/*,.xls,.xlsx" /><Form.Control.Feedback type="invalid" style={{display: (formErrors.fichiers || formErrors['fichiers.*']) ? 'block' : 'none'}}>{formErrors.fichiers || formErrors['fichiers.*']}</Form.Control.Feedback></div>{isEditing && visibleExistingFichiers.length > 0 && (<div className='mt-2 pt-2 border-top'><span className="me-2 small text-muted fw-bold">Fichiers Actuels:</span><Stack direction="horizontal" gap={1} className="mt-1 flex-wrap" style={{fontSize: '0.85em'}}>{visibleExistingFichiers.map((file) => (<Badge key={`existing-av-file-${file.id}`} pill bg='light' text='dark' className="d-flex border p-1 pe-2 align-items-center fw-normal shadow-sm"><FontAwesomeIcon icon={faPaperclip} className='me-1 ms-1 text-secondary'/><a href={file.fichier_url || '#'} target="_blank" rel="noopener noreferrer" className='me-1 text-truncate text-decoration-none link-primary' style={{maxWidth: '180px'}} title={file.file_name}>{file.file_name || 'Fichier inconnu'}</a><Button variant='link' size="sm" aria-label="Supprimer existant" className="p-0 m-0 ms-1 lh-1 text-danger" onClick={() => removeExistingFile(file.id)} title="Marquer pour suppression"><FontAwesomeIcon icon={faTrashAlt} /></Button></Badge>))}</Stack></div>)}{isEditing && fichiersToDelete.length > 0 && existingFichiers.some(f => fichiersToDelete.includes(f.id)) && (<div className='mt-2 pt-2 border-top border-danger border-opacity-25'><span className="me-2 small text-danger fw-bold">Fichiers Marqués pour Suppression:</span><Stack direction="horizontal" gap={1} className="mt-1 flex-wrap" style={{fontSize: '0.85em'}}>{existingFichiers.filter(f => fichiersToDelete.includes(f.id)).map((file) => (<Badge key={`deleted-av-file-${file.id}`} pill bg='danger' text='white' className="d-flex border p-1 pe-2 align-items-center fw-normal shadow-sm text-decoration-line-through"><FontAwesomeIcon icon={faTrashAlt} className='me-1 ms-1'/><span className='me-1 text-truncate' style={{maxWidth: '180px'}} title={file.file_name}>{file.file_name || 'Fichier inconnu'}</span></Badge>))}</Stack></div>)}{fichiers.length > 0 && (<div className={`mt-2 pt-2 ${visibleExistingFichiers.length > 0 || fichiersToDelete.length > 0 ? 'border-top' : ''}`}><span className="me-2 small text-muted fw-bold">Nouveaux Fichiers:</span><Stack direction="horizontal" gap={1} className="mt-1 flex-wrap" style={{fontSize: '0.85em'}}>{fichiers.map((file, fileIndex) => (<Badge key={`new-av-file-${file.name}-${fileIndex}`} pill bg="success" text="white" className="d-flex align-items-center fw-normal p-1 pe-2 shadow-sm"><FontAwesomeIcon icon={faPaperclip} className='me-1 ms-1'/><span className='me-1 text-truncate' style={{maxWidth: '180px'}} title={file.name}>{file.name}</span><Button variant="close" size="sm" aria-label="Retirer nouveau" className="p-0 m-0 ms-1 lh-1 btn-close-white" onClick={() => removeNewFile(fileIndex)}></Button></Badge>))}</Stack></div>)}{fichiers.length === 0 && visibleExistingFichiers.length === 0 && (<div className="mt-2 pt-2 small text-muted fst-italic border-top">Aucun fichier joint.</div>)}</Card.Body></Card></Col></Form.Group>
                     <Row className="mt-4 pt-3 border-top justify-content-center"><Col xs="auto"><Button variant="danger" onClick={onClose} className="btn px-5 rounded-pill shadow-sm" disabled={submissionStatus.loading}>Annuler</Button></Col><Col xs="auto"><Button type="submit" variant="primary" className="btn px-4 rounded-pill align-items-center d-flex justify-content-center shadow-sm" disabled={isSubmitDisabled}>{submissionStatus.loading ? ( <><Spinner as="span" animation="border" size="sm" className="me-2"/> Enregistrement...</> ) : ( isEditing ? 'Enregistrer Modifications' : 'Ajouter Avenant' )}</Button></Col></Row>
