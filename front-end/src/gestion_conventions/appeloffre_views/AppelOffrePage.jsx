@@ -8,6 +8,7 @@ import AppelOffreVisualisation from './AppelOffreVisualisation';
 
 // --- UI & Utilities ---
 import Select from 'react-select';
+import { FICHIER_CATEGORIES } from './AppelOffreForm';
 import { Badge, Form, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faBuilding, faToggleOn, faToggleOff, faMapMarkedAlt } from '@fortawesome/free-solid-svg-icons'; // Added faMapMarkedAlt
@@ -40,6 +41,7 @@ const CATEGORIE_OPTIONS = [
     { value: 'Services', label: 'Services' },
     { value: 'Fournitures', label: 'Fournitures' }
 ];
+const FILE_CATEGORY_OPTIONS = FICHIER_CATEGORIES;
 
 const PORTAIL_FILTER_OPTIONS = [
     { value: 'true', label: 'Oui' },
@@ -109,12 +111,12 @@ const AppelOffrePage = () => {
             // --- END UPDATED Province Column ---
         },
         {
-            accessorKey: 'estimation_HT', header: 'Estimation HT', size: 150,
+            accessorKey: 'estimation_HT', header: 'Estimation HT', size: 150, filterFn: 'numericRange',
             cell: info => formatCurrency(info.getValue()),
             meta: { align: 'right', enableGlobalFilter: false }
         },
         {
-            accessorKey: 'date_ouverture', header: 'Date Ouverture', size: 140,
+            accessorKey: 'date_ouverture', header: 'Date Ouverture', size: 140, filterFn: 'dateRange',
             cell: info => formatDate(info.getValue()),
             meta: { align: 'center', enableGlobalFilter: false }
         },
@@ -128,6 +130,15 @@ const AppelOffrePage = () => {
             },
             meta: { align: 'center', enableGlobalFilter: true },
         },
+        // --- Hidden file-based filters ---
+        { id: 'files_title', header: 'Titre Fichier (filtre)', size: 0, accessorFn: row => row, meta: { align: 'left', enableGlobalFilter: false }, enableHiding: true, filterFn: 'fileTitleIncludes' },
+        { id: 'files_type', header: 'Catégorie Fichier (filtre)', size: 0, accessorFn: row => row, meta: { align: 'left', enableGlobalFilter: false }, enableHiding: true, filterFn: 'fileTypeIncludes' },
+        { id: 'files_search', header: 'Recherche Fichiers', size: 0, accessorFn: row => {
+            const files = Array.isArray(row.fichiers) ? row.fichiers : [];
+            if (files.length === 0) return '';
+            return files.map(f => [f.intitule, f.nom_fichier, f.categorie, f.type_fichier].filter(Boolean).join(' ')).join(' | ');
+        }, meta: { align: 'left', enableGlobalFilter: true }, enableHiding: true },
+        { id: 'has_files', header: 'A des fichiers', size: 0, accessorFn: row => row, meta: { align: 'left', enableGlobalFilter: false }, enableHiding: true, filterFn: 'hasFiles' },
     ], []); // Dependency array is empty
     const dynamicFetchUrl = useMemo(() => {
         let url = '/appel-offres'; // Base URL segment
@@ -145,6 +156,11 @@ const AppelOffrePage = () => {
         const portailColumn = table.getColumn('lancement_portail');
         // Add province filter column if you want to filter by ONE province at a time
         const provinceColumn = table.getColumn('provincesList'); // Use the column ID
+        const estimationColumn = table.getColumn('estimation_HT');
+        const dateOuvertureColumn = table.getColumn('date_ouverture');
+        const filesTitleColumn = table.getColumn('files_title');
+        const filesTypeColumn = table.getColumn('files_type');
+        const hasFilesColumn = table.getColumn('has_files');
         const isAnyColumnFiltered = table.getState().columnFilters.length > 0;
         const handleProvinceChange = (selectedOption) => {
             setProvinceFilter(selectedOption?.value ?? null); // Update state
@@ -187,6 +203,41 @@ const AppelOffrePage = () => {
                         menuPortalTarget={document.body}
                         aria-label="Filtrer par province"
                     />
+                </Form.Group>
+
+                {/* Estimation Range */}
+                <Form.Group controlId="filterEstimationRange" className="mb-3">
+                    <Form.Label className="small mb-1 fw-bold">Estimation HT (MAD)</Form.Label>
+                    <div className="d-flex gap-2">
+                        <Form.Control type="number" placeholder="Min" value={estimationColumn?.getFilterValue()?.min ?? ''} onChange={e => estimationColumn?.setFilterValue(v => ({ ...(v||{}), min: e.target.value === '' ? undefined : Number(e.target.value) }))} />
+                        <Form.Control type="number" placeholder="Max" value={estimationColumn?.getFilterValue()?.max ?? ''} onChange={e => estimationColumn?.setFilterValue(v => ({ ...(v||{}), max: e.target.value === '' ? undefined : Number(e.target.value) }))} />
+                    </div>
+                </Form.Group>
+
+                {/* Date Ouverture Range */}
+                <Form.Group controlId="filterDateOuverture" className="mb-3">
+                    <Form.Label className="small mb-1 fw-bold">Date d'ouverture</Form.Label>
+                    <div className="d-flex gap-2">
+                        <Form.Control type="date" value={dateOuvertureColumn?.getFilterValue()?.from ?? ''} onChange={e => dateOuvertureColumn?.setFilterValue(v => ({ ...(v||{}), from: e.target.value || undefined }))} />
+                        <Form.Control type="date" value={dateOuvertureColumn?.getFilterValue()?.to ?? ''} onChange={e => dateOuvertureColumn?.setFilterValue(v => ({ ...(v||{}), to: e.target.value || undefined }))} />
+                    </div>
+                </Form.Group>
+
+                {/* Files Title Filter */}
+                <Form.Group controlId="filterFilesTitleAO" className="mb-3">
+                    <Form.Label className="small mb-1 fw-bold">Titre du Fichier</Form.Label>
+                    <Form.Control type="text" placeholder="Contient..." value={filesTitleColumn?.getFilterValue() || ''} onChange={e => filesTitleColumn?.setFilterValue(e.target.value || undefined)} />
+                </Form.Group>
+
+                {/* Files Category Filter */}
+                <Form.Group controlId="filterFilesCategoryAO" className="mb-3">
+                    <Form.Label className="small mb-1 fw-bold">Catégorie de Fichier</Form.Label>
+                    <Select inputId="filterFilesCategoryAOSelect" options={FILE_CATEGORY_OPTIONS} value={FILE_CATEGORY_OPTIONS.find(o => o.value === filesTypeColumn?.getFilterValue()) || null} onChange={opt => filesTypeColumn?.setFilterValue(opt?.value ?? undefined)} isClearable placeholder="Toutes Catégories..." styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }} menuPortalTarget={document.body} />
+                </Form.Group>
+
+                {/* Has Files Toggle */}
+                <Form.Group controlId="filterHasFilesAO" className="mb-3">
+                    <Form.Check type="switch" id="has-files-ao-switch" label="Afficher uniquement les AOs avec fichiers" checked={Boolean(hasFilesColumn?.getFilterValue())} onChange={e => hasFilesColumn?.setFilterValue(e.target.checked || undefined)} />
                 </Form.Group>
 
                 {/* Lancement Portail Filter */}
@@ -255,6 +306,60 @@ const AppelOffrePage = () => {
                       defaultVisibleColumns={defaultVisibleCols}
                       renderFilters={renderAppelOffreFilters}
                       enableGlobalSearch={true}
+                      customFilterFunctions={{
+                        numericRange: (row, columnId, filterValue) => {
+                            if (!filterValue || (filterValue.min == null && filterValue.max == null)) return true;
+                            const raw = row.getValue(columnId);
+                            const value = raw == null || raw === '' ? NaN : Number(raw);
+                            if (isNaN(value)) return false;
+                            if (filterValue.min != null && value < filterValue.min) return false;
+                            if (filterValue.max != null && value > filterValue.max) return false;
+                            return true;
+                        },
+                        dateRange: (row, columnId, filterValue) => {
+                            if (!filterValue || (!filterValue.from && !filterValue.to)) return true;
+                            const raw = row.getValue(columnId);
+                            if (!raw) return false;
+                            const dateStr = String(raw).split(' ')[0];
+                            const d = new Date(dateStr + 'T00:00:00Z');
+                            if (isNaN(d.getTime())) return false;
+                            if (filterValue.from) {
+                                const from = new Date(filterValue.from + 'T00:00:00Z');
+                                if (d < from) return false;
+                            }
+                            if (filterValue.to) {
+                                const to = new Date(filterValue.to + 'T23:59:59Z');
+                                if (d > to) return false;
+                            }
+                            return true;
+                        },
+                        fileTitleIncludes: (row, _columnId, filterValue) => {
+                            const query = String(filterValue || '').trim().toLowerCase();
+                            if (!query) return true;
+                            const files = Array.isArray(row?.original?.fichiers) ? row.original.fichiers : [];
+                            if (files.length === 0) return false;
+                            return files.some(f => {
+                                const title = (f.intitule || f.nom_fichier || '').toString().toLowerCase();
+                                return title.includes(query);
+                            });
+                        },
+                        fileTypeIncludes: (row, _columnId, filterValue) => {
+                            const query = String(filterValue || '').trim().toLowerCase();
+                            if (!query) return true;
+                            const files = Array.isArray(row?.original?.fichiers) ? row.original.fichiers : [];
+                            if (files.length === 0) return false;
+                            return files.some(f => {
+                                const category = (f.categorie || '').toString().toLowerCase();
+                                return category.includes(query);
+                            });
+                        },
+                        hasFiles: (row, _columnId, filterValue) => {
+                            const enabled = Boolean(filterValue);
+                            if (!enabled) return true;
+                            const files = Array.isArray(row?.original?.fichiers) ? row.original.fichiers : [];
+                            return files.length > 0;
+                        },
+                      }}
                       CreateComponent={AppelOffreForm}
                       ViewComponent={AppelOffreVisualisation}
                       EditComponent={AppelOffreForm}

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Form, Button, Row, Col, Spinner, Alert, Card, Stack, Badge } from 'react-bootstrap';
+import { Form, Button, Row, Col, Spinner,Modal, Alert, Card, Stack, Badge } from 'react-bootstrap';
 import Select from 'react-select';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -12,9 +12,119 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 // --- Constants ---
-const TYPE_OPTIONS = [ { value: 'Travaux', label: 'Travaux' }, { value: 'Fournitures', label: 'Fournitures' }, { value: 'Services', label: 'Services' }, { value: 'Etudes', label: 'Etudes' }];
-const MODE_PASSATION_OPTIONS = [ { value: "Appel d’offres ouvert", label: "Appel d’offres ouvert"}, { value: "Appel d’offres restreint", label: "Appel d’offres restreint"}, { value: "Marché négocié avec mise en concurrence", label: "Marché négocié avec mise en concurrence"}, { value: "Marché négocié sans mise en concurrence", label: "Marché négocié sans mise en concurrence"}, { value: "Concours", label: "Concours"}, { value: "Marché de gré à gré", label: "Marché de gré à gré"}, { value: "Système d’acquisition dynamique", label: "Système d’acquisition dynamique"}, { value: "Accord-cadre", label: "Accord-cadre"}, ];
-const STATUT_OPTIONS = [ { value: 'En préparation', label: 'En préparation' }, { value: 'En cours', label: 'En cours' }, { value: 'Terminé', label: 'Terminé' }, { value: 'Résilié', label: 'Résilié' } ];
+
+// You can place this code in a file like `src/constants.js` and export them.
+
+// Fichier : src/constants/marcheConstants.js
+
+/**
+ * Types de marchés publics avec leurs descriptions.
+ */
+export const MARCHE_FICHIER_CATEGORIES = [
+        { value: 'passation', label: "Documents de passation" },
+        { value: 'attribution', label: "Documents d’attribution" },
+        { value: 'contractuel', label: "Documents contractuels" },
+        { value: 'execution', label: "Documents d’exécution" },
+        { value: 'cloture', label: "Documents de clôture" },
+        { value: 'autre', label: "Autre" }
+    ];
+
+export const TYPE_OPTIONS = [
+  {
+    value: 'Marche-cadre',
+    label: 'Marché-cadre',
+    description: 'Conclus pour une durée déterminée, avec reconduction possible (max. 3 ou 5 ans selon le cas).'
+  },
+  {
+    value: 'Marche reconductible',
+    label: 'Marché reconductible',
+    description: 'Renouvelable selon les conditions prévues au CPS (Cahier des Prescriptions Spéciales).'
+  },
+  {
+    value: 'Marche a tranches conditionnelles',
+    label: 'Marché à tranches conditionnelles',
+    description: 'Divisé en tranches dont l’exécution dépend de la réalisation de conditions prédéfinies.'
+  },
+  {
+    value: 'Marche alloti',
+    label: 'Marché alloti',
+    description: 'Subdivisé en lots distincts qui peuvent être attribués à des entreprises différentes.'
+  },
+  {
+    value: 'Marche de conception-realisation',
+    label: 'Marché de conception-réalisation',
+    description: 'Regroupe au sein d\'un même marché les études (conception) et la réalisation des travaux.'
+  },
+  {
+    value: 'Dialogue competitif',
+    label: 'Dialogue compétitif',
+    description: 'Procédure impliquant des échanges avec les candidats pour définir la solution technique avant l’attribution finale.'
+  },
+  {
+    value: 'Offre spontanee',
+    label: 'Offre spontanée',
+    description: 'Projet proposé à l’initiative d’un opérateur économique sans sollicitation préalable de l’acheteur public.'
+  },
+  {
+    
+    value: 'Autre',
+    label: 'Autre',
+  
+  }
+];
+
+/**
+ * Modes de passation des marchés publics avec leurs descriptions.
+ */
+export const MODE_PASSATION_OPTIONS = [
+  {
+    value: "Appel d'offres - Ouvert",
+    label: "Appel d’offres - Ouvert",
+    description: "Mode de droit commun où tout concurrent intéressé peut soumettre une offre."
+  },
+  {
+    value: "Appel d'offres - Restreint",
+    label: "Appel d’offres - Restreint",
+    description: "Seuls les candidats présélectionnés après une première phase sont autorisés à déposer une offre."
+  },
+  {
+    value: "Appel d'offres - Ouvert simplifie",
+    label: "Appel d’offres - Ouvert simplifié",
+    description: "Procédure allégée pour les marchés dont le montant est inférieur ou égal à 1 000 000 MAD HT."
+  },
+  {
+    value: "Appel d'offres - National reserve",
+    label: "Appel d’offres - National réservé",
+    description: "Réservé aux entreprises nationales pour les marchés ≤ 10 M MAD (travaux) ou ≤ 1 M MAD (fournitures/services)."
+  },
+  {
+    value: "Appel d'offres - International",
+    label: "Appel d’offres - International",
+    description: "Obligatoire pour les marchés dépassant certains seuils financiers ou nécessitant une expertise internationale."
+  },
+  {
+    value: 'Concours',
+    label: 'Concours',
+    description: 'Utilisé principalement pour des prestations intellectuelles, architecturales ou artistiques, avec un jury qui choisit un lauréat.'
+  },
+  {
+    value: 'Procedure negociee',
+    label: 'Procédure négociée',
+    description: 'Permet de négocier les conditions du marché directement avec un ou plusieurs candidats (utilisée dans des cas particuliers : urgence, échec d\'un appel d\'offres, etc.).'
+  },
+  {
+    value: 'Bons de commande',
+    label: 'Bons de commande',
+    description: 'Mode dérogatoire pour des prestations récurrentes et limitées, avec un montant maximum de 500 000 MAD TTC par an et par prestataire.'
+  },
+   {
+    value: 'Autre',
+    label: 'Autre',
+  }
+];
+
+
+export const STATUT_OPTIONS = [ { value: 'En préparation', label: 'En préparation' }, { value: 'En cours', label: 'En cours' }, { value: 'Terminé', label: 'Terminé' }, { value: 'Résilié', label: 'Résilié' } ];
 
 const formatDateForInput = (dateString) => {
     if (!dateString) return '';
@@ -44,15 +154,18 @@ const MarchePublicForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseA
     const [fonctionnairesOptions, setFonctionnairesOptions] = useState([]);
     const [loadingOptions, setLoadingOptions] = useState({ conventions: true, appelOffres: true, fonctionnaires: true });
 
+    const [editingFile, setEditingFile] = useState(null); 
     const [selectedConventionOption, setSelectedConventionOption] = useState(null);
     const [selectedAoOption, setSelectedAoOption] = useState(null);
+    const [projetsEtSousProjetsOptions, setProjetsEtSousProjetsOptions] = useState([]);
 
     const initialLotState = useMemo(() => ({ id: null, numero_lot: '', objet: '', montant_attribue: '', attributaire: '', fichiers: [], existing_fichiers: [], fichiers_to_delete: [] }), []);
     const initialFormData = useMemo(() => ({
         numero_marche: '', intitule: '',
         id_convention: null,
         ref_appelOffre: null,
-        date_ouverture_plis: '', date_fin_ouverture: '',
+                projectable: null, // <-- ADD THIS
+
         avancement_physique: '0', avancement_financier: '0',
         date_engagement_tresorerie: '',
         type_marche: null,
@@ -73,157 +186,341 @@ const MarchePublicForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseA
     const [validationErrors, setValidationErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const generalFileInputRef = useRef(null);
+const [modalData, setModalData] = useState({
+    isOpen: false,
+    lotIndex: null, // null for general files, number for lot files
+    pendingFiles: [],
+});
+const openMetadataModal = (e, lotIndex = null) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    e.target.value = null; // Allows re-selecting the same file
 
-     const fetchOptionData = useCallback(async (endpoint, setter, optionsKeyForLoading) => {
-        setLoadingOptions(prev => ({ ...prev, [optionsKeyForLoading]: true }));
-        // CORRECTED URL for fonctionnaires, assuming others might also be under /options
-        const actualEndpoint = (endpoint === 'fonctionnaires' || endpoint === 'provinces' || endpoint === 'conventions' || endpoint === 'appel-offres')
-                             ? `options/${endpoint}` // <<< ENSURE ALL THESE ARE PREFIXED WITH /options/ IF THATS YOUR LARAVEL STRUCTURE
-                             : endpoint;
-        try {
-            console.log(`[MARCHE FORM] Fetching options for: ${actualEndpoint} from ${baseApiUrl}/${actualEndpoint}`);
-            const response = await axios.get(`${baseApiUrl}/${actualEndpoint}`, { withCredentials: true });
-            console.log(`[MARCHE FORM] Raw response for ${actualEndpoint}:`, response.data);
+    const fileWrappers = files.map(file => ({
+        file: file,
+        intitule: file.name.replace(/\.[^/.]+$/, ""),
+        categorie: MARCHE_FICHIER_CATEGORIES.find(c => c.value === 'autre')
+    }));
 
+    // Atomically set all modal state
+    setModalData({
+        isOpen: true,
+        lotIndex: lotIndex,
+        pendingFiles: fileWrappers,
+    });
+};
+
+const cancelMetadataModal = () => {
+    setModalData({
+        isOpen: false,
+        lotIndex: null,
+        pendingFiles: [],
+    });
+};
+
+
+ const openFileEditModal = (fileData, lotIndex, fileIndex, isExisting) => {
+        setEditingFile({
+            isExisting,
+            data: {
+                ...fileData,
+                // For existing files, the category is a string and needs to be converted into an object for react-select.
+                // For new files, it's already a correct object.
+                categorie: isExisting
+                    ? MARCHE_FICHIER_CATEGORIES.find(c => c.value === fileData.categorie) || MARCHE_FICHIER_CATEGORIES.find(c => c.value === 'autre')
+                    : fileData.categorie,
+            },
+            // Location helps us put the updated data back in the right place in the form's state.
+            location: {
+                lotIndex,  // null for general files
+                fileIndex, // the index of the file in its corresponding array
+            }
+        });
+    };
+
+    // Replaces the old handleEditingFileChange
+    const handleEditingFileChange = (field, value) => {
+        setEditingFile(prev => ({
+            ...prev,
+            data: {
+                ...prev.data,
+                [field]: value
+            }
+        }));
+    };
+
+    // This new function replaces handleUpdateMetadata. It handles both new and existing files.
+    const handleSaveFileMetadata = async () => {
+        if (!editingFile) return;
+
+        const { lotIndex, fileIndex } = editingFile.location;
+        const updatedFileData = editingFile.data;
+
+        if (editingFile.isExisting) {
+            // --- Logic for EXISTING files: make an API call ---
+            const url = `${baseApiUrl}/fichiers-joints/${updatedFileData.id}`;
+            const payload = {
+                intitule: updatedFileData.intitule,
+                categorie: updatedFileData.categorie.value
+            };
+
+            try {
+                const response = await axios.put(url, payload, { withCredentials: true });
+                const updatedFileFromServer = response.data.fichier_joint;
+                
+                // Update the main form state with the fresh data from the server
+                setFormData(prev => {
+                    const newFormData = { ...prev };
+                    if (lotIndex === null) { // General file
+                        const updatedFiles = [...newFormData.general_existing_fichiers];
+                        updatedFiles[fileIndex] = updatedFileFromServer;
+                        return { ...newFormData, general_existing_fichiers: updatedFiles };
+                    } else { // Lot file
+                        const newLots = [...newFormData.lots];
+                        const updatedExistingFiles = [...newLots[lotIndex].existing_fichiers];
+                        updatedExistingFiles[fileIndex] = updatedFileFromServer;
+                        newLots[lotIndex].existing_fichiers = updatedExistingFiles;
+                        return { ...newFormData, lots: newLots };
+                    }
+                });
+            } catch (error) {
+                console.error("Error updating file metadata:", error);
+                alert("An error occurred while updating the file. Please try again.");
+            }
+        } else {
+            // --- Logic for NEW files: just update local state ---
+            setFormData(prev => {
+                const newFormData = { ...prev };
+                if (lotIndex === null) { // General file
+                    const updatedFiles = [...newFormData.general_fichiers];
+                    updatedFiles[fileIndex] = updatedFileData;
+                    return { ...newFormData, general_fichiers: updatedFiles };
+                } else { // Lot file
+                    const newLots = [...newFormData.lots];
+                    const updatedNewFiles = [...newLots[lotIndex].fichiers];
+                    updatedNewFiles[fileIndex] = updatedFileData;
+                    newLots[lotIndex].fichiers = updatedNewFiles;
+                    return { ...newFormData, lots: newLots };
+                }
+            });
+        }
+
+        setEditingFile(null); // Close the modal in both cases
+    };
+
+const handlePendingFileChange = (index, field, value) => {
+    setModalData(prevData => ({
+        ...prevData,
+        pendingFiles: prevData.pendingFiles.map((pf, i) =>
+            i === index ? { ...pf, [field]: value } : pf
+        )
+    }));
+};
+
+const handleConfirmMetadata = () => {
+    // Read lotIndex and pendingFiles from the single modalData state
+    const { lotIndex, pendingFiles } = modalData;
+
+    if (lotIndex === null) { // This is for general files
+        setFormData(prev => ({
+            ...prev,
+            general_fichiers: [...(prev.general_fichiers || []), ...pendingFiles]
+        }));
+    } else { // This is for lot files
+        const updatedLots = formData.lots.map((lot, i) =>
+            i === lotIndex ? { ...lot, fichiers: [...(lot.fichiers || []), ...pendingFiles] } : lot
+        );
+        setFormData(prev => ({ ...prev, lots: updatedLots }));
+    }
+
+    // Reset the modal state completely
+    cancelMetadataModal();
+};
+const fetchOptionData = useCallback(async (endpoint, setter, optionsKeyForLoading) => {
+    setLoadingOptions(prev => ({ ...prev, [optionsKeyForLoading]: true }));
+
+    const actualEndpoint = (endpoint === 'fonctionnaires' || endpoint === 'conventions' || endpoint === 'appel-offres' || endpoint === 'projets-et-sous-projets')
+                         ? `options/${endpoint}`
+                         : endpoint;
+    try {
+        console.log(`[MARCHE FORM] Fetching options for: ${actualEndpoint} from ${baseApiUrl}/${actualEndpoint}`);
+        
+        // --- FIX: The axios call MUST come BEFORE you try to use the 'response' variable ---
+        const response = await axios.get(`${baseApiUrl}/${actualEndpoint}`, { withCredentials: true });
+        console.log(`[MARCHE FORM] Raw response for ${actualEndpoint}:`, response.data);
+
+        // Now that we have the response, we can decide how to process it.
+        if (endpoint === 'projets-et-sous-projets') {
+            const groupedData = response.data || [];
+            if (Array.isArray(groupedData)) {
+                setter(groupedData);
+                console.log(`[MARCHE FORM] Processed ${groupedData.length} groups for ${optionsKeyForLoading}.`);
+            } else {
+                 console.warn(`[MARCHE FORM] Data for ${optionsKeyForLoading} was not an array.`, groupedData);
+                 setter([]);
+            }
+        } else {
+            // This is the generic logic for all other dropdowns
             let listData;
-            // Specifically handle the 'fonctionnaires' key for the fonctionnaires endpoint
             if (endpoint === 'fonctionnaires' && response.data && typeof response.data === 'object') {
-                listData = response.data.fonctionnaires || []; // Expects { "fonctionnaires": [...] }
-            } else { // For conventions, appel-offres, provinces assuming direct array or {data: [...]} if paginated
-                listData = response.data.data || response.data || []; // Handle direct array or Laravel's default 'data' wrapper
+                listData = response.data.fonctionnaires || [];
+            } else {
+                listData = response.data.data || response.data || [];
             }
 
             if (!Array.isArray(listData)) {
-                console.warn(`[MARCHE FORM] Data for ${optionsKeyForLoading} (endpoint: ${actualEndpoint}) is not an array. Received:`, listData);
-                setter([]); // Set to empty array
+                console.warn(`[MARCHE FORM] Data for ${optionsKeyForLoading} is not an array.`, listData);
+                setter([]);
                 return;
             }
+
             const formattedOptions = listData.map(item => {
                 let value, label;
                 if (endpoint === 'fonctionnaires') {
                     value = item.id;
-                    label = item.nom_complet; // From your FonctionnaireController DB::raw
+                    label = item.nom_complet;
                 } else if (endpoint === 'conventions') {
-                    value = item.value; // Assuming 'id' is PK
+                    value = item.value;
                     label = item.Intitule || item.intitule || item.label || `Convention ID ${item.id}`;
                 } else if (endpoint === 'appel-offres') {
-                    value = item.value; // Assuming 'id' is PK
-                    label = item.numero || item.objet || item.label || `Appel d'Offre ID ${item.id}`; // Use 'numero' or 'objet'
+                    value = item.value;
+                    label = item.numero || item.objet || item.label || `Appel d'Offre ID ${item.id}`;
                 } else {
                     value = item.id || item.Id || item.value;
                     label = item.label || item.Description || item.nom_complet || `Item ${value}`;
                 }
-                return { value, label: label || `ID ${value}` }; // Ensure label has a fallback
+                return { value, label: label || `ID ${value}` };
             }).sort((a, b) => String(a.label || '').localeCompare(String(b.label || '')));
             
             setter(formattedOptions);
             console.log(`[MARCHE FORM] Processed ${formattedOptions.length} options for ${optionsKeyForLoading}.`);
-
-        } catch (error) {
-            console.error(`[MARCHE FORM] Error fetching ${optionsKeyForLoading} options:`, error.response || error);
-            setter([]);
-            setError(prevError => (prevError ? prevError + "\n" : "") + `Erreur chargement ${optionsKeyForLoading}.`);
-        } finally {
-            setLoadingOptions(prev => ({ ...prev, [optionsKeyForLoading]: false }));
         }
-    }, [baseApiUrl]);
+
+    } catch (error) {
+        console.error(`[MARCHE FORM] Error fetching ${optionsKeyForLoading} options:`, error.response || error);
+        setter([]);
+        setError(prevError => (prevError ? prevError + "\n" : "") + `Erreur chargement ${optionsKeyForLoading}.`);
+    } finally {
+        setLoadingOptions(prev => ({ ...prev, [optionsKeyForLoading]: false }));
+    }
+}, [baseApiUrl]);
 
     useEffect(() => {
         fetchOptionData('conventions', setConventionOptions, 'conventions');
         fetchOptionData('appel-offres', setAoOptions, 'appelOffres');
         fetchOptionData('fonctionnaires', setFonctionnairesOptions, 'fonctionnaires');
+        fetchOptionData('projets-et-sous-projets', setProjetsEtSousProjetsOptions, 'projets');
     }, [fetchOptionData]);
 
     const allOptionsLoaded = useMemo(() =>
-        !loadingOptions.conventions && !loadingOptions.appelOffres && !loadingOptions.fonctionnaires,
+        !loadingOptions.conventions && !loadingOptions.appelOffres && !loadingOptions.fonctionnaires&& !loadingOptions.projets,
         [loadingOptions]
     );
 
-    useEffect(() => {
-        let isMounted = true;
-        if (isEditMode && allOptionsLoaded) {
-            setIsLoading(true); setError(null); setValidationErrors({});
-            console.log(`[MARCHE FORM EDIT] Fetching data for Marche ID: ${itemId}`);
-            const apiEndpoint = `${baseApiUrl}/marches-publics/${itemId}`;
-            axios.get(apiEndpoint, { params: { include: 'lots.fichiersJoints,fichiersJointsGeneraux,convention,appelOffre' }, withCredentials: true })
-                .then(response => {
-                     if (!isMounted) return;
-                     const itemData = response.data?.marche_public || response.data || {};
-                     console.log("[MARCHE FORM EDIT] Fetched Marche Data:", itemData);
-                     console.log("[MARCHE FORM EDIT] Fetched id_convention from itemData:", itemData.id_convention);
-                     console.log("[MARCHE FORM EDIT] Fetched id_fonctionnaire string from itemData:", itemData.id_fonctionnaire);
+useEffect(() => {
+    let isMounted = true;
+    if (isEditMode && allOptionsLoaded) {
+        setIsLoading(true); setError(null); setValidationErrors({});
+        console.log(`[MARCHE FORM EDIT] Fetching data for Marche ID: ${itemId}`);
+        const apiEndpoint = `${baseApiUrl}/marches-publics/${itemId}`;
+        axios.get(apiEndpoint, { params: { include: 'lots.fichiersJoints,fichiersJointsGeneraux,convention,appelOffre,projectable' }, withCredentials: true })
+            .then(response => {
+                 if (!isMounted) return;
+                 const itemData = response.data?.marche_public || response.data || {};
+                 console.log("[MARCHE FORM EDIT] Fetched Marche Data:", itemData);
 
+                 // --- REVISED AND ROBUST PROJECTABLE MATCHING ---
+                 let matchedProjectable = null;
+                 if (itemData.projectable_id && itemData.projectable_type && projetsEtSousProjetsOptions.length > 0) {
+                     // Determine the prefix ('projet' or 'sous-projet') from the model type string
+                     const modelType = itemData.projectable_type.includes('SousProjet') ? 'sous-projet' : 'projet';
+                     // Construct the value string that react-select expects, e.g., "projet_123"
+                     const projectableValue = `${modelType}_${itemData.projectable_id}`;
 
-                     const lotFilesMap = {};
-                     const generalFiles = [];
-                     (itemData.fichiers_joints_generaux || []).forEach(f => generalFiles.push({ id: f.id, nom_fichier: f.nom_fichier, chemin_fichier: f.chemin_fichier, url: f.url }));
-                     (itemData.lots || []).forEach(lot => { lotFilesMap[lot.id] = (lot.fichiers_joints || []).map(f => ({ id: f.id, nom_fichier: f.nom_fichier, chemin_fichier: f.chemin_fichier, url: f.url })); });
+                     console.log(`[MARCHE FORM EDIT] Seeking projectable value: "${projectableValue}"`);
 
-                     const matchedConvention = conventionOptions.find(opt => String(opt.value) === String(itemData.id_convention));
-                     const matchedAo = aoOptions.find(opt => String(opt.value) === String(itemData.ref_appelOffre));
-                     const matchedFonctionnaires = findMultiOptions(fonctionnairesOptions, itemData.id_fonctionnaire, ';');
+                     // Search through all options in all groups to find the one with the matching value
+                     matchedProjectable = projetsEtSousProjetsOptions
+                         .flatMap(group => group.options || []) // Safely flatten all options into a single array
+                         .find(opt => String(opt.value) === String(projectableValue));
 
-                     console.log("[MARCHE FORM EDIT] Matched Convention Option:", matchedConvention);
-                     console.log("[MARCHE FORM EDIT] Matched Fonctionnaires for edit (array of objects):", matchedFonctionnaires);
+                     if (matchedProjectable) {
+                        console.log("[MARCHE FORM EDIT] Successfully matched Projectable Option:", matchedProjectable);
+                     } else {
+                        console.warn(`[MARCHE FORM EDIT] Could NOT find a match for projectable value: "${projectableValue}"`);
+                     }
+                 }
+                 // --- END OF REVISED LOGIC ---
 
-                     setSelectedConventionOption(matchedConvention || null);
-                     setSelectedAoOption(matchedAo || null);
+                 const lotFilesMap = {};
+                 const generalFiles = (itemData.fichiers_joints_generaux || []).map(f => ({ ...f }));
+                 (itemData.lots || []).forEach(lot => {
+                    lotFilesMap[lot.id] = (lot.fichiers_joints || []).map(f => ({ ...f }));
+                 });
 
-                     setFormData(prev => ({
-                        ...initialFormData,
-                        numero_marche: itemData.numero_marche || '',
-                        intitule: itemData.intitule || '',
-                        id_convention: itemData.id_convention , // Store the ID
-                        ref_appelOffre: itemData.ref_appelOffre || null, // Store the ID
-                        date_ouverture_plis: formatDateForInput(itemData.date_ouverture_plis),
-                        date_fin_ouverture: formatDateForInput(itemData.date_fin_ouverture),
-                        avancement_physique: itemData.avancement_physique ?? '0',
-                        avancement_financier: itemData.avancement_financier ?? '0',
-                        date_engagement_tresorerie: formatDateForInput(itemData.date_engagement_tresorerie),
-                        type_marche: TYPE_OPTIONS.find(opt => opt.value === itemData.type_marche) || null,
-                        procedure_passation: itemData.procedure_passation || '',
-                        mode_passation: MODE_PASSATION_OPTIONS.find(opt => opt.value === itemData.mode_passation) || null,
-                        budget_previsionnel: itemData.budget_previsionnel || '',
-                        montant_attribue: itemData.montant_attribue || '',
-                        source_financement: itemData.source_financement || '',
-                        attributaire: itemData.attributaire || '',
-                        date_publication: formatDateForInput(itemData.date_publication),
-                        date_limite_offres: formatDateForInput(itemData.date_limite_offres),
-                        date_notification: formatDateForInput(itemData.date_notification),
-                        date_debut_execution: formatDateForInput(itemData.date_debut_execution),
-                        duree_marche: itemData.duree_marche || '',
-                        statut: STATUT_OPTIONS.find(opt => opt.value === itemData.statut) || STATUT_OPTIONS.find(opt => opt.value === 'En préparation') || null,
-                        fonctionnaires: matchedFonctionnaires, // Array of {value, label} for react-select
-                        lots: (itemData.lots || []).map(lot => ({
-                            ...initialLotState,
-                            id: lot.id,
-                            numero_lot: lot.numero_lot || '',
-                            objet: lot.objet || '',
-                            montant_attribue: lot.montant_attribue || '',
-                            attributaire: lot.attributaire || '',
-                            existing_fichiers: lotFilesMap[lot.id] || [],
-                            fichiers: [], 
-                            fichiers_to_delete: []
-                        })),
-                        general_fichiers: [], 
-                        general_existing_fichiers: generalFiles,
-                        general_fichiers_to_delete: []
-                     }));
-                })
-                .catch(err => { if (!isMounted) return; console.error("[MARCHE FORM EDIT] Error loading data:", err.response || err); setError(err.response?.data?.message || err.message || "Erreur de chargement des données du marché."); setFormData(initialFormData); setSelectedConventionOption(null); setSelectedAoOption(null);})
-                .finally(() => { if (isMounted) setIsLoading(false); });
-        } else if (!isEditMode) {
-            if (formData.numero_marche || formData.lots.length > 0 || formData.fonctionnaires.length > 0) {
-                setFormData(initialFormData);
-            }
-            setSelectedConventionOption(null);
-            setSelectedAoOption(null);
-            setIsLoading(false);
-        }
-        return () => { isMounted = false; };
-    }, [itemId, isEditMode, baseApiUrl, allOptionsLoaded, conventionOptions, aoOptions, fonctionnairesOptions, initialFormData, initialLotState]);
+                 const matchedConvention = conventionOptions.find(opt => String(opt.value) === String(itemData.id_convention));
+                 const matchedAo = aoOptions.find(opt => String(opt.value) === String(itemData.ref_appelOffre));
+                 const matchedFonctionnaires = findMultiOptions(fonctionnairesOptions, itemData.id_fonctionnaire, ';');
 
-    const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); if (validationErrors[name]) setValidationErrors(prev => ({ ...prev, [name]: null })); };
+                 setSelectedConventionOption(matchedConvention || null);
+                 setSelectedAoOption(matchedAo || null);
+
+setFormData(prev => ({
+                    ...initialFormData,
+                    numero_marche: itemData.numero_marche || '',
+                    intitule: itemData.intitule || '',
+                    id_convention: itemData.id_convention,
+                    ref_appelOffre: itemData.ref_appelOffre || null,
+                    avancement_physique: itemData.avancement_physique ?? '0',
+                    avancement_financier: itemData.avancement_financier ?? '0',
+                    date_engagement_tresorerie: formatDateForInput(itemData.date_engagement_tresorerie),
+
+                    // --- THIS IS THE FIX ---
+                    // Find the full option object that matches the string value from the API
+                    type_marche: TYPE_OPTIONS.find(opt => opt.value === itemData.type_marche) || null,
+                    mode_passation: MODE_PASSATION_OPTIONS.find(opt => opt.value === itemData.mode_passation) || null,
+                    // --- END OF FIX ---
+
+                    procedure_passation: itemData.procedure_passation || '',
+                    budget_previsionnel: itemData.budget_previsionnel || '',
+                    montant_attribue: itemData.montant_attribue || '',
+                    projectable: matchedProjectable || null,
+                    source_financement: itemData.source_financement || '',
+                    attributaire: itemData.attributaire || '',
+                    date_publication: formatDateForInput(itemData.date_publication),
+                    date_limite_offres: formatDateForInput(itemData.date_limite_offres),
+                    date_notification: formatDateForInput(itemData.date_notification),
+                    date_debut_execution: formatDateForInput(itemData.date_debut_execution),
+                    duree_marche: itemData.duree_marche || '',
+                    statut: STATUT_OPTIONS.find(opt => opt.value === itemData.statut) || null,
+                    fonctionnaires: matchedFonctionnaires,
+                    lots: (itemData.lots || []).map(lot => ({
+                        ...initialLotState,
+                        id: lot.id,
+                        numero_lot: lot.numero_lot || '',
+                        objet: lot.objet || '',
+                        montant_attribue: lot.montant_attribue || '',
+                        attributaire: lot.attributaire || '',
+                        existing_fichiers: lotFilesMap[lot.id] || [],
+                        fichiers: [],
+                        fichiers_to_delete: []
+                    })),
+                    general_fichiers: [],
+                    general_existing_fichiers: generalFiles,
+                    general_fichiers_to_delete: []
+                 }));
+            })
+            .catch(err => { if (!isMounted) return; console.error("[MARCHE FORM EDIT] Error loading data:", err.response || err); setError(err.response?.data?.message || "Erreur de chargement."); })
+            .finally(() => { if (isMounted) setIsLoading(false); });
+    } else if (!isEditMode) {
+        setFormData(initialFormData);
+        setSelectedConventionOption(null);
+        setSelectedAoOption(null);
+        setIsLoading(false);
+    }
+    return () => { isMounted = false; };
+}, [itemId, isEditMode, baseApiUrl, allOptionsLoaded, conventionOptions, aoOptions, fonctionnairesOptions, initialFormData, initialLotState, projetsEtSousProjetsOptions]);
+ const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); if (validationErrors[name]) setValidationErrors(prev => ({ ...prev, [name]: null })); };
     
     const handleReactSelectChange = (selectedOption, actionMeta) => {
         const { name } = actionMeta;
@@ -253,108 +550,98 @@ const MarchePublicForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseA
 
 
     const handleLotChange = useCallback((index, e) => { const { name, value } = e.target; const updatedLots = formData.lots.map((lot, i) => i === index ? { ...lot, [name]: value } : lot); setFormData(prev => ({ ...prev, lots: updatedLots })); const errorKey = `lots.${index}.${name}`; if (validationErrors[errorKey]) setValidationErrors(prev => ({ ...prev, [errorKey]: null })); }, [formData.lots, validationErrors]);
-    const handleLotFileChange = useCallback((index, e) => { const files = Array.from(e.target.files); if (!files.length) return; const updatedLots = formData.lots.map((lot, i) => i === index ? { ...lot, fichiers: [...(lot.fichiers || []), ...files] } : lot); setFormData(prev => ({ ...prev, lots: updatedLots })); e.target.value = null; const errorKeyBaseExact = `lot_files.${index}`; const errorKeyBaseWildcard = `lot_files.${index}.*`; if (validationErrors[errorKeyBaseExact] || validationErrors[errorKeyBaseWildcard]) setValidationErrors(prev => ({ ...prev, [errorKeyBaseExact]: null, [errorKeyBaseWildcard]: null })); }, [formData.lots, validationErrors]);
     const removeNewLotFile = useCallback((lotIndex, fileIndex) => { const updatedLots = formData.lots.map((lot, i) => { if (i === lotIndex) { return { ...lot, fichiers: (lot.fichiers || []).filter((_, fIdx) => fIdx !== fileIndex) }; } return lot; }); setFormData(prev => ({ ...prev, lots: updatedLots })); }, [formData.lots]);
     const removeExistingLotFile = useCallback((lotIndex, fileId) => { if (!window.confirm("Supprimer ce fichier de lot existant ? Il sera effacé lors de la sauvegarde.")) return; const updatedLots = formData.lots.map((lot, i) => { if (i === lotIndex) { return { ...lot, existing_fichiers: (lot.existing_fichiers || []).filter(f => f.id !== fileId), fichiers_to_delete: [...(lot.fichiers_to_delete || []), fileId] }; } return lot; }); setFormData(prev => ({ ...prev, lots: updatedLots })); }, [formData.lots]);
     const addLot = useCallback(() => { setFormData(prev => ({ ...prev, lots: [...(prev.lots || []), { ...initialLotState }] })); }, [initialLotState]);
     const removeLot = useCallback((index) => { const lotNum = formData.lots?.[index]?.numero_lot || `(Lot ${index + 1})`; if (window.confirm(`Supprimer ${lotNum} et tous ses fichiers associés ?`)) { setFormData(prev => ({ ...prev, lots: (prev.lots || []).filter((_, i) => i !== index) })); } }, [formData.lots]);
-    const handleGeneralFileChange = useCallback((e) => { const files = Array.from(e.target.files); if (!files.length) return; setFormData(prev => ({ ...prev, general_fichiers: [...(prev.general_fichiers || []), ...files] })); e.target.value = null; if (validationErrors['general_files.*']) setValidationErrors(prev => ({ ...prev, 'general_files.*': null })); }, [validationErrors]);
     const removeNewGeneralFile = useCallback((fileIndex) => { setFormData(prev => ({ ...prev, general_fichiers: (prev.general_fichiers || []).filter((_, fIdx) => fIdx !== fileIndex) })); }, []);
     const removeExistingGeneralFile = useCallback((fileId) => { if (!window.confirm("Supprimer ce fichier général existant ? Il sera effacé lors de la sauvegarde.")) return; setFormData(prev => ({ ...prev, general_existing_fichiers: (prev.general_existing_fichiers || []).filter(f => f.id !== fileId), general_fichiers_to_delete: [...(prev.general_fichiers_to_delete || []), fileId] })); }, []);
     const mapServerErrors = useCallback((serverErrors) => { const formErrors = {}; if (!serverErrors || typeof serverErrors !== 'object') return formErrors; for (const key in serverErrors) { const messages = Array.isArray(serverErrors[key]) ? serverErrors[key].join(' ') : String(serverErrors[key]); const lotFieldMatch = key.match(/^lots\.(\d+)\.(.+)$/); const lotFileMatch = key.match(/^lot_files\.(\d+)(?:\.(\d+|\*))?$/); const generalFileMatch = key.match(/^general_files(?:\.(\d+|\*))?$/); if (lotFieldMatch) formErrors[`lots.${lotFieldMatch[1]}.${lotFieldMatch[2]}`] = messages; else if (lotFileMatch) formErrors[`lot_files.${lotFileMatch[1]}.*`] = messages; else if (generalFileMatch) formErrors['general_files.*'] = messages; else formErrors[key] = messages; } console.log("[MARCHE FORM] Mapped server validation errors:", formErrors); return formErrors; }, []);
 
-    const handleSubmit = useCallback(async (e) => {
-        e.preventDefault();
-        if (!allOptionsLoaded && !isEditMode) {
-            setError("Veuillez patienter que les options se chargent...");
+const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    if (!allOptionsLoaded && !isEditMode) {
+        setError("Veuillez patienter que les options se chargent...");
+        return;
+    }
+    setIsSubmitting(true); setError(null); setValidationErrors({});
+    
+    const submissionPayload = new FormData();
+
+    Object.entries(formData).forEach(([key, value]) => {
+        if (['lots', 'general_fichiers', 'general_existing_fichiers', 'general_fichiers_to_delete', 
+             'fonctionnaires', 'projectable',
+             'type_marche', 'mode_passation', 'statut',
+             'id_convention', 'ref_appelOffre'
+            ].includes(key)) {
             return;
         }
-        setIsSubmitting(true); setError(null); setValidationErrors({});
-        
-        console.log("[MARCHE FORM SUBMIT] Current formData at start of submit:", JSON.parse(JSON.stringify(formData)));
-        console.log("[MARCHE FORM SUBMIT] Selected Convention Option (for display):", selectedConventionOption);
-        console.log("[MARCHE FORM SUBMIT] Selected AO Option (for display):", selectedAoOption);
+        submissionPayload.append(key, (value === null || value === undefined) ? '' : value);
+    });
 
+    if (formData.projectable?.value) submissionPayload.append('projectable', formData.projectable.value);
+    else submissionPayload.append('projectable', '');
 
-        const submissionPayload = new FormData();
+    submissionPayload.append('type_marche', formData.type_marche?.value || '');
+    submissionPayload.append('mode_passation', formData.mode_passation?.value || '');
+    submissionPayload.append('statut', formData.statut?.value || (isEditMode ? '' : 'En préparation'));
+    submissionPayload.append('id_convention', formData.id_convention || '');
+    submissionPayload.append('ref_appelOffre', formData.ref_appelOffre || '');
 
-        Object.entries(formData).forEach(([key, value]) => {
-            if (['lots', 'general_fichiers', 'general_existing_fichiers', 'general_fichiers_to_delete', 
-                 'fonctionnaires',
-                 'type_marche', 'mode_passation', 'statut',
-                 'id_convention', 'ref_appelOffre' // Handled explicitly below
-                ].includes(key)) {
-                return;
-            }
-            submissionPayload.append(key, (value === null || value === undefined) ? '' : value);
+    const fonctionnaireIdsString = (formData.fonctionnaires || []).map(f => f.value).join(';');
+    submissionPayload.append('id_fonctionnaire', fonctionnaireIdsString);
+
+    const lotsJsonData = (formData.lots || []).map(lot => ({ id: lot.id || null, numero_lot: lot.numero_lot || null, objet: lot.objet || null, montant_attribue: (lot.montant_attribue !== '' && !isNaN(Number(lot.montant_attribue))) ? parseFloat(lot.montant_attribue) : null, attributaire: lot.attributaire || null, fichiers_to_delete: lot.fichiers_to_delete || [], }));
+    submissionPayload.append('lots_data', JSON.stringify(lotsJsonData));
+
+    // Append lot-specific files
+    (formData.lots || []).forEach((lot, lotIndex) => {
+        (lot.fichiers || []).forEach((fileWrapper, fileIndex) => {
+            submissionPayload.append(`lot_files[${lotIndex}][]`, fileWrapper.file);
+            submissionPayload.append(`intitule_lot[${lotIndex}][${fileIndex}]`, fileWrapper.intitule);
+            submissionPayload.append(`categorie_lot[${lotIndex}][${fileIndex}]`, fileWrapper.categorie.value);
         });
+    });
 
-        if (formData.type_marche?.value) submissionPayload.append('type_marche', formData.type_marche.value);
-        else submissionPayload.append('type_marche', '');
-        if (formData.mode_passation?.value) submissionPayload.append('mode_passation', formData.mode_passation.value);
-        else submissionPayload.append('mode_passation', '');
-        if (formData.statut?.value) submissionPayload.append('statut', formData.statut.value);
-        else if (!isEditMode) submissionPayload.append('statut', 'En préparation');
-        else submissionPayload.append('statut', '');
+    // Append general files
+    (formData.general_fichiers || []).forEach((fileWrapper, fileIndex) => {
+        submissionPayload.append(`general_files[]`, fileWrapper.file);
+        submissionPayload.append(`intitule_general[${fileIndex}]`, fileWrapper.intitule);
+        submissionPayload.append(`categorie_general[${fileIndex}]`, fileWrapper.categorie.value);
+    });
 
-        // --- EXPLICIT AND LOGGED HANDLING FOR id_convention ---
-        const idConventionToSubmit = formData.id_convention; // This should be the ID or null
-        console.log("[MARCHE FORM SUBMIT] Value of formData.id_convention being processed:", idConventionToSubmit, "(type:", typeof idConventionToSubmit, ")");
-        if (idConventionToSubmit !== null && idConventionToSubmit !== undefined && String(idConventionToSubmit).trim() !== '') {
-            submissionPayload.append('id_convention', idConventionToSubmit);
-            console.log("[MARCHE FORM SUBMIT] Appended id_convention WITH VALUE:", idConventionToSubmit);
+    submissionPayload.append('general_fichiers_to_delete_ids', JSON.stringify(formData.general_fichiers_to_delete || []));
+
+    if (isEditMode) submissionPayload.append('_method', 'PUT');
+
+    // --- ENHANCED DEBUGGING ---
+    console.log("%c[MARCHE FORM SUBMIT] Final FormData Payload Verification:", "color: blue; font-weight: bold;");
+    for (let pair of submissionPayload.entries()) {
+        if (pair[1] instanceof File) {
+            console.log(`  -> ${pair[0]}: File { name: "${pair[1].name}", size: ${pair[1].size} }`);
         } else {
-            submissionPayload.append('id_convention', ''); // Send empty string for null/undefined, Laravel handles it
-            console.log("[MARCHE FORM SUBMIT] Appended id_convention AS EMPTY STRING.");
+            console.log(`  -> ${pair[0]}: ${pair[1]}`);
         }
+    }
+    // --- End of Debugging ---
 
-        const refAppelOffreToSubmit = formData.ref_appelOffre; // This should be the ID or null
-        console.log("[MARCHE FORM SUBMIT] Value of formData.ref_appelOffre being processed:", refAppelOffreToSubmit, "(type:", typeof refAppelOffreToSubmit, ")");
-        if (refAppelOffreToSubmit !== null && refAppelOffreToSubmit !== undefined && String(refAppelOffreToSubmit).trim() !== '') {
-            submissionPayload.append('ref_appelOffre', refAppelOffreToSubmit);
-        } else {
-            submissionPayload.append('ref_appelOffre', '');
-        }
-
-        const fonctionnaireIdsString = (formData.fonctionnaires || []).map(f => f.value).join(';');
-        submissionPayload.append('id_fonctionnaire', fonctionnaireIdsString);
-        console.log("[MARCHE FORM SUBMIT] Appending id_fonctionnaire_string:", fonctionnaireIdsString);
-
-        const lotsJsonData = (formData.lots || []).map(lot => ({ id: lot.id || null, numero_lot: lot.numero_lot || null, objet: lot.objet || null, montant_attribue: (lot.montant_attribue !== '' && !isNaN(Number(lot.montant_attribue))) ? parseFloat(lot.montant_attribue) : null, attributaire: lot.attributaire || null, fichiers_to_delete: lot.fichiers_to_delete || [], }));
-        if (lotsJsonData.length > 0) submissionPayload.append('lots_data', JSON.stringify(lotsJsonData));
-        else submissionPayload.append('lots_data', JSON.stringify([]));
-        (formData.lots || []).forEach((lot, index) => { if (lot.fichiers && lot.fichiers.length > 0) { lot.fichiers.forEach((file) => { if (file instanceof File) { submissionPayload.append(`lot_files[${index}][]`, file, file.name); } }); } });
-        if (formData.general_fichiers && formData.general_fichiers.length > 0) { formData.general_fichiers.forEach((file) => { if (file instanceof File) { submissionPayload.append(`general_files[]`, file, file.name); } }); }
-        if (formData.general_fichiers_to_delete && formData.general_fichiers_to_delete.length > 0) submissionPayload.append('general_fichiers_to_delete_ids', JSON.stringify(formData.general_fichiers_to_delete));
-        else submissionPayload.append('general_fichiers_to_delete_ids', JSON.stringify([]));
-
-        if (isEditMode) submissionPayload.append('_method', 'PUT');
-
-        console.log("[MARCHE FORM SUBMIT] Final FormData to be sent:");
-        for (let pair of submissionPayload.entries()) { console.log(pair[0]+ ': ' + (pair[1] instanceof File ? `File: ${pair[1].name}` : pair[1])); }
-
-        const url = isEditMode ? `${baseApiUrl}/marches-publics/${itemId}` : `${baseApiUrl}/marches-publics`;
-        try {
-            const config = { headers: { 'Accept': 'application/json' }, withCredentials: true };
-            const response = await axios.post(url, submissionPayload, config);
-            console.log(`[MARCHE FORM SUBMIT] API ${isEditMode ? 'Update' : 'Create'} Response:`, response.data);
-            setError(null); setValidationErrors({});
-            const submittedData = response.data.marche_public || response.data;
-            if (isEditMode && onItemUpdated) onItemUpdated(submittedData);
-            else if (!isEditMode && onItemCreated) onItemCreated(submittedData);
-            onClose();
-        } catch (err) {
-            const message = err.response?.data?.message || err.message || "Erreur de soumission.";
-            console.error(`[MARCHE FORM SUBMIT] Erreur lors de ${isEditMode ? 'la modification' : 'la création'}:`, err.response || err);
-            if (err.response && err.response.status === 422) {
-                const serverErrors = err.response.data.errors || {};
-                setValidationErrors(mapServerErrors(serverErrors));
-                setError("Veuillez corriger les erreurs de validation.");
-            } else { setError(message); setValidationErrors({}); }
-        } finally { setIsSubmitting(false); }
-    }, [formData, isEditMode, baseApiUrl, itemId, onItemUpdated, onItemCreated, onClose, allOptionsLoaded, mapServerErrors, selectedConventionOption, selectedAoOption]); // Added selected options as direct deps
-
-    // ... (isOverallDisabled, isLoading checks, and the rest of your JSX return) ...
+    const url = isEditMode ? `${baseApiUrl}/marches-publics/${itemId}` : `${baseApiUrl}/marches-publics`;
+    try {
+        const config = { headers: { 'Accept': 'application/json' }, withCredentials: true };
+        const response = await axios.post(url, submissionPayload, config);
+        const submittedData = response.data.marche_public || response.data;
+        if (isEditMode) onItemUpdated(submittedData);
+        else onItemCreated(submittedData);
+        onClose();
+    } catch (err) {
+        const message = err.response?.data?.message || err.message || "Erreur de soumission.";
+        console.error(`[MARCHE FORM SUBMIT] Erreur lors de ${isEditMode ? 'la modification' : 'la création'}:`, err.response || err);
+        if (err.response && err.response.status === 422) {
+            setValidationErrors(mapServerErrors(err.response.data.errors || {}));
+            setError("Veuillez corriger les erreurs de validation.");
+        } else { setError(message); }
+    } finally { setIsSubmitting(false); }
+}, [formData, isEditMode, baseApiUrl, itemId, onItemUpdated, onItemCreated, onClose, allOptionsLoaded, mapServerErrors]);
     const isOverallDisabled = isSubmitting || !allOptionsLoaded || (isEditMode && isLoading);
 
     if (isLoading && isEditMode) { return (<div className="text-center p-5"><Spinner animation="border" variant="primary"/> Chargement des données du marché...</div>); }
@@ -363,7 +650,7 @@ const MarchePublicForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseA
     }
 
      return (
-        <Form onSubmit={handleSubmit} noValidate className='px-5 py-5' style={{ maxHeight: 'calc(90vh - 100px)', overflowY: 'auto', }}>
+        <Form onSubmit={handleSubmit} noValidate className='px-5 bg-white py-5' style={{ maxHeight: 'calc(90vh - 100px)', overflowY: 'auto', }}>
             {error && !Object.keys(validationErrors).length && <Alert variant="danger" className="mt-3">{error}</Alert>}
             {Object.keys(validationErrors).length > 0 && <Alert variant="warning" className="mt-3 small py-2">Veuillez corriger les erreurs indiquées ci-dessous.</Alert>}
             <div className="d-flex justify-content-between align-items-center mb-4 flex-shrink-0 border-bottom pb-3">
@@ -377,6 +664,22 @@ const MarchePublicForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseA
             </Row>
              <Form.Group className="mb-3"> <Form.Label htmlFor="intitule">Intitulé du Marché <span className="text-danger">*</span></Form.Label> <Form.Control id="intitule" className={textareaClass} as="textarea" rows={1} name="intitule" value={formData.intitule || ''} onChange={handleChange} isInvalid={!!validationErrors.intitule} placeholder="Objet spécifique..." /> <Form.Control.Feedback type="invalid">{validationErrors.intitule}</Form.Control.Feedback> </Form.Group>
              <Form.Group className="mb-3"> <Form.Label htmlFor="convention_select">Convention Associée</Form.Label> <Select inputId="convention_select_input" name="id_convention_select_display" options={conventionOptions} value={selectedConventionOption} onChange={handleConventionSelectChange} isLoading={loadingOptions.conventions} isDisabled={loadingOptions.conventions} placeholder={loadingOptions.conventions ? "Chargement..." : "Sélectionner (Optionnel)..."} isClearable styles={selectStyles} className={validationErrors.id_convention ? 'is-invalid' : ''} menuPortalTarget={document.body}/> {validationErrors.id_convention && <div className="invalid-feedback d-block ps-2 small mt-1">{validationErrors.id_convention}</div>} </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Projet / Sous-Projet Associé</Form.Label>
+                <Select
+                    name="projectable"
+                    options={projetsEtSousProjetsOptions}
+                    value={formData.projectable}
+                    onChange={(opt) => handleReactSelectChange(opt, {name: 'projectable'})}
+                    placeholder={loadingOptions.projets ? "Chargement..." : "Sélectionner (Optionnel)..."}
+                    isLoading={loadingOptions.projets}
+                    isClearable
+                    styles={selectStyles}
+                    className={validationErrors.projectable ? 'is-invalid' : ''}
+                    menuPortalTarget={document.body}
+                />
+                {validationErrors.projectable && <div className="invalid-feedback d-block ps-2 small mt-1">{validationErrors.projectable}</div> }
+            </Form.Group>
              <Row className="mb-3 g-3">
                   <Form.Group as={Col} md={12} controlId="formFonctionnaireMarche">
                      <Form.Label className="small mb-1 fw-medium"> <FontAwesomeIcon icon={faUsers} className="me-1" /> Fonctionnaire(s) Associé(s) </Form.Label>
@@ -406,19 +709,124 @@ const MarchePublicForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseA
                      />
                      {validationErrors.ref_appelOffre && <div className="invalid-feedback d-block ps-2 small mt-1">{validationErrors.ref_appelOffre[0]}</div>}
                  </Form.Group>
-                 <Form.Group as={Col} md="6" controlId="date_ouverture_plis"> <Form.Label>Date Ouverture des Plis </Form.Label> <Form.Control className={inputClass} type="date" name="date_ouverture_plis" value={formData.date_ouverture_plis} onChange={handleChange} isInvalid={!!validationErrors.date_ouverture_plis} /> <Form.Control.Feedback type="invalid">{validationErrors.date_ouverture_plis}</Form.Control.Feedback> </Form.Group>
             </Row>
-            <Row className="mb-3"> <Form.Group as={Col} md="6" controlId="date_fin_ouverture"> <Form.Label>Date Fin Session Ouverture </Form.Label> <Form.Control className={inputClass} type="date" name="date_fin_ouverture" value={formData.date_fin_ouverture} onChange={handleChange} isInvalid={!!validationErrors.date_fin_ouverture} /> <Form.Control.Feedback type="invalid">{validationErrors.date_fin_ouverture}</Form.Control.Feedback> </Form.Group> <Form.Group as={Col} md="6" controlId="date_engagement_tresorerie"> <Form.Label>Date Engagement Trésorerie </Form.Label> <Form.Control className={inputClass} type="date" name="date_engagement_tresorerie" value={formData.date_engagement_tresorerie} onChange={handleChange} isInvalid={!!validationErrors.date_engagement_tresorerie} /> <Form.Control.Feedback type="invalid">{validationErrors.date_engagement_tresorerie}</Form.Control.Feedback> </Form.Group> </Row>
             <Row className="mb-3"> <Form.Group as={Col} md="6" controlId="avancement_physique"> <Form.Label>Avancement Physique (%) </Form.Label> <Form.Control className={inputClass} type="number" name="avancement_physique" value={formData.avancement_physique} onChange={handleChange} isInvalid={!!validationErrors.avancement_physique} min="0" max="100" step="0.01" /> <Form.Control.Feedback type="invalid">{validationErrors.avancement_physique}</Form.Control.Feedback> </Form.Group> <Form.Group as={Col} md="6" controlId="avancement_financier"> <Form.Label>Avancement Financier (%) </Form.Label> <Form.Control className={inputClass} type="number" name="avancement_financier" value={formData.avancement_financier} onChange={handleChange} isInvalid={!!validationErrors.avancement_financier} min="0" max="100" step="0.01" /> <Form.Control.Feedback type="invalid">{validationErrors.avancement_financier}</Form.Control.Feedback> </Form.Group> </Row>
             <Row> <Form.Group as={Col} md="6" className="mb-3"> <Form.Label htmlFor="budget_previsionnel">Budget Prévisionnel (MAD)</Form.Label> <Form.Control id="budget_previsionnel" className={inputClass} type="number" step="0.01" name="budget_previsionnel" value={formData.budget_previsionnel || ''} onChange={handleChange} isInvalid={!!validationErrors.budget_previsionnel} placeholder="0.00" /> <Form.Control.Feedback type="invalid">{validationErrors.budget_previsionnel}</Form.Control.Feedback> </Form.Group> <Form.Group as={Col} md="6" className="mb-3"> <Form.Label htmlFor="montant_attribue">Montant Attribué (MAD)</Form.Label> <Form.Control id="montant_attribue" className={inputClass} type="number" step="0.01" name="montant_attribue" value={formData.montant_attribue || ''} onChange={handleChange} isInvalid={!!validationErrors.montant_attribue} placeholder="0.00" /> <Form.Control.Feedback type="invalid">{validationErrors.montant_attribue}</Form.Control.Feedback> </Form.Group> </Row>
             <Row> <Form.Group as={Col} md="6" className="mb-3"> <Form.Label htmlFor="source_financement">Source Financement</Form.Label> <Form.Control id="source_financement" className={inputClass} type="text" name="source_financement" value={formData.source_financement || ''} onChange={handleChange} isInvalid={!!validationErrors.source_financement} /> <Form.Control.Feedback type="invalid">{validationErrors.source_financement}</Form.Control.Feedback> </Form.Group> <Form.Group as={Col} md="6" className="mb-3"> <Form.Label htmlFor="attributaire">Attributaire</Form.Label> <Form.Control id="attributaire" className={textareaClass} as="textarea" rows={1} name="attributaire" value={formData.attributaire || ''} onChange={handleChange} isInvalid={!!validationErrors.attributaire} placeholder="Nom(s)..."/> <Form.Control.Feedback type="invalid">{validationErrors.attributaire}</Form.Control.Feedback> </Form.Group> </Row>
             <Row> <Form.Group as={Col} md="6" lg="3" className="mb-3"> <Form.Label htmlFor="date_publication">Date Publication</Form.Label> <Form.Control id="date_publication" className={inputClass} type="date" name="date_publication" value={formData.date_publication || ''} onChange={handleChange} isInvalid={!!validationErrors.date_publication} /> <Form.Control.Feedback type="invalid">{validationErrors.date_publication}</Form.Control.Feedback> </Form.Group> <Form.Group as={Col} md="6" lg="3" className="mb-3"> <Form.Label htmlFor="date_limite_offres">Date Limite Offres</Form.Label> <Form.Control className={inputClass} id="date_limite_offres" type="date" name="date_limite_offres" value={formData.date_limite_offres || ''} onChange={handleChange} isInvalid={!!validationErrors.date_limite_offres} /> <Form.Control.Feedback type="invalid">{validationErrors.date_limite_offres}</Form.Control.Feedback> </Form.Group> <Form.Group as={Col} md="6" lg="3" className="mb-3"> <Form.Label htmlFor="date_notification">Date Notification</Form.Label> <Form.Control className={inputClass} id="date_notification" type="date" name="date_notification" value={formData.date_notification || ''} onChange={handleChange} isInvalid={!!validationErrors.date_notification} /> <Form.Control.Feedback type="invalid">{validationErrors.date_notification}</Form.Control.Feedback> </Form.Group> <Form.Group as={Col} md="6" lg="3" className="mb-3"> <Form.Label htmlFor="date_debut_execution" >Date Début Exécution</Form.Label> <Form.Control className={inputClass} id="date_debut_execution" type="date" name="date_debut_execution" value={formData.date_debut_execution || ''} onChange={handleChange} isInvalid={!!validationErrors.date_debut_execution} /> <Form.Control.Feedback type="invalid">{validationErrors.date_debut_execution}</Form.Control.Feedback> </Form.Group> </Row>
             <Row> <Form.Group as={Col} md="6" className="mb-3"> <Form.Label htmlFor="duree_marche">Durée (jours)</Form.Label> <Form.Control className={inputClass} id="duree_marche" type="number" step="1" min="0" name="duree_marche" value={formData.duree_marche || ''} onChange={handleChange} isInvalid={!!validationErrors.duree_marche} placeholder="Nombre entier" /> <Form.Control.Feedback type="invalid">{validationErrors.duree_marche}</Form.Control.Feedback> </Form.Group> {!isEditMode && ( <Form.Group as={Col} md="6" className="mb-3"> <Form.Label htmlFor="statut_create">Statut Initial</Form.Label> <Select inputId="statut_create_select" name="statut" options={STATUT_OPTIONS} value={formData.statut} onChange={(opt) => handleReactSelectChange(opt, {name: 'statut'})} styles={selectStyles} placeholder="Sélectionner statut..." className={validationErrors.statut ? 'is-invalid' : ''}/> {validationErrors.statut && <div className="invalid-feedback d-block ps-2 small mt-1">{validationErrors.statut[0]}</div>} </Form.Group> )} </Row>
             <h5 className="mt-4 mb-3">Lots</h5>
-             {(formData.lots || []).map((lot, index) => ( <Card key={`lot-card-${index}-${lot.id || `new-${index}`}`} className="mb-3 lot-card border shadow-sm"> <Card.Body className='p-3'> <Row className="align-items-center mb-2"> <Col><Card.Title className="h6 mb-0">Lot {index + 1} {lot.id ? `(ID: ${lot.id})` : '(Nouveau)'}</Card.Title></Col> <Col xs="auto"> <Button variant="outline-danger" size="sm" onClick={() => removeLot(index)} title="Supprimer ce lot" className='py-0 px-1 border-1'> <FontAwesomeIcon icon={faTrashAlt} size="md"/> </Button> </Col> </Row> <Row> <Form.Group as={Col} md="6" className="mb-2"> <Form.Label htmlFor={`lot_${index}_numero`} className="small text-muted">Numéro Lot</Form.Label> <Form.Control className={inputClass} id={`lot_${index}_numero`} size="sm" type="text" name="numero_lot" value={lot.numero_lot || ''} onChange={(e) => handleLotChange(index, e)} isInvalid={!!validationErrors[`lots.${index}.numero_lot`]}/> <Form.Control.Feedback type="invalid">{validationErrors[`lots.${index}.numero_lot`]}</Form.Control.Feedback> </Form.Group> <Form.Group as={Col} md="6" className="mb-2"> <Form.Label htmlFor={`lot_${index}_montant`} className="small text-muted">Montant Attribué (MAD)</Form.Label> <Form.Control className={inputClass} id={`lot_${index}_montant`} size="sm" type="number" step="0.01" name="montant_attribue" value={lot.montant_attribue || ''} onChange={(e) => handleLotChange(index, e)} isInvalid={!!validationErrors[`lots.${index}.montant_attribue`]} placeholder="0.00"/> <Form.Control.Feedback type="invalid">{validationErrors[`lots.${index}.montant_attribue`]}</Form.Control.Feedback> </Form.Group> </Row> <Form.Group className="mb-2"> <Form.Label htmlFor={`lot_${index}_objet`} className="small text-muted">Objet Lot</Form.Label> <Form.Control className={textareaClass} id={`lot_${index}_objet`} size="sm" as="textarea" rows={1} name="objet" value={lot.objet || ''} onChange={(e) => handleLotChange(index, e)} isInvalid={!!validationErrors[`lots.${index}.objet`]} /> <Form.Control.Feedback type="invalid">{validationErrors[`lots.${index}.objet`]}</Form.Control.Feedback> </Form.Group> <Form.Group className="mb-2"> <Form.Label htmlFor={`lot_${index}_attributaire`} className="small text-muted">Attributaire(s) Lot</Form.Label> <Form.Control className={inputClass} id={`lot_${index}_attributaire`} size="sm" type="text" name="attributaire" value={lot.attributaire || ''} onChange={(e) => handleLotChange(index, e)} isInvalid={!!validationErrors[`lots.${index}.attributaire`]} /> <Form.Control.Feedback type="invalid">{validationErrors[`lots.${index}.attributaire`]}</Form.Control.Feedback> </Form.Group> <Form.Group className="mt-3"> <Form.Label className="small mb-1 text-muted"> <FontAwesomeIcon icon={faPaperclip} className="me-1"/> Fichiers Joints (Lot)</Form.Label> <Form.Control className={inputClass} id={`lot_${index}_fichiers_hidden_input`} type="file" multiple onChange={(e) => handleLotFileChange(index, e)} style={{ display: 'none' }} aria-hidden="true" isInvalid={!!validationErrors[`lot_files.${index}.*`]}/> <Button size="sm" className="d-inline-block ms-2 btn bg-light outline-primary text-primary rounded-5" onClick={() => document.getElementById(`lot_${index}_fichiers_hidden_input`)?.click()} > <FontAwesomeIcon icon={faPlus} className="me-1" /> Ajouter</Button> {validationErrors[`lot_files.${index}.*`] && ( <div className="d-block invalid-feedback small mt-1 ms-1">{validationErrors[`lot_files.${index}.*`]}</div> )} {isEditMode && lot.existing_fichiers?.length > 0 && ( <Stack direction="horizontal" gap={1} className="mt-2 flex-wrap" style={{fontSize: '0.8em'}}><span className="me-2 small text-muted">Existants:</span> {(lot.existing_fichiers || []).map((file) => ( <Badge key={`existing-lot-${index}-file-${file.id}`} pill bg="info" text="dark" className="d-flex p-2 align-items-center fw-normal"><span className='me-1 text-truncate' style={{maxWidth: '120px'}} title={file.nom_fichier}>{file.nom_fichier}</span><Button variant="close" size="sm" aria-label="Supprimer existant" className="p-0 ms-1" style={{fontSize: '0.6em'}} onClick={() => removeExistingLotFile(index, file.id)} title="Marquer pour suppression"></Button></Badge> ))} </Stack> )} {lot.fichiers?.length > 0 && ( <Stack direction="horizontal" gap={1} className={`${(isEditMode && lot.existing_fichiers?.length > 0) ? 'mt-1' : 'mt-2'} flex-wrap`} style={{fontSize: '0.8em'}}><span className="me-2 small text-muted">Nouveaux:</span> {(lot.fichiers || []).map((file, fileIndex) => ( <Badge key={`new-lot-${index}-file-${file.name}-${fileIndex}-${Date.now()}`} pill bg="success" className="d-flex align-items-center fw-normal"><span className='me-1 p-2 text-truncate' style={{maxWidth: '120px'}} title={file.name}>{file.name}</span><Button variant="close" size="sm" aria-label="Retirer nouveau" className="btn-close-white p-0 ms-1" style={{fontSize: '1em', filter: 'invert(1) grayscale(100%) brightness(200%)'}} onClick={() => removeNewLotFile(index, fileIndex)}></Button></Badge> ))} </Stack> )} {!lot.fichiers?.length && !lot.existing_fichiers?.length && ( <div className="mt-2 small text-muted fst-italic">Aucun fichier.</div> )} </Form.Group> </Card.Body> </Card> ))}
+             {(formData.lots || []).map((lot, index) => ( <Card key={`lot-card-${index}-${lot.id || `new-${index}`}`} className="mb-3 lot-card border shadow-sm"> <Card.Body className='p-3'> <Row className="align-items-center mb-2"> <Col><Card.Title className="h6 mb-0">Lot {index + 1} {lot.id ? `(ID: ${lot.id})` : '(Nouveau)'}</Card.Title></Col> <Col xs="auto"> <Button variant="outline-danger" size="sm" onClick={() => removeLot(index)} title="Supprimer ce lot" className='py-0 px-1 border-1'> <FontAwesomeIcon icon={faTrashAlt} size="md"/> </Button> </Col> </Row> <Row> <Form.Group as={Col} md="6" className="mb-2"> <Form.Label htmlFor={`lot_${index}_numero`} className="small text-muted">Numéro Lot</Form.Label> <Form.Control className={inputClass} id={`lot_${index}_numero`} size="sm" type="text" name="numero_lot" value={lot.numero_lot || ''} onChange={(e) => handleLotChange(index, e)} isInvalid={!!validationErrors[`lots.${index}.numero_lot`]}/> <Form.Control.Feedback type="invalid">{validationErrors[`lots.${index}.numero_lot`]}</Form.Control.Feedback> </Form.Group> <Form.Group as={Col} md="6" className="mb-2"> <Form.Label htmlFor={`lot_${index}_montant`} className="small text-muted">Montant Attribué (MAD)</Form.Label> <Form.Control className={inputClass} id={`lot_${index}_montant`} size="sm" type="number" step="0.01" name="montant_attribue" value={lot.montant_attribue || ''} onChange={(e) => handleLotChange(index, e)} isInvalid={!!validationErrors[`lots.${index}.montant_attribue`]} placeholder="0.00"/> <Form.Control.Feedback type="invalid">{validationErrors[`lots.${index}.montant_attribue`]}</Form.Control.Feedback> </Form.Group> </Row> <Form.Group className="mb-2"> <Form.Label htmlFor={`lot_${index}_objet`} className="small text-muted">Objet Lot</Form.Label> <Form.Control className={textareaClass} id={`lot_${index}_objet`} size="sm" as="textarea" rows={1} name="objet" value={lot.objet || ''} onChange={(e) => handleLotChange(index, e)} isInvalid={!!validationErrors[`lots.${index}.objet`]} /> <Form.Control.Feedback type="invalid">{validationErrors[`lots.${index}.objet`]}</Form.Control.Feedback> </Form.Group> <Form.Group className="mb-2"> <Form.Label htmlFor={`lot_${index}_attributaire`} className="small text-muted">Attributaire(s) Lot</Form.Label> <Form.Control className={inputClass} id={`lot_${index}_attributaire`} size="sm" type="text" name="attributaire" value={lot.attributaire || ''} onChange={(e) => handleLotChange(index, e)} isInvalid={!!validationErrors[`lots.${index}.attributaire`]} /> <Form.Control.Feedback type="invalid">{validationErrors[`lots.${index}.attributaire`]}</Form.Control.Feedback> </Form.Group> <Form.Group className="mt-3"> <Form.Label className="small mb-1 text-muted"> <FontAwesomeIcon icon={faPaperclip} className="me-1"/> Fichiers Joints (Lot)</Form.Label> <Form.Control className={inputClass} id={`lot_${index}_fichiers_hidden_input`} type="file" multiple onChange={(e) => openMetadataModal(e, index)} style={{ display: 'none' }} aria-hidden="true" isInvalid={!!validationErrors[`lot_files.${index}.*`]}/> <Button size="sm" className="d-inline-block ms-2 btn bg-light outline-primary text-primary rounded-5" onClick={() => document.getElementById(`lot_${index}_fichiers_hidden_input`)?.click()} > <FontAwesomeIcon icon={faPlus} className="me-1" /> Ajouter</Button> {validationErrors[`lot_files.${index}.*`] && ( <div className="d-block invalid-feedback small mt-1 ms-1">{validationErrors[`lot_files.${index}.*`]}</div> )} 
+             {isEditMode && lot.existing_fichiers?.length > 0 && (
+    <Stack direction="horizontal" gap={1} className="mt-2 flex-wrap" style={{fontSize: '0.8em'}}>
+        <span className="me-2 small text-muted">Existants:</span>
+        {(lot.existing_fichiers || []).map((file, fileIndex) => (
+            <Badge
+                key={`existing-lot-${index}-file-${file.id}`}
+                as={Button} // Keep as button
+                pill
+                bg="info"
+                text="dark"
+                className="d-flex p-2 align-items-center fw-normal"
+                onClick={() => openFileEditModal(file, index, fileIndex, true)} // Use new handler
+            >
+                <span className='me-1 text-truncate' style={{maxWidth: '120px'}} title={file.intitule || file.nom_fichier}>
+                    {file.intitule || file.nom_fichier}
+                </span>
+                <Button
+                    variant="close"
+                    size="sm"
+                    aria-label="Supprimer existant"
+                    className="p-0 ms-1"
+                    style={{fontSize: '0.6em'}}
+                    onClick={(e) => { e.stopPropagation(); removeExistingLotFile(index, file.id); }} // Keep stopPropagation
+                    title="Marquer pour suppression"
+                />
+            </Badge>
+        ))}
+    </Stack>
+)}{lot.fichiers?.length > 0 && (
+    <Stack direction="horizontal" gap={1} className={`${(isEditMode && lot.existing_fichiers?.length > 0) ? 'mt-1' : 'mt-2'} flex-wrap`} style={{fontSize: '0.8em'}}>
+        <span className="me-2 small text-muted">Nouveaux:</span>
+        {(lot.fichiers || []).map((fileWrapper, fileIndex) => (
+            <Badge
+                key={`new-lot-${index}-file-${fileIndex}`}
+                as={Button} // CHANGE to Button to make it clickable
+                pill
+                bg="success"
+                className="d-flex align-items-center fw-normal"
+                onClick={() => openFileEditModal(fileWrapper, index, fileIndex, false)} // ADD onClick handler
+                title={`Edit: ${fileWrapper.intitule || fileWrapper.file.name}`} // Add a helpful title
+            >
+                <span className='me-1 p-2 text-truncate' style={{maxWidth: '120px'}} title={fileWrapper.intitule || fileWrapper.file.name}>
+                    {fileWrapper.intitule || fileWrapper.file.name}
+                </span>
+                <Button
+                    variant="close"
+                    size="sm"
+                    aria-label="Retirer nouveau"
+                    className="btn-close-white p-0 ms-1"
+                    style={{fontSize: '1em', filter: 'invert(1) grayscale(100%) brightness(200%)'}}
+                    onClick={(e) => { e.stopPropagation(); removeNewLotFile(index, fileIndex); }} // ADD stopPropagation
+                />
+            </Badge>
+        ))}
+    </Stack>
+)}{!lot.fichiers?.length && !lot.existing_fichiers?.length && ( <div className="mt-2 small text-muted fst-italic">Aucun fichier.</div> )} </Form.Group> </Card.Body> </Card> ))}
             <Button variant="outline-success" size="sm" onClick={addLot} className="rounded-5 d-flex align-items-center mb-3"> <FontAwesomeIcon icon={faPlus} className="me-2" /> Ajouter un Lot </Button>
             <h5 className="mt-4 mb-3">Fichiers Généraux du Marché</h5>
-            <Card className="mb-3 border shadow-sm"> <Card.Body className='p-3'> <Form.Group controlId="generalFileGroup"> <Form.Label className="small mb-1 text-muted"> <FontAwesomeIcon icon={faPaperclip} className="me-1"/> Joindre Fichiers Généraux </Form.Label> <Form.Control ref={generalFileInputRef} className={inputClass} id="general_fichiers_hidden_input" type="file" multiple onChange={handleGeneralFileChange} style={{ display: 'none' }} aria-hidden="true" isInvalid={!!validationErrors['general_files.*']} /> <Button variant="outline-info" size="sm" className="d-inline-block ms-2 rounded-5" onClick={() => generalFileInputRef.current?.click()} > <FontAwesomeIcon icon={faPlus} className="me-1" /> Ajouter</Button> {validationErrors['general_files.*'] && ( <div className="d-block invalid-feedback small mt-1 ms-1">{validationErrors['general_files.*'][0]}</div> )} {isEditMode && formData.general_existing_fichiers?.length > 0 && ( <Stack direction="horizontal" gap={1} className="mt-2 flex-wrap" style={{fontSize: '0.8em'}}> <span className="me-2 small text-muted">Existants:</span> {(formData.general_existing_fichiers || []).map((file) => ( <Badge key={`existing-general-file-${file.id}`} pill bg="info" text="dark" className="d-flex p-2 align-items-center fw-normal"> <span className='me-1 text-truncate' style={{maxWidth: '120px'}} title={file.nom_fichier}>{file.nom_fichier}</span><Button variant="close" size="sm" aria-label="Supprimer général existant" className="p-0 ms-1" style={{fontSize: '0.6em'}} onClick={() => removeExistingGeneralFile(file.id)} title="Marquer pour suppression"></Button> </Badge> ))} </Stack> )} {formData.general_fichiers?.length > 0 && ( <Stack direction="horizontal" gap={1} className={`${(isEditMode && formData.general_existing_fichiers?.length > 0) ? 'mt-2' : 'mt-2'} flex-wrap`} style={{fontSize: '0.8em'}}> <span className="me-2 small text-muted">Nouveaux:</span> {(formData.general_fichiers || []).map((file, fileIndex) => ( <Badge key={`new-general-file-${file.name}-${fileIndex}-${Date.now()}`} pill bg="success" className="d-flex align-items-center fw-normal"> <span className='me-1 text-truncate my-2 ' style={{maxWidth: '120px'}} title={file.name}>{file.name}</span><Button variant="close" size="sm" aria-label="Retirer nouveau général" className="btn-close-white p-0 ms-1" style={{fontSize: '1em', filter: 'invert(1) grayscale(100%) brightness(200%)'}} onClick={() => removeNewGeneralFile(fileIndex)}></Button> </Badge> ))} </Stack> )} {!formData.general_fichiers?.length && !formData.general_existing_fichiers?.length && ( <div className="mt-2 small text-muted fst-italic">Aucun fichier général joint.</div> )} </Form.Group> </Card.Body> </Card>
+            <Card className="mb-3 border shadow-sm"> <Card.Body className='p-3'> <Form.Group controlId="generalFileGroup"> <Form.Label className="small mb-1 text-muted"> <FontAwesomeIcon icon={faPaperclip} className="me-1"/> Joindre Fichiers Généraux </Form.Label> <Form.Control ref={generalFileInputRef} className={inputClass} id="general_fichiers_hidden_input" type="file" multiple onChange={(e) => openMetadataModal(e, null)} style={{ display: 'none' }} aria-hidden="true" isInvalid={!!validationErrors['general_files.*']} /> <Button variant="outline-info" size="sm" className="d-inline-block ms-2 rounded-5" onClick={() => generalFileInputRef.current?.click()} > <FontAwesomeIcon icon={faPlus} className="me-1" /> Ajouter</Button> {validationErrors['general_files.*'] && ( <div className="d-block invalid-feedback small mt-1 ms-1">{validationErrors['general_files.*'][0]}</div> )} 
+            {/* --- CORRECTED EXISTING GENERAL FILES --- */}
+{isEditMode && formData.general_existing_fichiers?.length > 0 && (
+    <Stack direction="horizontal" gap={1} className="mt-2 flex-wrap" style={{fontSize: '0.8em'}}>
+        <span className="me-2 small text-muted">Existants:</span>
+        {(formData.general_existing_fichiers || []).map((file, fileIndex) => ( // Added fileIndex here
+            <Badge
+                key={`existing-general-file-${file.id}`}
+                as={Button}
+                pill
+                bg="info"
+                text="dark"
+                // CHANGED: Use the new function with all required parameters
+                onClick={() => openFileEditModal(file, null, fileIndex, true)} 
+                className="d-flex p-2 align-items-center fw-normal"
+            >
+                <span className='me-1 text-truncate' style={{maxWidth: '120px'}} title={file.intitule || file.nom_fichier}>{file.intitule || file.nom_fichier}</span>
+                <Button variant="close" size="sm" aria-label="Supprimer général existant" className="p-0 ms-1" style={{fontSize: '0.6em'}} onClick={(e) => { e.stopPropagation(); removeExistingGeneralFile(file.id); }} title="Marquer pour suppression"></Button>
+            </Badge>
+        ))}
+    </Stack>
+)}
+{/* --- CORRECTED NEW GENERAL FILES --- */}
+{formData.general_fichiers?.length > 0 && (
+    <Stack direction="horizontal" gap={1} className={`${(isEditMode && formData.general_existing_fichiers?.length > 0) ? 'mt-2' : 'mt-2'} flex-wrap`} style={{fontSize: '0.8em'}}>
+        <span className="me-2 small text-muted">Nouveaux:</span>
+        {(formData.general_fichiers || []).map((fileWrapper, fileIndex) => (
+            <Badge
+                key={`new-general-file-${fileIndex}`}
+                as={Button} // CHANGED: Make the badge a button
+                pill
+                bg="success"
+                className="d-flex align-items-center fw-normal"
+                title={`Edit: ${fileWrapper.intitule || fileWrapper.file.name}`}
+                // CHANGED: Use the new function
+                onClick={() => openFileEditModal(fileWrapper, null, fileIndex, false)}
+            >
+                <span className='me-1 text-truncate my-2' style={{maxWidth: '120px'}} title={fileWrapper.intitule || fileWrapper.file.name}>{fileWrapper.intitule || fileWrapper.file.name}</span>
+                <Button
+                    variant="close"
+                    size="sm"
+                    aria-label="Retirer nouveau général"
+                    className="btn-close-white p-0 ms-1"
+                    style={{fontSize: '1em', filter: 'invert(1) grayscale(100%) brightness(200%)'}}
+                    // CHANGED: Add stopPropagation to prevent editing when clicking remove
+                    onClick={(e) => { e.stopPropagation(); removeNewGeneralFile(fileIndex); }}
+                />
+            </Badge>
+        ))}
+    </Stack>
+)}
+{!formData.general_fichiers?.length && !formData.general_existing_fichiers?.length && ( <div className="mt-2 small text-muted fst-italic">Aucun fichier général joint.</div> )} </Form.Group> </Card.Body> </Card>
             <div className="text-center mt-4 pt-3 border-top">
                  <Button variant="danger" onClick={onClose} className="me-2 rounded-5 px-5">Annuler</Button>
                  <Button variant="primary" type="submit" className="me-2 rounded-5 px-5" disabled={isOverallDisabled}>
@@ -426,7 +834,109 @@ const MarchePublicForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseA
                     {isSubmitting ? 'Enregistrement...' : (isEditMode ? 'Enregistrer Modifications' : 'Créer Marché')}
                 </Button>
             </div>
+{/* --- CORRECTED METADATA MODAL with consolidated state --- */}
+<Modal show={modalData.isOpen} onHide={cancelMetadataModal} size="lg" backdrop="static" keyboard={false}>
+    <Modal.Header closeButton>
+        <Modal.Title>Informations sur les fichiers</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+        <p className="text-muted small">Veuillez vérifier et compléter les informations pour chaque fichier téléversé.</p>
+        {modalData.pendingFiles.map((pf, index) => ( // Use modalData.pendingFiles here
+            <Card key={index} className="mb-3 shadow-sm">
+                <Card.Header className="small fw-bold bg-light text-truncate" title={pf.file.name}>
+                    <FontAwesomeIcon icon={faPaperclip} className="me-2" />
+                    {pf.file.name}
+                </Card.Header>
+                <Card.Body>
+                    <Row>
+                        <Col md={6} className="mb-2 mb-md-0">
+                            <Form.Group>
+                                <Form.Label htmlFor={`intitule-${index}`} className="small">Intitulé du fichier</Form.Label>
+                                <Form.Control
+                                    id={`intitule-${index}`}
+                                    type="text"
+                                    value={pf.intitule}
+                                    onChange={(e) => handlePendingFileChange(index, 'intitule', e.target.value)}
+                                    size="sm"
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label htmlFor={`categorie-${index}`} className="small">Catégorie</Form.Label>
+                                <Select
+                                    inputId={`categorie-${index}`}
+                                    options={MARCHE_FICHIER_CATEGORIES}
+                                    value={pf.categorie}
+                                    onChange={(opt) => handlePendingFileChange(index, 'categorie', opt)}
+                                    styles={selectStyles}
+                                    placeholder="Choisir..."
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                </Card.Body>
+            </Card>
+        ))}
+    </Modal.Body>
+    <Modal.Footer>
+        <Button variant="secondary" onClick={cancelMetadataModal}>Annuler</Button>
+        <Button variant="primary" onClick={handleConfirmMetadata}>
+            <FontAwesomeIcon icon={faPlus} className="me-2" />
+            Confirmer et Ajouter
+        </Button>
+    </Modal.Footer>
+</Modal>
+  {editingFile && (
+    <Modal show={!!editingFile} onHide={() => setEditingFile(null)} size="lg">
+        <Modal.Header closeButton>
+            <Modal.Title>Edit File Information</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+            <Card className="mb-3">
+                {/* CHANGED: Use the new data structure to find the file name */}
+                <Card.Header className="small" title={editingFile.data.intitule || editingFile.data.nom_fichier || editingFile.data.file?.name}>
+                    {editingFile.data.intitule || editingFile.data.nom_fichier || editingFile.data.file?.name}
+                </Card.Header>
+                <Card.Body>
+                    <Row>
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label className="small">Intitulé</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    // CHANGED: Use editingFile.data
+                                    value={editingFile.data.intitule || ''}
+                                    onChange={(e) => handleEditingFileChange('intitule', e.target.value)}
+                                    size="sm"
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label className="small">Catégorie</Form.Label>
+                                <Select
+                                    options={MARCHE_FICHIER_CATEGORIES}
+                                    // CHANGED: Use editingFile.data
+                                    value={editingFile.data.categorie}
+                                    onChange={(opt) => handleEditingFileChange('categorie', opt)}
+                                    styles={selectStyles}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                </Card.Body>
+            </Card>
+        </Modal.Body>
+        <Modal.Footer>
+            <Button variant="secondary" onClick={() => setEditingFile(null)}>Cancel</Button>
+            {/* CHANGED: Call the new save function */}
+            <Button variant="success" onClick={handleSaveFileMetadata}>Save Changes</Button>
+        </Modal.Footer>
+    </Modal>
+)}
         </Form>
+        
     );
 };
 

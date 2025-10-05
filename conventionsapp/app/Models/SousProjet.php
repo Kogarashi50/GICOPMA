@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\Relations\MorphMany; // <-- IMPORTER MorphMany
 
 class SousProjet extends Model
 {
@@ -71,7 +72,10 @@ class SousProjet extends Model
     {
         return $this->belongsTo(Province::class, 'Id_Province', 'Id');
     }
-
+    public function marchesPublics(): MorphMany
+    {
+        return $this->morphMany(MarchePublic::class, 'projectable');
+    }
     public function commune()
     {
         return $this->belongsTo(Commune::class, 'Id_Commune', 'Id');

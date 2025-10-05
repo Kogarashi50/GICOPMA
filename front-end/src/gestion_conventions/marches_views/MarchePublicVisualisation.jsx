@@ -3,17 +3,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Spinner, Alert, Table, Badge, Stack, Button, Row, Col, Card } from 'react-bootstrap';
+// --- CHANGE 1: Import Popover and OverlayTrigger ---
+import { Spinner, Alert, Table, Badge, Stack, Button, Row, Col, Card, Popover, OverlayTrigger } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faFilePdf, faFileWord, faFileImage, faFileExcel, faFileAlt,
     faExternalLinkAlt, faTimes, faInfoCircle, faLink,
-    faUserTie
+    faUserTie, faProjectDiagram // <-- Add project icon
 } from '@fortawesome/free-solid-svg-icons';
 
 import './marche.css';
 
-// --- Helpers ---
+// --- Helpers (No changes needed here) ---
 const displayData = (data, fallback = '-') => data ?? fallback;
 const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -64,18 +65,14 @@ const getFileIcon = (filenameOrMimeType) => {
 };
 // --- End Helpers ---
 
-// --- Constants ---
 const CARD_CLASS = "border-light shadow-sm mb-3";
 const CARD_TITLE_CLASS = "mb-3 section-title text-uppercase fw-bold text-secondary";
-// --- End Constants ---
 
 
 const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
-    // --- State Variables ---
     const [marcheData, setMarcheData] = useState(null);
     const [lotsData, setLotsData] = useState([]);
     const [filesData, setFilesData] = useState([]);
-    const [conventionName, setConventionName] = useState(null);
     const [fonctionnairesList, setFonctionnairesList] = useState([]);
     const [loadingMarche, setLoadingMarche] = useState(true);
     const [loadingRelated, setLoadingRelated] = useState(true);
@@ -90,115 +87,49 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
         }
 
         const fetchDetails = async () => {
-            setLoadingMarche(true);
-            setLoadingRelated(true);
-            setError(null);
-            setMarcheData(null); setLotsData([]); setFilesData([]); setConventionName(null); setFonctionnairesList([]);
-            console.log(`MARCHE VISU: Fetching ALL details for Marche ID: ${itemId}`);
-
-            // Assuming baseApiUrl is 'http://localhost:8000/api'
-            // So, no additional apiPrefix is needed if Laravel prefixes /api automatically.
+            setLoadingMarche(true); setLoadingRelated(true); setError(null);
+            setMarcheData(null); setLotsData([]); setFilesData([]); setFonctionnairesList([]);
+            
             const marcheUrl = `${baseApiUrl}/marches-publics/${itemId}`;
-            const fonctionnairesUrl = `${baseApiUrl}/options/fonctionnaires`; // <<< CORRECTED URL
+            const fonctionnairesUrl = `${baseApiUrl}/options/fonctionnaires`;
 
             try {
-                console.log("MARCHE VISU: Fetching Marche from:", marcheUrl);
-                console.log("MARCHE VISU: Fetching Fonctionnaires from:", fonctionnairesUrl);
-
-                const [marcheRes, foncRes] = await Promise.allSettled([
+                const [marcheRes, foncRes] = await Promise.all([
                     axios.get(marcheUrl, { withCredentials: true }),
                     axios.get(fonctionnairesUrl, { withCredentials: true })
                 ]);
 
                 if (!isMounted) return;
 
-                // Process Marche Public Response
-                if (marcheRes.status === 'fulfilled' && marcheRes.value.data) {
-                    const fetchedMarcheData = marcheRes.value.data?.marche_public || marcheRes.value.data || null;
-                    if (!fetchedMarcheData || !fetchedMarcheData.id) { // Check for a primary key or essential field
-                        throw new Error("Données principales du marché non trouvées ou invalides.");
-                    }
-                    console.log("MARCHE VISU: Received main data:", fetchedMarcheData);
+                if (marcheRes.status === 200 && marcheRes.data) {
+                    const fetchedMarcheData = marcheRes.data?.marche_public || marcheRes.data;
                     setMarcheData(fetchedMarcheData);
-                    setLoadingMarche(false);
-
-                    const extractedLots = fetchedMarcheData.lots || [];
-                    setLotsData(extractedLots);
-                    console.log("MARCHE VISU: Extracted Lots (count):", extractedLots.length);
-
+                    setLotsData(fetchedMarcheData.lots || []);
                     const generalFiles = fetchedMarcheData.fichiers_joints_generaux || [];
-                    let allFiles = [...generalFiles];
-                    extractedLots.forEach(lot => {
-                        if (lot.fichiers_joints && Array.isArray(lot.fichiers_joints)) {
-                            allFiles = [...allFiles, ...lot.fichiers_joints];
-                        }
-                    });
-                    setFilesData(allFiles);
-                    console.log("MARCHE VISU: Extracted and Combined Files (count):", allFiles.length);
-
-                    const loadedConvention = fetchedMarcheData.convention;
-                    setConventionName(loadedConvention ? (loadedConvention.Intitule || null) : null);
-
+                    const allLotFiles = (fetchedMarcheData.lots || []).flatMap(lot => lot.fichiers_joints || []);
+                    setFilesData([...generalFiles, ...allLotFiles]);
                 } else {
-                    const status = marcheRes.reason?.response?.status;
-                    const errorDetail = marcheRes.reason?.response?.data?.message || marcheRes.reason?.message || `Erreur inconnue (Status: ${status || 'N/A'})`;
-                    console.error(`MARCHE VISU: Marche fetch failed (Status: ${status}):`, errorDetail, marcheRes.reason);
-                    throw new Error(`Échec chargement marché: ${errorDetail}`);
+                    throw new Error("Données principales du marché non trouvées ou invalides.");
                 }
+                setLoadingMarche(false);
 
-                // =============== MODIFIED SECTION FOR FONCTIONNAIRES DEBUGGING ===============
-                if (foncRes.status === 'fulfilled') {
-                    const foncResValueData = foncRes.value.data; // This is the data part of the Axios response
-                    // --- CRITICAL LOGS FOR FONCTIONNAIRES ---
-                    console.log("MARCHE VISU: Raw response for /options/fonctionnaires:", foncResValueData);
-                    console.log("MARCHE VISU: typeof foncResValueData:", typeof foncResValueData);
-                    console.log("MARCHE VISU: Array.isArray(foncResValueData):", Array.isArray(foncResValueData));
-
-                    if (foncResValueData && typeof foncResValueData === 'object') {
-                        // Check for the 'fonctionnaires' key as returned by your controller
-                        console.log("MARCHE VISU: foncResValueData.fonctionnaires:", foncResValueData.fonctionnaires);
-                        console.log("MARCHE VISU: typeof foncResValueData.fonctionnaires:", typeof foncResValueData.fonctionnaires);
-                        console.log("MARCHE VISU: Array.isArray(foncResValueData.fonctionnaires):", Array.isArray(foncResValueData.fonctionnaires));
-
-                        // Also check for a 'data' key in case of Laravel pagination wrapper (less likely for options)
-                        console.log("MARCHE VISU: foncResValueData.data (for pagination check):", foncResValueData.data);
-                        console.log("MARCHE VISU: typeof foncResValueData.data:", typeof foncResValueData.data);
-                        console.log("MARCHE VISU: Array.isArray(foncResValueData.data):", Array.isArray(foncResValueData.data));
-                    }
-                    // --- END CRITICAL LOGS ---
-
-                    // Extract the array. Your controller returns { "fonctionnaires": [...] }
-                    const foncDataPayload = foncResValueData.fonctionnaires; // <<< CORRECTED EXTRACTION
-
+                if (foncRes.status === 200 && foncRes.data) {
+                    const foncDataPayload = foncRes.data.fonctionnaires;
                     if (Array.isArray(foncDataPayload)) {
                         setFonctionnairesList(foncDataPayload.map(f => ({
-                            value: f.id, // From your controller's DB::raw select
-                            label: f.nom_complet || f.Nom_Fonctionnaire || f.nom || f.name || `ID ${f.id}`
+                            value: f.id,
+                            label: f.nom_complet
                         })));
-                        console.log(`MARCHE VISU: Processed ${foncDataPayload.length} fonctionnaires for list from array.`);
                     } else {
-                        console.warn("MARCHE VISU: Payload 'foncResValueData.fonctionnaires' was NOT an array:", foncDataPayload);
-                        setFonctionnairesList([]); // Fallback
-                        // Optionally set an error or part of an error message
-                        // setError(prev => (prev ? prev + "\n" : "") + "Format incorrect pour points focaux.");
+                        console.warn("MARCHE VISU: Payload 'fonctionnaires' was not an array.");
                     }
                 } else {
-                     if (isMounted) {
-                         console.warn("MARCHE VISU: Could not fetch fonctionnaires list:", foncRes.reason?.message || foncRes.reason);
-                         setFonctionnairesList([]); // Fallback
-                         // Optionally set an error
-                         // setError(prev => (prev ? prev + "\n" : "") + "Erreur chargement points focaux.");
-                     }
+                     console.warn("MARCHE VISU: Could not fetch fonctionnaires list.");
                 }
-                // =============== END MODIFIED SECTION FOR FONCTIONNAIRES DEBUGGING ===============
-
             } catch (err) {
                  if (!isMounted) return;
-                console.error("MARCHE VISU: Error fetching marche data:", err.response || err);
-                setError(err.response?.data?.message || err.message || "Erreur critique lors du chargement du marché.");
+                setError(err.response?.data?.message || err.message || "Erreur critique lors du chargement.");
                  setLoadingMarche(false);
-                 setMarcheData(null);
-                 setFonctionnairesList([]); // Ensure empty on major error
             } finally {
                  if (isMounted) setLoadingRelated(false);
             }
@@ -208,33 +139,18 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
     }, [itemId, baseApiUrl]);
 
     const getFonctionnaireNames = useCallback((fonctionnaireIdString) => {
-        console.log("MARCHE VISU GETNAMES: Called with string:", fonctionnaireIdString);
-        console.log("MARCHE VISU GETNAMES: current fonctionnairesList:", fonctionnairesList);
-        console.log("MARCHE VISU GETNAMES: Array.isArray(fonctionnairesList):", Array.isArray(fonctionnairesList));
+        if (!fonctionnaireIdString) return <span className="text-muted small fst-italic">Aucun point focal assigné.</span>;
+        if (fonctionnairesList.length === 0) return <span className="text-warning fst-italic">Chargement... (IDs: {fonctionnaireIdString})</span>;
 
-        if (!fonctionnaireIdString || typeof fonctionnaireIdString !== 'string' || fonctionnaireIdString.trim() === '') {
-            return <span className="text-muted small fst-italic">Aucun point focal assigné.</span>;
-        }
-        if (!Array.isArray(fonctionnairesList)) {
-            console.error("MARCHE VISU GETNAMES: fonctionnairesList is NOT an array!");
-            return <span className="text-danger">Erreur: Liste points focaux invalide</span>;
-        }
-        if (fonctionnairesList.length === 0) { // Check after confirming it's an array
-             return <span className="text-warning fst-italic">Chargement points focaux... (IDs: {fonctionnaireIdString})</span>;
-        }
-
-        const ids = fonctionnaireIdString.split(';').map(id => id.trim()).filter(id => id);
-        if (ids.length === 0) {
-            return <span className="text-muted small fst-italic">Aucun point focal assigné.</span>;
-        }
+        const ids = fonctionnaireIdString.split(';').map(id => id.trim()).filter(Boolean);
         return (
             <Stack direction="horizontal" gap={1} wrap="wrap">
                 {ids.map(id => {
-                    const fonctionnaire = fonctionnairesList.find(f => String(f.value).toLowerCase() === String(id).toLowerCase());
+                    const fonctionnaire = fonctionnairesList.find(f => String(f.value) === id);
                     return (
                         <Badge key={id} pill bg="light" text="dark" className="border me-1 mb-1 fw-normal shadow-sm">
                             <FontAwesomeIcon icon={faUserTie} className="me-1 text-secondary" />
-                            {fonctionnaire?.label || `ID Point Focal: ${id}`}
+                            {fonctionnaire?.label || `ID: ${id}`}
                         </Badge>
                     );
                 })}
@@ -242,16 +158,15 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
         );
     }, [fonctionnairesList]);
 
-    // --- Render Detail Helpers ---
-    // ... (Your renderDetail and renderDetail2 helpers remain the same) ...
     const renderDetail = (label, value, formatter = null, mdSize = 6, lgSize = 3) => (
-        ((value !== null && value !== undefined && String(value).trim() !== '') || value === 0) ?
+        (value !== null && value !== undefined && String(value).trim() !== '') || value === 0 ?
            <Col xs={12} md={mdSize} lg={lgSize} className="mb-3 data-point text-center">
                <strong className="text-dark titly d-block label">{label}</strong>
                <span className="value">{formatter ? formatter(value) : displayData(value)}</span>
            </Col>
        : null
    );
+
    const renderDetail2 = (label, value, formatter = null) => (
        ((value !== null && value !== undefined && String(value).trim() !== '') || value === 0) ?
           <div className="mb-2 d-flex justify-content-between align-items-center data-point">
@@ -263,8 +178,6 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
       : null
   );
 
-
-    // --- File Mapping Logic ---
     const marketFiles = (filesData || []).filter(f => f.marche_id && !f.lot_id);
     const lotFilesMap = (filesData || []).reduce((acc, f) => {
         if (f.lot_id) {
@@ -274,12 +187,22 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
         return acc;
     }, {});
 
-    // --- Render Logic ---
     if (loadingMarche) {
        return <div className="text-center p-5"><Spinner animation="border" /><span> Chargement initial...</span></div>;
     }
     if (error) { return <Alert variant="danger" className="m-3">Erreur: {error}</Alert>; }
     if (!marcheData) { return <Alert variant="warning" className="m-3">Aucune donnée principale de marché trouvée.</Alert>; }
+    
+    // --- CHANGE 2: Define a reusable popover component for files ---
+    const filePopover = (file) => (
+        <Popover id={`popover-file-${file.id}`} style={{maxWidth: '350px'}}>
+            <Popover.Header as="h3" className='small fw-bold'>{displayData(file.intitule, "Détails du Fichier")}</Popover.Header>
+            <Popover.Body>
+                <p className='small mb-1'><strong>Fichier Original:</strong> <span className='text-muted'>{displayData(file.nom_fichier)}</span></p>
+                <p className='small mb-0'><strong>Catégorie:</strong> <Badge bg="secondary" pill>{displayData(file.categorie, 'N/A')}</Badge></p>
+            </Popover.Body>
+        </Popover>
+    );
 
     return (
         <div className='px-4'>
@@ -305,27 +228,32 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                 <Row className="mb-3 data-section">
                      <Col xs={12} className="mb-3 data-point">
                          <Row className='p-4 m-2 bg-white shadow-sm rounded-5'>
-                            {renderDetail( "Convention Associée", conventionName, (name) => name ? <span><FontAwesomeIcon icon={faLink} className="me-2 text-warning"/>{displayData(name)}</span> : '-', 6, 3 )}
-                            {renderDetail( "Appel d'Offre Réf.", marcheData.appel_offre?.numero, (num) => num ? <span><FontAwesomeIcon icon={faLink} className="me-2 text-warning"/>{displayData(num)}</span> : '-', 6, 3 )}
-                            {renderDetail("Type", marcheData.type_marche, null, 6, 3)}
+                            {/* --- CHANGE 3: Display Project/Sub-Project --- */}
+                            {renderDetail(
+                                marcheData.projectable_type?.includes('SousProjet') ? "Sous-Projet Associé" : "Projet Associé",
+                                marcheData.projectable?.Nom_Projet, // The name of the project/sub-project
+                                (name) => name ? <span><FontAwesomeIcon icon={faProjectDiagram} className="me-2 text-info"/>{displayData(name)}</span> : '-',
+                                6, 6 // Make it wider
+                            )}
+                            {renderDetail( "Convention Associée", marcheData.convention?.Intitule, (name) => name ? <span><FontAwesomeIcon icon={faLink} className="me-2 text-warning"/>{displayData(name)}</span> : '-', 6, 3 )}
                             {renderDetail("Statut", marcheData.statut, getStatusBadge, 6, 3)}
                          </Row>
                      </Col>
                  </Row>
-                 <Row className="mb-3 data-section">
+                <Row className="mb-3 data-section">
                      <Col xs={12} className="mb-3 data-point">
                          <div className='d-flex w-100 justify-content-between'>
                              <div className='p-3 m-2 bg-white rounded-5 shadow-sm w-100'>
+                                {renderDetail2("Appel d'Offre Réf.", marcheData.appel_offre?.numero)}
                                 {renderDetail2("Procédure Passation", marcheData.procedure_passation)}
                                 {renderDetail2("Mode Passation", marcheData.mode_passation)}
-                                {renderDetail2("Budget Prévisionnel", marcheData.budget_previsionnel, formatCurrency)}
-                                {renderDetail2("Montant Attribué", marcheData.montant_attribue, formatCurrency)}
+                                {renderDetail2("Type de Marché", marcheData.type_marche)}
                              </div>
                              <div className='p-4 m-2 bg-white rounded-5 shadow-sm w-100'>
+                                {renderDetail2("Budget Prévisionnel", marcheData.budget_previsionnel, formatCurrency)}
+                                {renderDetail2("Montant Attribué", marcheData.montant_attribue, formatCurrency)}
                                 {renderDetail2("Source Financement", marcheData.source_financement)}
                                 {renderDetail2("Attributaire(s) Principal", marcheData.attributaire)}
-                                {renderDetail2("Date Publication", marcheData.date_publication, formatDate)}
-                                {renderDetail2("Date Limite Offres", marcheData.date_limite_offres, formatDate)}
                              </div>
                          </div>
                      </Col>
@@ -333,48 +261,47 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                 <Row className="mb-4 pb-3 border-bottom data-section">
                     <Col md={6}>
                         <div className='p-4 m-2 bg-white rounded-5 shadow-sm flex-fill w-100'>
-                            {renderDetail2("Date Ouverture Plis", marcheData.date_ouverture_plis, formatDate)}
-                            {renderDetail2("Date Fin Session Ouverture", marcheData.date_fin_ouverture, formatDate)}
-                            {renderDetail2("Avancement Physique", marcheData.avancement_physique, formatPercentage)}
-                            {renderDetail2("Avancement Financier", marcheData.avancement_financier, formatPercentage)}
-                            {renderDetail2("Date Engagement Trésorerie", marcheData.date_engagement_tresorerie, formatDate)}
+                            {renderDetail2("Date Publication", marcheData.date_publication, formatDate)}
+                            {renderDetail2("Date Limite Offres", marcheData.date_limite_offres, formatDate)}
+                            {renderDetail2("Date Notification", marcheData.date_notification, formatDate)}
                          </div>
                      </Col>
                      <Col md={6}>
                          <div className='p-4 m-2 bg-white rounded-5 shadow-sm w-100 flex-fill'>
-                            {renderDetail2("Date Notification", marcheData.date_notification, formatDate)}
                             {renderDetail2("Date Début Exécution", marcheData.date_debut_execution, formatDate)}
                             {renderDetail2("Durée (jours)", marcheData.duree_marche)}
+                            {renderDetail2("Date Engagement Trésorerie", marcheData.date_engagement_tresorerie, formatDate)}
                          </div>
                      </Col>
                 </Row>
-
-                 {loadingRelated && (
-                     <div className="text-center my-3 text-muted">
-                         <Spinner animation="border" size="sm" className="me-2"/> Chargement des détails supplémentaires...
-                     </div>
-                 )}
-
-                <Card className={CARD_CLASS}>
-                     <Card.Body>
-                         <Card.Title as="h5" className={CARD_TITLE_CLASS}>Points Focaux</Card.Title>
-                         {loadingRelated ? (
-                             <div className="text-center"> <Spinner animation="border" size="sm" /> </div>
-                         ) : (
-                             getFonctionnaireNames(marcheData.id_fonctionnaire)
-                         )}
-                     </Card.Body>
-                 </Card>
+                
+                <Row className="mb-4 pb-3 border-bottom data-section">
+                    <Col md={12}>
+                        <Card className={CARD_CLASS}>
+                            <Card.Body>
+                                <Card.Title as="h5" className={CARD_TITLE_CLASS}>Suivi et Points Focaux</Card.Title>
+                                <Row>
+                                    <Col md={6} className="mb-3 mb-md-0">
+                                        {renderDetail2("Avancement Physique", marcheData.avancement_physique, formatPercentage)}
+                                        {renderDetail2("Avancement Financier", marcheData.avancement_financier, formatPercentage)}
+                                    </Col>
+                                    <Col md={6}>
+                                        <strong className="text-dark titly fw-bold label me-2 d-block mb-1">Points Focaux :</strong>
+                                        {loadingRelated ? <Spinner size="sm"/> : getFonctionnaireNames(marcheData.id_fonctionnaire)}
+                                    </Col>
+                                </Row>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+                
+                 {loadingRelated && <div className="text-center my-3 text-muted"><Spinner animation="border" size="sm" className="me-2"/> Chargement...</div>}
 
                  {!loadingRelated && lotsData && lotsData.length > 0 && (
                      <div className="mb-4 pb-3 border-bottom data-section">
                         <h5 className="mb-3 section-title text-uppercase fw-bold text-secondary">Lots Associés ({lotsData.length})</h5>
                         <Table striped hover responsive size="sm" className="mytab">
-                            <thead className="table-light">
-                                <tr>
-                                    <th>N° Lot</th><th>Objet</th><th className="text-end">Montant Attribué</th><th>Attributaire</th><th>Fichiers</th>
-                                </tr>
-                            </thead>
+                            <thead className="table-light"><tr><th>N° Lot</th><th>Objet</th><th className="text-end">Montant</th><th>Attributaire</th><th>Fichiers</th></tr></thead>
                              <tbody>
                                 {lotsData.map(lot => (
                                     <tr key={lot.id}>
@@ -383,16 +310,16 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                                         <td className="text-end">{formatCurrency(lot.montant_attribue)}</td>
                                         <td>{displayData(lot.attributaire)}</td>
                                         <td>
+                                            {/* --- CHANGE 4: Add OverlayTrigger to Lot Files --- */}
                                             {lotFilesMap[lot.id]?.length > 0 ? (
                                                 <Stack direction="horizontal" gap={2}>
-                                                    {lotFilesMap[lot.id].map(file => {
-                                                        const publicUrl = file.url;
-                                                        return publicUrl ? (
-                                                            <a key={file.id} href={publicUrl} target="_blank" rel="noopener noreferrer" className="p-0 text-secondary" title={`Ouvrir: ${file.nom_fichier}`}>
-                                                                <FontAwesomeIcon className='text-warning' icon={getFileIcon(file.nom_fichier || file.type_fichier)} />
+                                                    {lotFilesMap[lot.id].map(file => (
+                                                        <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={filePopover(file)} key={file.id}>
+                                                            <a href={file.url || '#'} target="_blank" rel="noopener noreferrer" className={`p-0 ${file.url ? 'text-secondary' : 'text-muted'}`} title={file.intitule}>
+                                                                <FontAwesomeIcon className='text-warning' icon={getFileIcon(file.nom_fichier)} />
                                                             </a>
-                                                        ) : (<FontAwesomeIcon icon={faLink} className="text-muted" title="Lien indisponible"/>);
-                                                    })}
+                                                        </OverlayTrigger>
+                                                    ))}
                                                 </Stack>
                                             ) : (<span className="text-muted fst-italic">-</span>)}
                                         </td>
@@ -406,31 +333,31 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                 {!loadingRelated && marketFiles && marketFiles.length > 0 && (
                     <div className="mb-3 data-section">
                         <h5 className="mb-3 section-title text-uppercase fw-bold text-secondary">Fichiers Généraux ({marketFiles.length})</h5>
-                        <Stack direction="horizontal" gap={3} wrap className='justify-content-start'>
-                            {marketFiles.map(file => {
-                                const publicUrl = file.url;
-                                return (
-                                    <div key={file.id} className="border rounded p-2 d-flex align-items-center bg-dark text-white shadow-sm mb-2" style={{minWidth: '180px'}}>
-                                        <FontAwesomeIcon icon={getFileIcon(file.nom_fichier || file.type_fichier)} className="me-2 fa-lg text-warning"/>
-                                        <span className="me-auto small text-truncate" title={file.nom_fichier}>
-                                            {displayData(file.nom_fichier, 'Fichier')}
+                        <div className="d-flex flex-wrap" style={{gap: '0.75rem'}}>
+                            {/* --- CHANGE 5: Update General Files display --- */}
+                            {marketFiles.map(file => (
+                                <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={filePopover(file)} key={file.id}>
+                                    <div className="border rounded p-2 d-flex align-items-center bg-dark text-white shadow-sm" style={{minWidth: '220px'}}>
+                                        <FontAwesomeIcon icon={getFileIcon(file.nom_fichier)} className="me-2 fa-lg text-warning"/>
+                                        <span className="me-auto small text-truncate" title={file.intitule}>
+                                            {displayData(file.intitule, 'Fichier')}
                                         </span>
-                                        {publicUrl ? (
-                                            <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-warning py-0 px-1 ms-2" title="Ouvrir">
-                                                <FontAwesomeIcon icon={faExternalLinkAlt} size="xs" className='text-warning'/>
+                                        {file.url ? (
+                                            <a href={file.url} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-warning py-0 px-1 ms-2" title="Ouvrir">
+                                                <FontAwesomeIcon icon={faExternalLinkAlt} size="xs"/>
                                             </a>
                                         ) : (
                                             <span className="text-muted fst-italic small ms-2">(Lien invalide)</span>
                                         )}
                                     </div>
-                                );
-                             })}
-                        </Stack>
+                                </OverlayTrigger>
+                             ))}
+                        </div>
                     </div>
                 )}
 
                  {!loadingRelated && (!lotsData || lotsData.length === 0) && (!marketFiles || marketFiles.length === 0) && (
-                    <Alert variant='secondary' className='small py-2'><FontAwesomeIcon icon={faInfoCircle} className="me-2"/> Aucun lot ou fichier général joint pour ce marché.</Alert>
+                    <Alert variant='secondary' className='small py-2'><FontAwesomeIcon icon={faInfoCircle} className="me-2"/> Aucun lot ou fichier général joint.</Alert>
                  )}
              </div>
          </div>

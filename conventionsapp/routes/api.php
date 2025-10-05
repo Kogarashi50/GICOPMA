@@ -32,6 +32,8 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\EngagementFinancierController;
 use App\Http\Controllers\VersementController;
 use App\Http\Controllers\OrdreServiceController;
+use App\Http\Controllers\OptionsController;
+
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AppelOffreController;
 use App\Http\Controllers\Api\ActivityLogController;
@@ -49,11 +51,18 @@ use App\Http\Controllers\Api\ActivityLogController;
 
 // --- Public Routes (No Authentication Required) ---
 Route::post('/login', [LoginController::class, 'login'])->name('api.login');
-
+Route::put('/fichiers-joints/{fichier_joint}', [FichierJointController::class, 'updateMetadata']);
 // --- Public Helper Routes (Consider if they need protection later) ---
 Route::get('/conventions/{convention_id}/commitment-details', [ConvPartController::class, 'getCommitmentsForConvention']);
 Route::get('/convparts/lookup', [ConvPartController::class, 'lookupDetails'])->name('convparts.lookup');
-
+Route::prefix('options')->group(function () {
+ Route::get('/projets-et-sous-projets', [OptionsController::class, 'getProjetsAndSousProjets']);
+    
+    // Ajoutez ici d'autres routes d'options si nécessaire, par exemple :
+    Route::get('/appel-offres', [\App\Http\Controllers\AppelOffreController::class, 'getOptions']);
+    Route::get('/fonctionnaires', [\App\Http\Controllers\FonctionnaireController::class, 'getOptions']); // Assurez-vous que ce contrôleur/méthode existe
+    Route::get('/conventions', [\App\Http\Controllers\ConventionController::class, 'getOptions']); // Assurez-vous que ce contrôleur/méthode existe
+});
 Route::get('/projets/unique/{field}', [ProjetController::class, 'getUniqueFieldValues']);
 
 // --- Protected Routes (Require Sanctum Authentication & Permissions) ---
@@ -148,7 +157,7 @@ Route::get('/projets/{projet_code}/locations', [ProjetController::class, 'getLoc
     Route::get('/marches-publics/{marche}/lots', [LotController::class, 'indexForMarche'])->middleware('permission:view marches');
     Route::get('/marches-publics/{marche}/fichiers', [FichierJointController::class, 'indexForMarche'])->middleware('permission:view marches');
     Route::get('/fichiers-telecharger/{fichier_joint}', [FichierJointController::class, 'download'])->middleware('permission:download fichiers');
-
+Route::put('/fichiers-joints-os/{fichierJoint}', [FichierJointOsController::class, 'update']);
     // --- Ordre de Service ---
     Route::apiResource('ordres-service', OrdreServiceController::class)
         ->parameters(['ordres-service' => 'ordre_service'])

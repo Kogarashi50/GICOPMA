@@ -152,8 +152,12 @@ const ConventionsPage = () => {
             cell: info => {
                 const row = info.getValue();
                 if (row.type === 'cadre') {
+                    const code = row.programme?.Code_Programme;
                     const programmeName = row.programme?.Description;
-                    return <div className="text-truncate" title={programmeName}>{row.programme.Code_Programme +' - '+programmeName || '-'}</div>;
+                    const displayText = (code || programmeName)
+                        ? `${code ?? ''}${code && programmeName ? ' - ' : ''}${programmeName ?? ''}`.trim()
+                        : '-';
+                    return <div className="text-truncate" title={displayText}>{displayText}</div>;
                 }
                 if (row.type === 'specifique') {
                     const projet = row.projet;
@@ -223,6 +227,15 @@ const ConventionsPage = () => {
             meta: { enableGlobalFilter: false },
             filterFn: 'costRange'
         },
+        // Hidden file-based filters/search (align with Appel d'Offre)
+        { id: 'files_title', header: 'Titre Fichier (filtre)', size: 0, accessorFn: row => row, meta: { enableGlobalFilter: false }, enableHiding: true, filterFn: 'fileTitleIncludes' },
+        { id: 'files_type', header: 'Type Fichier (filtre)', size: 0, accessorFn: row => row, meta: { enableGlobalFilter: false }, enableHiding: true, filterFn: 'fileTypeIncludes' },
+        { id: 'files_search', header: 'Recherche Fichiers', size: 0, accessorFn: row => {
+            const files = Array.isArray(row.documents) ? row.documents : [];
+            if (files.length === 0) return '';
+            return files.map(f => [f.Intitule, f.file_name, f.file_type].filter(Boolean).join(' ')).join(' | ');
+        }, meta: { enableGlobalFilter: true }, enableHiding: true },
+        { id: 'has_files', header: 'A des fichiers', size: 0, accessorFn: row => row, meta: { enableGlobalFilter: false }, enableHiding: true, filterFn: 'hasFiles' },
     ], [allPartenairesOptions]);
 
     // --- State for Filters ---
@@ -240,6 +253,9 @@ const ConventionsPage = () => {
         const typeColumn = table.getColumn('type');
         const maitreOuvrageColumn = table.getColumn('Maitre_Ouvrage');
         const coutGlobalColumn = table.getColumn('Cout_Global');
+        const filesTitleColumn = table.getColumn('files_title');
+        const filesTypeColumn = table.getColumn('files_type');
+        const hasFilesColumn = table.getColumn('has_files');
 
         const handleSelectChange = (setter, column, selectedOption) => {
             setter(selectedOption);
@@ -303,6 +319,23 @@ const ConventionsPage = () => {
                              </InputGroup>
                          </Form.Group>
                      </Col>
+                    <Col xs={12}>
+                        <Form.Group controlId="filterFilesTitleConv">
+                            <Form.Label size="sm" className="mb-1">Titre du fichier</Form.Label>
+                            <Form.Control size="sm" type="text" placeholder="Contient..." value={filesTitleColumn?.getFilterValue() || ''} onChange={(e) => filesTitleColumn?.setFilterValue(e.target.value || undefined)} />
+                        </Form.Group>
+                    </Col>
+                    <Col xs={12}>
+                        <Form.Group controlId="filterFilesTypeConv">
+                            <Form.Label size="sm" className="mb-1">Type de fichier</Form.Label>
+                            <Form.Control size="sm" type="text" placeholder="ex: pdf, word, image..." value={filesTypeColumn?.getFilterValue() || ''} onChange={(e) => filesTypeColumn?.setFilterValue(e.target.value || undefined)} />
+                        </Form.Group>
+                    </Col>
+                    <Col xs={12}>
+                        <Form.Group controlId="filterHasFilesConv">
+                            <Form.Check type="switch" id="has-files-conv-switch" label="Afficher uniquement les conventions avec fichiers" checked={Boolean(hasFilesColumn?.getFilterValue())} onChange={(e) => hasFilesColumn?.setFilterValue(e.target.checked || undefined)} />
+                        </Form.Group>
+                    </Col>
                     <Col xs={12} className="d-flex justify-content-end">
                         <Button variant="outline-secondary" size="sm" onClick={resetFilters} title="Réinitialiser les filtres">
                              <FontAwesomeIcon icon={faTimes} />
@@ -336,7 +369,32 @@ const ConventionsPage = () => {
         'documents', 'Cout_Global',
         'partenaires', 'localisation',
     ], []);
-    const customFilters = useMemo(() => ({ costRange: costRangeFilterFn }), []);
+    const customFilters = useMemo(() => ({
+        costRange: costRangeFilterFn,
+        fileTitleIncludes: (row, _columnId, filterValue) => {
+            const query = String(filterValue || '').trim().toLowerCase();
+            if (!query) return true;
+            const files = Array.isArray(row?.original?.documents) ? row.original.documents : [];
+            if (files.length === 0) return false;
+            return files.some(f => {
+                const title = ((f.Intitule || f.file_name || '') + '').toLowerCase();
+                return title.includes(query);
+            });
+        },
+        fileTypeIncludes: (row, _columnId, filterValue) => {
+            const query = String(filterValue || '').trim().toLowerCase();
+            if (!query) return true;
+            const files = Array.isArray(row?.original?.documents) ? row.original.documents : [];
+            if (files.length === 0) return false;
+            return files.some(f => ((f.file_type || '') + '').toLowerCase().includes(query));
+        },
+        hasFiles: (row, _columnId, filterValue) => {
+            const enabled = Boolean(filterValue);
+            if (!enabled) return true;
+            const files = Array.isArray(row?.original?.documents) ? row.original.documents : [];
+            return files.length > 0;
+        },
+    }), []);
     const handleFormClose = () => { setSearchParams({}); };
 
     // --- Render DynamicTable ---

@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Traits\LogsActivity;   // <--- MUST be imported
-use Spatie\Activitylog\LogOptions;  
+use Spatie\Activitylog\LogOptions;
+use App\Models\FichierJoint;  
 // Use Storage facade if you plan to add URL accessors later
 // use Illuminate\Support\Facades\Storage;
 
@@ -122,6 +123,10 @@ class OrdreService extends Model
 
             ->useLogName('ordre_service');
     }
+    public function fichiers()
+{
+    return $this->hasMany(FichierJoint::class);
+}
 
 
     //--------------------------------------------------------------------------

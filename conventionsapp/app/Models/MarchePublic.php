@@ -8,6 +8,7 @@ use Spatie\Activitylog\Traits\LogsActivity;   // <--- MUST be imported
 use Spatie\Activitylog\LogOptions;  
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo; // Import BelongsTo
+use Illuminate\Database\Eloquent\Relations\MorphTo; // <-- 1. IMPORT THIS
 
 class MarchePublic extends Model
 {
@@ -54,11 +55,11 @@ class MarchePublic extends Model
         'id_fonctionnaire',
         // --- ADD NEW FILLABLE FIELDS ---
         'ref_appelOffre',
-        'date_ouverture_plis',
-        'date_fin_ouverture',
         'avancement_physique',
         'avancement_financier',
         'date_engagement_tresorerie',
+        'projectable_id',
+        'projectable_type',
         // --- END NEW FILLABLE FIELDS ---
     ];
 
@@ -80,8 +81,7 @@ class MarchePublic extends Model
 
         // --- ADD CASTS FOR NEW FIELDS ---
         'ref_appelOffre' => 'integer',       // Cast Foreign Key to integer
-        'date_ouverture_plis' => 'date:Y-m-d', // Cast to Carbon date object, format on serialization
-        'date_fin_ouverture' => 'date:Y-m-d',
+        
         'avancement_physique' => 'double',     // Cast to float/double
         'avancement_financier' => 'double',    // Cast to float/double
         'date_engagement_tresorerie' => 'date:Y-m-d',
@@ -92,7 +92,10 @@ class MarchePublic extends Model
     ];
 
     // --- Relationships ---
-
+public function projectable(): MorphTo
+    {
+        return $this->morphTo();
+    }
     /**
      * Get the lots associated with this public market.
      * Defines a one-to-many relationship.

@@ -270,7 +270,8 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
             // --- Handle File Uploads ---
             if (!empty($validatedData['fichiers']) && is_array($validatedData['fichiers'])) {
                  Log::info(count($validatedData['fichiers']) . ' fichier(s) à traiter.');
-                 foreach ($validatedData['fichiers'] as $index => $file) {
+                $intitules = $request->input('intitules', $request->input('intitule_file', []));
+                foreach ($validatedData['fichiers'] as $index => $file) {
                     if ($file instanceof \Illuminate\Http\UploadedFile && $file->isValid()) {
                         $originalName = $file->getClientOriginalName(); $mimeType = $file->getClientMimeType() ?: 'application/octet-stream'; $size = $file->getSize();
                         $safeOriginalName = preg_replace('/[^A-Za-z0-9\._-]/', '_', $originalName); $generatedFilename = date('Ymd-His') . '_' . Str::random(5) . '_' . $safeOriginalName;
@@ -278,7 +279,8 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
                              $file->move($targetDirAbsolute, $generatedFilename);
                              $storedRelativePath = $targetDirRelative . '/' . $generatedFilename;
                              $createdDocumentsInfo[] = ['path' => $storedRelativePath];
-                             $documentData = ['Id_Doc' => 'convdoc_' . Str::uuid()->toString(), 'Intitule' => pathinfo($originalName, PATHINFO_FILENAME), 'file_type' => $mimeType, 'file_name' => $originalName, 'file_path' => $storedRelativePath, 'file_size' => $size];
+                            $documentIntitule = is_array($intitules) && array_key_exists($index, $intitules) && !empty($intitules[$index]) ? $intitules[$index] : pathinfo($originalName, PATHINFO_FILENAME);
+                            $documentData = ['Id_Doc' => 'convdoc_' . Str::uuid()->toString(), 'Intitule' => $documentIntitule, 'file_type' => $mimeType, 'file_name' => $originalName, 'file_path' => $storedRelativePath, 'file_size' => $size];
                              $document = $convention->documents()->create($documentData);
                              Log::info("Document associé #{$index} créé: ID {$document->Id_Doc}");
                         } catch (\Symfony\Component\HttpFoundation\File\Exception\FileException $e) { throw new \Exception("Échec déplacement fichier '{$originalName}'."); }
@@ -622,6 +624,7 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
             // --- Process NEW File Uploads ---
             if (!empty($validatedData['fichiers']) && is_array($validatedData['fichiers'])) {
                 Log::info('Traitement nouveaux fichiers (update)...');
+                $intitules = $request->input('intitules', $request->input('intitule_file', []));
                 foreach ($validatedData['fichiers'] as $index => $file) {
                      if ($file instanceof \Illuminate\Http\UploadedFile && $file->isValid()) {
                          $originalName = $file->getClientOriginalName(); $mimeType = $file->getClientMimeType() ?: 'application/octet-stream'; $size = $file->getSize();
@@ -630,13 +633,26 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
                             $file->move($targetDirAbsolute, $generatedFilename);
                             $storedRelativePath = $targetDirRelative . '/' . $generatedFilename;
                             $newlyAddedDocumentInfo[] = ['relative' => $storedRelativePath, 'absolute' => public_path($storedRelativePath)];
-                            $documentData = [ 'Id_Doc' => 'convdoc_' . Str::uuid()->toString(), 'Intitule' => pathinfo($originalName, PATHINFO_FILENAME), 'file_type' => $mimeType, 'file_name' => $originalName, 'file_path' => $storedRelativePath, 'file_size' => $size ];
+                            $documentIntitule = is_array($intitules) && array_key_exists($index, $intitules) && !empty($intitules[$index]) ? $intitules[$index] : pathinfo($originalName, PATHINFO_FILENAME);
+                            $documentData = [ 'Id_Doc' => 'convdoc_' . Str::uuid()->toString(), 'Intitule' => $documentIntitule, 'file_type' => $mimeType, 'file_name' => $originalName, 'file_path' => $storedRelativePath, 'file_size' => $size ];
                             $newDocument = $convention->documents()->create($documentData);
                             Log::info("Nouveau Document ajouté #{$index}: ID {$newDocument->Id_Doc}");
                          } catch (\Symfony\Component\HttpFoundation\File\Exception\FileException $e) { throw new \Exception("Échec critique déplacement fichier '{$originalName}'."); }
                      } else { Log::warning("Nouveau fichier invalide/null #{$index} (update), ignoré."); }
                 }
             } else { Log::info('Aucun nouveau fichier (update).'); }
+
+            // --- Update metadata for existing documents (inline title edits)
+            $existingDocsMeta = json_decode($request->input('documents_existants_meta', '[]'), true);
+            if (is_array($existingDocsMeta) && !empty($existingDocsMeta)) {
+                foreach ($existingDocsMeta as $meta) {
+                    if (isset($meta['id']) && isset($meta['intitule'])) {
+                        Document::where('Id_Doc', $meta['id'])
+                            ->where('Id_Conv', $convention->id)
+                            ->update(['Intitule' => $meta['intitule']]);
+                    }
+                }
+            }
 
             // --- Update Convention Record ---
             Log::info('MAJ enregistrement Convention...');

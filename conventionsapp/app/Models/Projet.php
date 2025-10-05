@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany; // <-- ADD THIS IMPORT
 use Illuminate\Database\Eloquent\Relations\HasMany;   // Import HasMany
 use Spatie\Activitylog\Traits\LogsActivity;   // <--- MUST be imported
 use Spatie\Activitylog\LogOptions; 
+use Illuminate\Database\Eloquent\Relations\MorphMany; // <-- IMPORTER MorphMany
+
 class Projet extends Model
 {
     use LogsActivity;
@@ -115,7 +117,11 @@ class Projet extends Model
         // Foreign key on projet table ('Id_Domaine'), Owner key on domaine table ('Code')
         return $this->belongsTo(Domaine::class, 'Id_Domaine', 'Code');
     }
-    
+    public function marchesPublics(): MorphMany
+    {
+        // 'projectable' est le nom de la relation dans le modèle MarchePublic
+        return $this->morphMany(MarchePublic::class, 'projectable');
+    }
     /**
      * Get the programme associated with the projet.
      *

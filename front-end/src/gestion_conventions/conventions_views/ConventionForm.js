@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -50,6 +50,9 @@ const getFileIcon = (filenameOrMimeType) => { if (!filenameOrMimeType) return fa
 
 // --- Component ---
 const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, baseApiUrl = 'http://localhost:8000/api' }) => {
+    const intituleRef = useRef(null);
+    const INTITULE_MAX = 250;
+    const FILE_INTITULE_MAX = 120;
     const [formData, setFormData] = useState({
         Code: '', Classification_prov: '', Categorie: '', Intitule: '', Reference: '',
         Annee_Convention: '', Objet: '', Objectifs: '', provinces: [], Maitre_Ouvrage: '',
@@ -88,6 +91,15 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
     const storageBaseUrl = useMemo(() => baseApiUrl.replace('/api', ''), [baseApiUrl]);
     const STATUT_OPTIONS = useMemo(() => [  { value: "en cours d'approbation", label: "En Cours d'Approbation", color: "warning" }, { value: "approuvé", label: "Approuvé", color: "success" }, { value: "non visé", label: "Non Visé", color: "danger" }, { value: "en cours de visa", label: "En Cours de Visa", color: "warning" }, { value: "visé", label: "Visé", color: "info" }, { value: "non signé", label: "Non Signé", color: "secondary"}, { value: "en cours de signature", label: "En Cours de Signature", color: "warning" }, { value: "signé", label: "Signé", color: "primary" } ], []);
     const groupedStatutOptions = useMemo(() => { const groups = []; const groupLabels = ["Approbation", "Visa", "Signature"]; const groupSize = 3; for (let i = 0; i < STATUT_OPTIONS.length; i += groupSize) { groups.push({ label: groupLabels[Math.floor(i / groupSize)], options: STATUT_OPTIONS.slice(i, i + groupSize) }); } return groups; }, [STATUT_OPTIONS]);
+
+    // Autosize for Intitulé textarea (better UX when editing)
+    const autosizeIntitule = useCallback(() => {
+        const el = intituleRef.current;
+        if (!el) return;
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 200) + 'px'; // cap height
+    }, []);
+    useEffect(() => { autosizeIntitule(); }, [formData.Intitule, autosizeIntitule]);
 
     const fetchOptions = useCallback(async () => {
         console.log("Fetching options using /api/options/...");
@@ -194,7 +206,7 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
                 })));
                 
                 const fetchedDocs = data.documents || [];
-                setExistingDocuments(fetchedDocs.map(doc => ({ id: doc.Id_Doc, name: doc.file_name || `Document ${doc.Id_Doc}`, url: doc.url || null, type: doc.file_type, })));
+                setExistingDocuments(fetchedDocs.map(doc => ({ id: doc.Id_Doc, name: doc.file_name || `Document ${doc.Id_Doc}`, url: doc.url || null, type: doc.file_type, intitule: doc.Intitule || '', })));
                 
             } catch (err) { console.error("Erreur chargement données convention:", err); if (isMounted) setSubmissionStatus({ loading: false, error: err.response?.data?.message || err.message || "Erreur chargement données.", success: false }); }
             finally { if (isMounted) setLoadingData(false); }
@@ -267,7 +279,7 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
             })
         );
     };
-    const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: undefined })); };
+    const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: undefined })); if (name === 'Intitule') { requestAnimationFrame(autosizeIntitule); } };
     const handleProgrammeChange = (selectedOption) => { setFormData(prev => ({ ...prev, programmeId: selectedOption })); if (formErrors.Id_Programme) setFormErrors(prev => ({ ...prev, Id_Programme: undefined })); };
     // Add these new handlers to ConventionForm.jsx
 
@@ -316,7 +328,7 @@ const handleTypeToggleChange = (value) => {
     const handleStatutChange = (selectedOption) => { setFormData(prev => ({ ...prev, Statut: selectedOption , date_visa: selectedOption?.value === 'visé' ? prev.date_visa : '' })); if (formErrors.Statut) setFormErrors(prev => ({ ...prev, Statut: undefined })); };
     const handleProjetChange = (selectedOption) => { setFormData(prev => ({ ...prev, projetId: selectedOption })); if (formErrors.Id_Projet) { setFormErrors(prev => ({ ...prev, Id_Projet: undefined })); } };
     const handleFonctionnaireChange = (selectedOptions) => { setFormData(prev => ({ ...prev, fonctionnaires: selectedOptions || [] })); if (formErrors.id_fonctionnaire) { setFormErrors(prev => ({ ...prev, id_fonctionnaire: undefined })); } };
-    const handleFileChange = (e) => { const files = Array.from(e.target.files); if (files.length > 0) { setNewFiles(prev => { const currentIdentifiers = new Set(prev.map(f => `${f.name}_${f.size}`)); const newlyAdded = files.filter(f => !currentIdentifiers.has(`${f.name}_${f.size}`)); return [...prev, ...newlyAdded]; }); if (formErrors.fichiers) setFormErrors(prev => ({ ...prev, fichiers: undefined })); } e.target.value = null; };
+    const handleFileChange = (e) => { const files = Array.from(e.target.files); if (files.length > 0) { setNewFiles(prev => { const currentIdentifiers = new Set(prev.map(fw => `${(fw.file?.name || fw.name)}_${(fw.file?.size || fw.size)}`)); const newlyAdded = files.filter(f => !currentIdentifiers.has(`${f.name}_${f.size}`)).map(f => ({ file: f, intitule: '', showIntitule: false })); return [...prev, ...newlyAdded]; }); if (formErrors.fichiers) setFormErrors(prev => ({ ...prev, fichiers: undefined })); } e.target.value = null; };
     const handleRemoveNewFile = (indexToRemove) => { setNewFiles(prev => prev.filter((_, index) => index !== indexToRemove)); };
     const handleMarkForDeletion = (docId) => { setDocumentsToDelete(prev => [...new Set([...prev, docId])]); };
     const handleUnmarkForDeletion = (docId) => { setDocumentsToDelete(prev => prev.filter(id => id !== docId)); if (formErrors.fichiers_delete) setFormErrors(prev => ({ ...prev, fichiers_delete: undefined })); };
@@ -463,7 +475,16 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
             return commitment;
         });
         dataPayload.append('partner_commitments', JSON.stringify(partnerCommitmentsPayload));
-        if (newFiles.length > 0) { newFiles.forEach((file) => dataPayload.append('fichiers[]', file)); }
+        if (newFiles.length > 0) { newFiles.forEach((fw, index) => { const fileObj = fw.file || fw; dataPayload.append('fichiers[]', fileObj); if (typeof fw.intitule === 'string') { dataPayload.append(`intitules[${index}]`, fw.intitule); } }); }
+        // Include existing document titles metadata for update (mirrors Ordre Service behavior)
+        if (isEditing && existingDocuments.length > 0) {
+            const docsMeta = existingDocuments
+                .filter(d => typeof d.intitule === 'string' && d.intitule.trim() !== '')
+                .map(d => ({ id: d.id, intitule: d.intitule.trim() }));
+            if (docsMeta.length > 0) {
+                dataPayload.append('documents_existants_meta', JSON.stringify(docsMeta));
+            }
+        }
         if (isEditing && documentsToDelete.length > 0) { dataPayload.append('deleted_document_ids', JSON.stringify(documentsToDelete)); }
         executeSubmit(dataPayload, false);
     };
@@ -524,9 +545,35 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
         </Row>
     </Card.Body>
 </Card>
-                         <Row className="mb-3 g-3">
-                            <Form.Group as={Col} md={8} controlId="formIntitule"><Form.Label className="small mb-1 fw-medium">Intitule <span className="text-danger">*</span></Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Intitule} required as="textarea" rows={1} name="Intitule" value={formData.Intitule} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Intitule}</Form.Control.Feedback></Form.Group>
-                            <Form.Group as={Col} md={4} controlId="formAnnee_Convention"><Form.Label className="small mb-1 fw-medium">Annee Convention <span className="text-danger">*</span></Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Annee_Convention} required type="number" name="Annee_Convention" value={formData.Annee_Convention} onChange={handleChange} size="sm" placeholder="YYYY" min="1900" max={new Date().getFullYear() + 10}/><Form.Control.Feedback type="invalid">{formErrors.Annee_Convention}</Form.Control.Feedback></Form.Group>
+                        <Row className="mb-3 g-3">
+                            <Form.Group as={Col} md={8} controlId="formIntitule">
+                                <Form.Label className="small mb-1 fw-medium">Intitulé <span className="text-danger">*</span></Form.Label>
+                                <Form.Control
+                                    ref={intituleRef}
+                                    className={textareaClass}
+                                    isInvalid={!!formErrors.Intitule}
+                                    required
+                                    as="textarea"
+                                    rows={1}
+                                    name="Intitule"
+                                    value={formData.Intitule}
+                                    onChange={handleChange}
+                                    size="sm"
+                                    placeholder={isEditing ? "Modifier l'intitulé de la convention..." : "Saisir l'intitulé de la convention..."}
+                                    maxLength={INTITULE_MAX}
+                                    onFocus={autosizeIntitule}
+                                />
+                                <div className="form-text small d-flex justify-content-between">
+                                    <span>Utilisez des termes clairs et précis.</span>
+                                    <span>{(formData.Intitule || '').length}/{INTITULE_MAX}</span>
+                                </div>
+                                <Form.Control.Feedback type="invalid">{formErrors.Intitule}</Form.Control.Feedback>
+                            </Form.Group>
+                            <Form.Group as={Col} md={4} controlId="formAnnee_Convention">
+                                <Form.Label className="small mb-1 fw-medium">Année Convention <span className="text-danger">*</span></Form.Label>
+                                <Form.Control className={inputClass} isInvalid={!!formErrors.Annee_Convention} required type="number" name="Annee_Convention" value={formData.Annee_Convention} onChange={handleChange} size="sm" placeholder="YYYY" min="1900" max={new Date().getFullYear() + 10}/>
+                                <Form.Control.Feedback type="invalid">{formErrors.Annee_Convention}</Form.Control.Feedback>
+                            </Form.Group>
                         </Row>
                                             
                                                 <Row className="mb-3 g-3">
@@ -868,8 +915,88 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                          <Card className="mb-4 shadow-sm border-light" id="file-management-card">
                             <Card.Header className='bg-light py-2'><h6 className='mb-0 fw-semibold text-secondary'>Gestion des Fichiers</h6></Card.Header>
                             <Card.Body className="pb-3 pt-3">
-                                 {isEditing && existingDocuments.length > 0 && ( <> <h6 className="small text-muted mb-2">Fichiers Actuels :</h6> <ListGroup variant="flush" className="mb-3 existing-files-list border rounded-3"> {existingDocuments.map((doc) => ( <ListGroup.Item key={doc.id} className={`d-flex justify-content-between align-items-center px-2 py-1 border-bottom ${documentsToDelete.includes(doc.id) ? 'bg-light text-muted text-decoration-line-through' : ''}`} style={{ transition: 'background-color 0.3s ease' }}> <div className="d-flex align-items-center text-truncate me-2"> <FontAwesomeIcon icon={getFileIcon(doc.type || doc.name)} className="me-2 text-secondary" fixedWidth title={doc.type || 'Type inconnu'}/> {doc.url ? ( <a href={doc.url} target="_blank" rel="noopener noreferrer" title={`Voir ${doc.name}`} className={`text-truncate me-2 small fw-medium ${documentsToDelete.includes(doc.id) ? 'text-muted' : 'link-primary'}`} style={{ maxWidth: '250px' }}> {doc.name} <FontAwesomeIcon icon={faExternalLinkAlt} size="xs" className="ms-1"/> </a> ) : ( <span title={doc.name} className={`text-truncate me-2 small fw-medium ${documentsToDelete.includes(doc.id) ? 'text-muted' : ''}`} style={{ maxWidth: '250px' }}>{doc.name}</span> )} </div> {documentsToDelete.includes(doc.id) ? ( <Button variant="outline-secondary" size="sm" className="flex-shrink-0" onClick={() => handleUnmarkForDeletion(doc.id)} title="Annuler la suppression"><FontAwesomeIcon icon={faUndo} /></Button> ) : ( <Button variant="outline-danger" size="sm" className="flex-shrink-0" onClick={() => handleMarkForDeletion(doc.id)} title="Marquer pour suppression"><FontAwesomeIcon icon={faTrashAlt} /></Button> )} </ListGroup.Item> ))} </ListGroup> {formErrors.fichiers_delete && <Form.Text className="text-danger small d-block mb-2">{formErrors.fichiers_delete}</Form.Text>} </> )}
-                                {newFiles.length > 0 && ( <> <h6 className="small text-muted mb-2 mt-3">Nouveaux Fichiers à Ajouter :</h6> <ListGroup variant="flush" className="mb-3 new-files-list border rounded-3"> {newFiles.map((file, index) => ( <ListGroup.Item key={`${file.name}-${file.size}-${index}`} className="d-flex justify-content-between align-items-center px-2 py-1 border-bottom"> <div className="d-flex align-items-center text-truncate me-2"> <FontAwesomeIcon icon={getFileIcon(file.type || file.name)} className="me-2 text-secondary" fixedWidth /> <span className="text-truncate me-2 small" title={file.name} style={{ maxWidth: '250px' }}>{file.name}</span> </div> <Stack direction="horizontal" gap={2} className="align-items-center flex-shrink-0"> <Badge bg="light" text="dark" pill className="small fw-normal">{(file.size / 1024 / 1024).toFixed(2)} Mo</Badge> <Button variant="outline-warning" size="sm" onClick={() => handleRemoveNewFile(index)} title="Retirer ce fichier"><FontAwesomeIcon icon={faTimes} /></Button> </Stack> </ListGroup.Item> ))} </ListGroup> </> )}
+                                {isEditing && existingDocuments.length > 0 && (
+                                    <>
+                                        <h6 className="small text-muted mb-2">Fichiers Actuels :</h6>
+                                        <ListGroup variant="flush" className="mb-3 existing-files-list border rounded-3">
+                                            {existingDocuments.map((doc) => (
+                                                <ListGroup.Item key={doc.id} className={`px-2 py-2 border-bottom ${documentsToDelete.includes(doc.id) ? 'bg-light text-muted text-decoration-line-through' : ''}`} style={{ transition: 'background-color 0.3s ease' }}>
+                                                    <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                                                        <div className="d-flex align-items-center text-truncate me-2">
+                                                            <FontAwesomeIcon icon={getFileIcon(doc.type || doc.name)} className="me-2 text-secondary" fixedWidth title={doc.type || 'Type inconnu'}/>
+                                                            {doc.url ? (
+                                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" title={`Voir ${doc.name}`} className={`text-truncate me-2 small fw-medium ${documentsToDelete.includes(doc.id) ? 'text-muted' : 'link-primary'}`} style={{ maxWidth: '250px' }}>
+                                                                    {doc.name}
+                                                                    <FontAwesomeIcon icon={faExternalLinkAlt} size="xs" className="ms-1"/>
+                                                                </a>
+                                                            ) : (
+                                                                <span title={doc.name} className={`text-truncate me-2 small fw-medium ${documentsToDelete.includes(doc.id) ? 'text-muted' : ''}`} style={{ maxWidth: '250px' }}>{doc.name}</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-grow-1 d-flex align-items-center gap-2">
+                                                            <div className="flex-grow-1">
+                                                                <Form.Control
+                                                                    type="text"
+                                                                    size="sm"
+                                                                    placeholder={doc.name ? `Intitulé (ex: ${doc.name})` : 'Intitulé du fichier'}
+                                                                    value={doc.intitule || ''}
+                                                                    onChange={(e) => setExistingDocuments(prev => prev.map(d => d.id === doc.id ? { ...d, intitule: e.target.value } : d))}
+                                                                    className="form-control-sm rounded-3 shadow-sm"
+                                                                    disabled={documentsToDelete.includes(doc.id)}
+                                                                    maxLength={FILE_INTITULE_MAX}
+                                                                />
+                                                                <div className="form-text small text-muted d-flex justify-content-end mt-1">
+                                                                    {(doc.intitule || '').length}/{FILE_INTITULE_MAX}
+                                                                </div>
+                                                            </div>
+                                                            {documentsToDelete.includes(doc.id) ? (
+                                                                <Button variant="outline-secondary" size="sm" className="flex-shrink-0" onClick={() => handleUnmarkForDeletion(doc.id)} title="Annuler la suppression"><FontAwesomeIcon icon={faUndo} /></Button>
+                                                            ) : (
+                                                                <Button variant="outline-danger" size="sm" className="flex-shrink-0" onClick={() => handleMarkForDeletion(doc.id)} title="Marquer pour suppression"><FontAwesomeIcon icon={faTrashAlt} /></Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </ListGroup.Item>
+                                            ))}
+                                        </ListGroup>
+                                        {formErrors.fichiers_delete && <Form.Text className="text-danger small d-block mb-2">{formErrors.fichiers_delete}</Form.Text>}
+                                    </>
+                                )}
+                                {newFiles.length > 0 && (
+                                    <>
+                                        <h6 className="small text-muted mb-2 mt-3">Nouveaux Fichiers à Ajouter :</h6>
+                                        <ListGroup variant="flush" className="mb-3 new-files-list border rounded-3">
+                                            {newFiles.map((fw, index) => (
+                                                <ListGroup.Item key={`${(fw.file?.name || fw.name)}-${(fw.file?.size || fw.size)}-${index}`} className="px-2 py-2 border-bottom">
+                                                    <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                                                        <div className="d-flex align-items-center text-truncate me-2">
+                                                            <FontAwesomeIcon icon={getFileIcon((fw.file?.type || fw.file?.name || ''))} className="me-2 text-secondary" fixedWidth />
+                                                            <span className="text-truncate me-2 small" title={fw.file?.name} style={{ maxWidth: '250px' }}>{fw.file?.name}</span>
+                                                        </div>
+                                                        <div className="flex-grow-1 d-flex align-items-center gap-2">
+                                                            <div className="flex-grow-1">
+                                                                <Form.Control
+                                                                    type="text"
+                                                                    size="sm"
+                                                                    placeholder={fw.file?.name ? `Intitulé (ex: ${fw.file.name})` : 'Intitulé du fichier'}
+                                                                    value={fw.intitule || ''}
+                                                                    onChange={(e) => setNewFiles(prev => prev.map((it, idx) => idx === index ? { ...it, intitule: e.target.value } : it))}
+                                                                    className="form-control-sm rounded-3 shadow-sm"
+                                                                    maxLength={FILE_INTITULE_MAX}
+                                                                />
+                                                                <div className="form-text small text-muted d-flex justify-content-end mt-1">
+                                                                    {(fw.intitule || '').length}/{FILE_INTITULE_MAX}
+                                                                </div>
+                                                            </div>
+                                                            <Badge bg="light" text="dark" pill className="small fw-normal">{((fw.file?.size || 0) / 1024 / 1024).toFixed(2)} Mo</Badge>
+                                                            <Button variant="outline-warning" size="sm" onClick={() => handleRemoveNewFile(index)} title="Retirer ce fichier"><FontAwesomeIcon icon={faTimes} /></Button>
+                                                        </div>
+                                                    </div>
+                                                </ListGroup.Item>
+                                            ))}
+                                        </ListGroup>
+                                    </>
+                                )}
                                 <Form.Group id="formFichiers" className={`mt-3 text-center ${formErrors.fichiers ? 'is-invalid' : ''}`}>
                                     <Form.Label htmlFor="file-upload-input" className="btn btn-outline-secondary rounded-pill shadow-sm px-4 py-2"> <FontAwesomeIcon icon={faPlusCircle} className="me-2" /> {isEditing ? 'Ajouter Fichiers' : 'Sélectionner Fichiers'} </Form.Label>
                                     <Form.Control type="file" id="file-upload-input" multiple onChange={handleFileChange} style={{ display: 'none' }} accept=".pdf,.doc,.docx,image/*,.xls,.xlsx"/>

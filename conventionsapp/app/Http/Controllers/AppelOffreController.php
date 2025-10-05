@@ -12,7 +12,9 @@ use Illuminate\Validation\Rule;
 use Exception; // More specific exceptions like ModelNotFoundException are better
 use Illuminate\Database\Eloquent\ModelNotFoundException; // Explicitly import
 // use Illuminate\Support\Arr; // Not used in this version
-
+use Illuminate\Support\Facades\Storage; // <-- IMPORTER STORAGE
+use App\Models\FichierJoint; // <-- IMPORTER LE MODÈLE
+use Illuminate\Support\Facades\DB;
 class AppelOffreController extends Controller
 {
     protected $allowedProvinces;
@@ -46,6 +48,11 @@ class AppelOffreController extends Controller
                 }
             }
             $appelOffres = $query->get();
+            $appelOffres->each(function ($ao) {
+                $ao->fichiers->each(function ($fichier) {
+                    $fichier->url = $fichier->chemin_fichier ? Storage::disk('public')->url($fichier->chemin_fichier) : null;
+                });
+            });
             // Consistent response: Nest under a key if other index methods do, otherwise direct array is fine.
             return response()->json(['appel_offres' => $appelOffres]);
 
@@ -103,63 +110,113 @@ class AppelOffreController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+// ... (dans app/Http/Controllers/AppelOffreController.php)
+
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request): JsonResponse
     {
+        // --- VALIDATION MISE À JOUR ---
+        $validatedData = $request->validate([
+            'categorie' => ['required', Rule::in(['Travaux', 'Etudes', 'Services', 'Fournitures'])],
+            'provinces' => 'nullable|array',
+            'provinces.*' => ['required_with:provinces', 'string', Rule::in($this->allowedProvinces)],
+            'numero' => 'required|string|max:255|unique:appel_offre,numero',
+            'intitule' => 'required|string|max:65535',
+            'estimation' => 'nullable|numeric|min:0',
+            'estimation_HT' => 'required|numeric|min:0',
+            'montant_TVA' => 'required|numeric|min:0',
+            'duree_execution' => 'nullable|integer|min:0',
+            'date_verification' => 'nullable|date_format:Y-m-d',
+            'id_fonctionnaire'=>'nullable|string',
+            'date_ouverture' => 'nullable|date_format:Y-m-d',
+            'last_session_op' => 'nullable|date_format:Y-m-d',
+            'date_publication' => 'nullable|date_format:Y-m-d',
+            'lancement_portail' => 'nullable|boolean',
+            'date_lancement_portail' => 'nullable|date_format:Y-m-d|required_if:lancement_portail,true',
+            
+            // Validation pour les nouveaux fichiers
+            'fichiers_data' => 'nullable|json',
+            'files' => 'nullable|array',
+            'files.*' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,dwg,zip,rar|max:20480',
+        ]);
+
+        $fichiersMetadata = json_decode($request->input('fichiers_data', '[]'), true);
+
+        DB::beginTransaction();
         try {
-            $validatedData = $request->validate([
-                'categorie' => ['required', Rule::in(['Travaux', 'Etudes', 'Services', 'Fournitures'])],
-                'provinces' => 'nullable|array',
-                'provinces.*' => ['required_with:provinces', 'string', Rule::in($this->allowedProvinces)], // Only validate items if provinces array is not null
-                'numero' => 'required|string|max:255|unique:appel_offre,numero', // Ensure max length
-                'intitule' => 'required|string|max:65535', // TEXT usually doesn't need max, but good for VARCHAR
-                'estimation' => 'nullable|numeric|min:0',
-                'estimation_HT' => 'required|numeric|min:0',
-                'montant_TVA' => 'required|numeric|min:0',
-                'duree_execution' => 'nullable|integer|min:0',
-                'date_verification' => 'nullable|date_format:Y-m-d',
-                'id_fonctionnaire'=>'nullable|string', // Consider if this should be an integer FK
-                'date_ouverture' => 'nullable|date_format:Y-m-d',
-                'last_session_op' => 'nullable|date_format:Y-m-d',
-                'date_publication' => 'nullable|date_format:Y-m-d',
-                'lancement_portail' => 'nullable|boolean',
-                'date_lancement_portail' => 'nullable|date_format:Y-m-d|required_if:lancement_portail,true',
-            ]);
+            // Prépare les données de l'appel d'offre en excluant les données des fichiers
+            $appelOffreData = $request->except(['fichiers_data', 'files']);
 
-            // Ensure 'lancement_portail' is explicitly boolean, default false if not present
-            $validatedData['lancement_portail'] = $request->boolean('lancement_portail');
+            // --- VOTRE LOGIQUE DE PRÉPARATION DE DONNÉES (RÉINTÉGRÉE) ---
+            
+            // S'assure que 'lancement_portail' est un booléen, avec false par défaut
+            $appelOffreData['lancement_portail'] = $request->boolean('lancement_portail');
 
-            // Handle provinces array: if it's sent as empty or just null, store null.
+            // Gère le tableau des provinces : un tableau vide doit être stocké comme NULL
             if (isset($validatedData['provinces']) && is_array($validatedData['provinces'])) {
-                $validatedData['provinces'] = array_filter($validatedData['provinces']); // Remove empty values
-                if (empty($validatedData['provinces'])) {
-                    $validatedData['provinces'] = null;
-                }
+                $filteredProvinces = array_filter($validatedData['provinces']);
+                $appelOffreData['provinces'] = !empty($filteredProvinces) ? $filteredProvinces : null;
             } else {
-                $validatedData['provinces'] = null; // Ensure it's null if not provided or not an array
+                $appelOffreData['provinces'] = null; // S'assure que c'est NULL si non fourni ou invalide
             }
+            
+            // --- FIN DE VOTRE LOGIQUE ---
 
+            $appelOffre = AppelOffre::create($appelOffreData);
 
-            $appelOffre = AppelOffre::create($validatedData);
-            Log::info('Appel d\'offre created successfully: ID ' . $appelOffre->id); // Assumes PK is 'id'
+            // --- GESTION DES NOUVEAUX FICHIERS ---
+            if ($request->hasFile('files')) {
+foreach ($request->file('files', []) as $key => $file) {
+                    if ($file->isValid()) {
+                        $metadata = $fichiersMetadata[$key] ?? [];
+                        
+                        $path = $file->store('uploads/appel_offres/' . $appelOffre->id, 'public');
+
+                        FichierJoint::create([
+                            'appel_offre_id' => $appelOffre->id,
+                            'intitule' => $request->input("intitule_file.{$key}",  $file->getClientOriginalName()),
+                            'categorie' => $request->input("categorie_file.{$key}", 'autre'),
+                            'nom_fichier' => $file->getClientOriginalName(),
+                            'chemin_fichier' => $path,
+                            'type_fichier' => $file->getClientMimeType(),
+                        ]);
+                    }
+                }
+            }
+            
+            DB::commit();
+
+            $appelOffre->load('fichiers');
+            $appelOffre->fichiers->each(fn($f) => $f->url = Storage::disk('public')->url($f->chemin_fichier));
+
+            Log::info('Appel d\'offre créé avec succès: ID ' . $appelOffre->id);
             return response()->json(['message' => 'Appel d\'offre créé avec succès.', 'appel_offre' => $appelOffre], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('Validation failed for creating appel d\'offre: ', $e->errors());
+            Log::warning('Validation a échoué pour la création d\'appel d\'offre: ', $e->errors());
             return response()->json(['message' => 'Les données fournies étaient invalides.', 'errors' => $e->errors()], 422);
         } catch (Exception $e) {
-            Log::error('Error creating appel d\'offre: ' . $e->getMessage(), ['data' => $request->all(), 'trace' => $e->getTraceAsString()]);
+            DB::rollBack();
+            Log::error('Erreur lors de la création d\'appel d\'offre: ' . $e->getMessage(), ['data' => $request->all(), 'trace' => $e->getTraceAsString()]);
             return response()->json(['message' => 'Erreur serveur lors de la création de l\'appel d\'offre.'], 500);
         }
     }
-
     /**
      * Display the specified resource.
      */
     public function show(string $id): JsonResponse
     {
         try {
-            $appelOffre = AppelOffre::findOrFail($id); // Assumes PK is 'id'
-            return response()->json($appelOffre); // Return model directly or nest: ['appel_offre' => $appelOffre]
+            $appelOffre = AppelOffre::with('fichiers')->findOrFail($id);
+            
+            // Générer les URLs publiques pour les fichiers
+            $appelOffre->fichiers->each(function ($fichier) {
+                $fichier->url = $fichier->chemin_fichier ? Storage::disk('public')->url($fichier->chemin_fichier) : null;
+            });
+
+            return response()->json($appelOffre);
         } catch (ModelNotFoundException $e) {
              Log::warning('Appel d\'offre not found with ID: ' . $id);
              return response()->json(['message' => 'Appel d\'offre non trouvé.'], 404);
@@ -169,14 +226,13 @@ class AppelOffreController extends Controller
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+ 
     public function update(Request $request, string $id): JsonResponse
     {
         try {
-            $appelOffre = AppelOffre::findOrFail($id); // Assumes PK is 'id'
+            $appelOffre = AppelOffre::findOrFail($id);
 
+            // --- VALIDATION MISE À JOUR ---
             $validatedData = $request->validate([
                 'categorie' => ['required', Rule::in(['Travaux', 'Etudes', 'Services', 'Fournitures'])],
                 'provinces' => 'nullable|array',
@@ -194,36 +250,92 @@ class AppelOffreController extends Controller
                 'date_publication' => 'nullable|date_format:Y-m-d',
                 'lancement_portail' => 'nullable|boolean',
                 'date_lancement_portail' => 'nullable|date_format:Y-m-d|required_if:lancement_portail,true',
+
+                // Validation pour les fichiers
+                'fichiers_data' => 'nullable|json',
+                'files' => 'nullable|array',
+                'files.*' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,dwg,zip,rar|max:20480',
+                'fichiers_a_supprimer' => 'nullable|json', // IDs des fichiers à supprimer
             ]);
 
-            $validatedData['lancement_portail'] = $request->boolean('lancement_portail', $appelOffre->lancement_portail); // Keep existing if not provided
-            if (isset($validatedData['provinces']) && is_array($validatedData['provinces'])) {
-                 $validatedData['provinces'] = array_filter($validatedData['provinces']);
-                  if (empty($validatedData['provinces'])) { $validatedData['provinces'] = null; }
-             } elseif ($request->exists('provinces') && $request->input('provinces') === null) { // Handle explicit null to clear
-                $validatedData['provinces'] = null;
-             } else {
-                // If 'provinces' key is not in request, don't change it from the model's current value.
-                // To achieve this, remove it from $validatedData if not present in $request.
-                if (!$request->exists('provinces')) {
-                    unset($validatedData['provinces']);
+            $fichiersMetadata = json_decode($request->input('fichiers_data', '[]'), true);
+            $fichiersASupprimer = json_decode($request->input('fichiers_a_supprimer', '[]'), true);
+
+            DB::beginTransaction();
+            
+            // Prépare les données pour la mise à jour
+            $updateData = $request->except(['fichiers_data', 'files', 'fichiers_a_supprimer', '_method']);
+
+            // --- VOTRE LOGIQUE DE PRÉPARATION DE DONNÉES (RÉINTÉGRÉE POUR UPDATE) ---
+
+            // Gère 'lancement_portail', en conservant l'ancienne valeur si non fournie.
+            $updateData['lancement_portail'] = $request->boolean('lancement_portail', $appelOffre->lancement_portail);
+
+            // Gère le tableau des provinces avec la logique complète pour la mise à jour
+            if ($request->exists('provinces')) {
+                if (is_array($request->input('provinces'))) {
+                    $filteredProvinces = array_filter($request->input('provinces'));
+                    $updateData['provinces'] = !empty($filteredProvinces) ? $filteredProvinces : null;
+                } else {
+                    // Si 'provinces' est envoyé mais n'est pas un tableau (ex: null), on le met à NULL
+                    $updateData['provinces'] = null;
                 }
-             }
+            } else {
+                // Si la clé 'provinces' n'est pas du tout dans la requête, on la retire des données
+                // de mise à jour pour ne pas écraser la valeur existante.
+                unset($updateData['provinces']);
+            }
+            
+            // --- FIN DE VOTRE LOGIQUE ---
 
+            $appelOffre->update($updateData);
 
-            $appelOffre->update($validatedData);
-            Log::info('Appel d\'offre updated successfully: ID ' . $appelOffre->id);
+            // --- GESTION DES FICHIERS À SUPPRIMER ---
+            if (!empty($fichiersASupprimer)) {
+                $fichiers = FichierJoint::whereIn('id', $fichiersASupprimer)
+                    ->where('appel_offre_id', $appelOffre->id) // Sécurité : ne supprimer que les fichiers de cet AO
+                    ->get();
+                
+                foreach ($fichiers as $fichier) {
+                    Storage::disk('public')->delete($fichier->chemin_fichier);
+                    $fichier->delete();
+                }
+            }
+
+            // --- GESTION DES NOUVEAUX FICHIERS ---
+            if ($request->hasFile('files')) {
+            foreach ($request->file('files', []) as $key => $file) {
+                    if ($file && $file->isValid()) {
+                        $metadata = $fichiersMetadata[$key] ?? [];
+                        $path = $file->store('uploads/appel_offres/'.$appelOffre->id, 'public');
+                        FichierJoint::create([
+                            'appel_offre_id' => $appelOffre->id,
+                            'intitule' => $request->input("intitule_file.{$key}", $file->getClientOriginalName()),
+                            'categorie' => $request->input("categorie_file.{$key}", 'autre'),
+                            'nom_fichier' => $file->getClientOriginalName(),
+                            'chemin_fichier' => $path,
+                            'type_fichier' => $file->getClientMimeType(),
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            $appelOffre->load('fichiers');
+            $appelOffre->fichiers->each(fn($f) => $f->url = Storage::disk('public')->url($f->chemin_fichier));
+            
+            Log::info('Appel d\'offre mis à jour avec succès: ID ' . $appelOffre->id);
             return response()->json(['message' => 'Appel d\'offre mis à jour avec succès.', 'appel_offre' => $appelOffre->fresh()], 200);
 
         } catch (ModelNotFoundException $e) {
-            Log::warning('Appel d\'offre not found for update with ID: ' . $id);
             return response()->json(['message' => 'Appel d\'offre non trouvé.'], 404);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('Validation failed during update for Appel d\'offre ID ' . $id . ': ', $e->errors());
             return response()->json(['message' => 'Les données fournies étaient invalides.', 'errors' => $e->errors()], 422);
         } catch (Exception $e) {
-            Log::error('Error updating appel d\'offre ID ' . $id . ': ' . $e->getMessage(), ['data' => $request->all(), 'trace' => $e->getTraceAsString()]);
-            return response()->json(['message' => 'Erreur serveur lors de la mise à jour de l\'appel d\'offre.'], 500);
+            DB::rollBack();
+            Log::error('Erreur lors de la mise à jour de l\'appel d\'offre ID ' . $id . ': ' . $e->getMessage());
+            return response()->json(['message' => 'Erreur serveur lors de la mise à jour.'], 500);
         }
     }
 
@@ -232,15 +344,23 @@ class AppelOffreController extends Controller
      */
     public function destroy(string $id): JsonResponse
     {
+       DB::beginTransaction();
         try {
             $appelOffre = AppelOffre::findOrFail($id); // Assumes PK is 'id'
+             Storage::disk('public')->deleteDirectory('uploads/appel_offres/' . $appelOffre->id);
             $appelOffre->delete();
+             DB::commit();
             Log::info('Appel d\'offre deleted successfully: ID ' . $id);
             return response()->json(null, 204); // Standard 204 No Content
+           
         } catch (ModelNotFoundException $e) {
+                        DB::rollBack();
+
              Log::warning('Appel d\'offre not found for deletion with ID: ' . $id);
              return response()->json(['message' => 'Appel d\'offre non trouvé.'], 404);
-        } catch (QueryException $qe) { // Catch specific database errors
+        } catch (QueryException $qe) {
+                        DB::rollBack();
+ // Catch specific database errors
              Log::error('Database error deleting appel d\'offre ID ' . $id . ': ' . $qe->getMessage(), ['sql_code' => $qe->getCode()]);
              // Check for foreign key constraint violation (error code/message can vary by database)
              if (str_contains($qe->getMessage(), 'constraint violation') || $qe->getCode() == '23000' || ($qe->errorInfo[1] ?? null) == 1451) {
@@ -248,6 +368,8 @@ class AppelOffreController extends Controller
              }
              return response()->json(['message' => 'Erreur base de données lors de la suppression.'], 500);
          } catch (Exception $e) {
+                        DB::rollBack();
+
             Log::error('Error deleting appel d\'offre ID ' . $id . ': ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json(['message' => 'Erreur serveur lors de la suppression de l\'appel d\'offre.'], 500);
         }

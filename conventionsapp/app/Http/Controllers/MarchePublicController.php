@@ -7,7 +7,8 @@ use App\Models\MarchePublic;
 use App\Models\Lot;
 use App\Models\FichierJoint;
 use App\Models\Convention; // Make sure this is the correct Convention model if needed
-
+use App\Models\Projet;       // <-- 1. IMPORT PROJET
+use App\Models\SousProjet; 
 // Facades and Classes
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,6 +45,7 @@ class MarchePublicController extends Controller
             $query = MarchePublic::with([
                 'lots.fichiersJoints',
                 'fichiersJointsGeneraux',
+                 'projectable' ,
                 "{$conventionRelationshipName}:id,{$conventionTitleField}",
                 "{$appelOffreRelationshipName}:id,{$appelOffreNumeroField}"
             ]);
@@ -107,16 +109,21 @@ class MarchePublicController extends Controller
      * POST /api/marches-publics
      * URLs added manually to response.
      */
+     /**
+     * Store MarchePublic, related Lots, and Files (Lot & General) using direct public storage.
+     * POST /api/marches-publics
+     * CORRECTED to handle general file metadata properly.
+     */
     public function store(Request $request)
     {
         Log::info('--- MarchePublic Store Request Received (Direct Public Storage - Manual URL) ---');
-        // Validation remains the same...
+        
         $validator = Validator::make($request->all(), [
             'numero_marche' => 'required|string|max:50|unique:marche_public,numero_marche',
             'intitule' => 'required|string',
-            'type_marche' => ['required', Rule::in(['Travaux', 'Fournitures', 'Services','Etudes'])],
+            'type_marche' => ['required', 'string'],
             'procedure_passation' => 'required|string|max:100',
-            'mode_passation' => 'required|string|max:100',
+            'mode_passation' => 'required|string',
             'budget_previsionnel' => 'nullable|numeric|min:0',
             'montant_attribue' => 'nullable|numeric|min:0',
             'source_financement' => 'nullable|string|max:255',
@@ -126,11 +133,10 @@ class MarchePublicController extends Controller
             'date_notification' => 'nullable|date_format:Y-m-d|after_or_equal:date_limite_offres',
             'date_debut_execution' => 'nullable|date_format:Y-m-d|after_or_equal:date_notification',
             'duree_marche' => 'nullable|integer|min:0',
+            'projectable' => ['nullable', 'string', 'regex:/^(projet|sous-projet)_[a-zA-Z0-9-]+$/'],
             'statut' => ['nullable', Rule::in(['En préparation', 'En cours', 'Terminé', 'Résilié'])],
-            'id_convention' => ['nullable', 'integer'],
+            'id_convention' => ['nullable', 'integer', Rule::exists('conventions', 'id')], // Good practice to add exists rule
             'ref_appelOffre' => ['nullable', 'integer', Rule::exists('appel_offre', 'id')],
-            'date_ouverture_plis' => 'nullable|date_format:Y-m-d',
-            'date_fin_ouverture' => 'nullable|date_format:Y-m-d',
             'avancement_physique' => 'nullable|numeric',
             'avancement_financier' => 'nullable|numeric',
             'date_engagement_tresorerie' => 'nullable|date_format:Y-m-d',
@@ -142,105 +148,124 @@ class MarchePublicController extends Controller
             'general_files.*' => ['nullable','file','mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,dwg,zip,rar','max:20480'],
             'id_fonctionnaire' => 'nullable|string',
         ]);
-        if ($validator->fails()) { /* ... handle validation error ... */ return response()->json(['message' => 'Erreurs de validation.', 'errors' => $validator->errors()], 422); }
 
-        // Prepare Data & Decode JSON (remains the same)
-        $marcheData = $request->except(['lots_data', 'lot_files', 'general_files', '_method']);
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Erreurs de validation.', 'errors' => $validator->errors()], 422);
+        }
+
+        $marcheData = $request->except(['lots_data', 'lot_files', 'general_files', '_method', 'projectable']);
         $marcheData['statut'] = $request->input('statut', 'En préparation');
         $lotsInputData = [];
         $lotsString = $request->input('lots_data');
-        if ($lotsString) { /* Decode JSON as before */
+        if ($lotsString) {
             $decodedLots = json_decode($lotsString, true);
-            if (json_last_error() !== JSON_ERROR_NONE) { return response()->json(['message' => 'Erreurs de validation.', 'errors' => ['lots_data' => ['Format JSON invalide. (' . json_last_error_msg() . ')']]], 422); }
+            if (json_last_error() !== JSON_ERROR_NONE) { return response()->json(['message' => 'Erreurs de validation.', 'errors' => ['lots_data' => ['Format JSON invalide.']]], 422); }
             if (!is_array($decodedLots)) { return response()->json(['message' => 'Erreurs de validation.', 'errors' => ['lots_data' => ['Les données des lots doivent être une liste (array).']]], 422); }
             $lotsInputData = $decodedLots;
         }
 
-        $storedLotFilePathsRelative = [];
-        $storedGeneralFilePathsRelative = [];
+        $storedFilePathsRelative = [];
 
         DB::beginTransaction();
         try {
-            // Create Marche Public (remains the same)
+            if ($request->filled('projectable')) {
+                [$type, $id] = explode('_', $request->input('projectable'));
+                $modelClass = $type === 'projet' ? Projet::class : SousProjet::class;
+                $marcheData['projectable_type'] = $modelClass;
+                $marcheData['projectable_id'] = $id;
+            }
             $marche = MarchePublic::create($marcheData);
 
-            // Create Lots and Attach Lot Files (remains the same)
+            // Create Lots and Attach Lot Files
             $uploadedLotFiles = $request->file('lot_files', []);
             foreach ($lotsInputData as $index => $lotInput) {
-                // ... (lot creation logic is identical) ...
                 if (Arr::first(Arr::only($lotInput, ['numero_lot', 'objet', 'montant_attribue', 'attributaire']), fn ($v) => $v !== null && $v !== '') !== null || isset($uploadedLotFiles[$index])) {
                     $newLot = $marche->lots()->create(Arr::only($lotInput, ['numero_lot', 'objet', 'montant_attribue', 'attributaire']));
                     if (isset($uploadedLotFiles[$index]) && is_array($uploadedLotFiles[$index])) {
                          $targetDirRelative = 'uploads/lots/' . $newLot->id;
                          $targetDirAbsolute = public_path($targetDirRelative);
-                         if (!File::isDirectory($targetDirAbsolute)) File::makeDirectory($targetDirAbsolute, 0775, true, true);
-                         if (!File::isWritable($targetDirAbsolute)) throw new Exception("Lot directory not writable: {$targetDirAbsolute}");
+                         File::makeDirectory($targetDirAbsolute, 0775, true, true);
+                         
                          foreach ($uploadedLotFiles[$index] as $fileKey => $file) {
                             if ($file instanceof \Illuminate\Http\UploadedFile && $file->isValid()) {
-                                // ... (file move and FichierJoint creation is identical) ...
-                                $originalName = $file->getClientOriginalName(); $mimeType = $file->getClientMimeType() ?: 'application/octet-stream';
-                                $safeOriginalName = preg_replace('/[^A-Za-z0-9\._-]/', '_', $originalName); $generatedFilename = date('Ymd-His') . '_' . Str::random(5) . '_' . $safeOriginalName;
+                                $originalName = $file->getClientOriginalName();
+                                $safeOriginalName = preg_replace('/[^A-Za-z0-9\._-]/', '_', $originalName);
+                                $generatedFilename = date('Ymd-His') . '_' . Str::random(5) . '_' . $safeOriginalName;
                                 $file->move($targetDirAbsolute, $generatedFilename);
                                 $storedRelativePublicPath = $targetDirRelative . '/' . $generatedFilename;
-                                $storedLotFilePathsRelative[] = $storedRelativePublicPath;
-                                FichierJoint::create([ 'marche_id' => $marche->id, 'lot_id' => $newLot->id, 'nom_fichier' => $originalName, 'chemin_fichier' => $storedRelativePublicPath, 'type_fichier' => $mimeType ]);
+                                $storedFilePathsRelative[] = $storedRelativePublicPath;
+
+                                FichierJoint::create([
+                                    'marche_id' => $marche->id,
+                                    'lot_id' => $newLot->id,
+                                    'nom_fichier' => $originalName,
+                                    'intitule' => $request->input("intitule_lot.{$index}.{$fileKey}", $originalName),
+                                    'categorie' => $request->input("categorie_lot.{$index}.{$fileKey}", 'autre'),
+                                    'chemin_fichier' => $storedRelativePublicPath,
+                                    'type_fichier' => $file->getClientMimeType() ?: 'application/octet-stream'
+                                ]);
                             }
                         }
                     }
                 }
             }
 
-            // Handle General File Uploads (remains the same)
+            // Handle General File Uploads
             $uploadedGeneralFiles = $request->file('general_files', []);
             if (!empty($uploadedGeneralFiles)) {
                  $targetDirRelative = 'uploads/marches/' . $marche->id;
                  $targetDirAbsolute = public_path($targetDirRelative);
-                 if (!File::isDirectory($targetDirAbsolute)) File::makeDirectory($targetDirAbsolute, 0775, true, true);
-                 if (!File::isWritable($targetDirAbsolute)) throw new Exception("General Marche directory not writable: {$targetDirAbsolute}");
+                 File::makeDirectory($targetDirAbsolute, 0775, true, true);
+                 
                  foreach ($uploadedGeneralFiles as $fileKey => $file) {
                     if ($file instanceof \Illuminate\Http\UploadedFile && $file->isValid()) {
-                        // ... (file move and FichierJoint creation is identical) ...
-                        $originalName = $file->getClientOriginalName(); $mimeType = $file->getClientMimeType() ?: 'application/octet-stream';
-                        $safeOriginalName = preg_replace('/[^A-Za-z0-9\._-]/', '_', $originalName); $generatedFilename = date('Ymd-His') . '_' . Str::random(5) . '_' . $safeOriginalName;
+                        $originalName = $file->getClientOriginalName();
+                        $safeOriginalName = preg_replace('/[^A-Za-z0-9\._-]/', '_', $originalName);
+                        $generatedFilename = date('Ymd-His') . '_' . Str::random(5) . '_' . $safeOriginalName;
                         $file->move($targetDirAbsolute, $generatedFilename);
                         $storedRelativePublicPath = $targetDirRelative . '/' . $generatedFilename;
-                        $storedGeneralFilePathsRelative[] = $storedRelativePublicPath;
-                        FichierJoint::create([ 'marche_id' => $marche->id, 'lot_id' => null, 'nom_fichier' => $originalName, 'chemin_fichier' => $storedRelativePublicPath, 'type_fichier' => $mimeType ]);
+                        $storedFilePathsRelative[] = $storedRelativePublicPath;
+
+                        // --- THIS BLOCK IS NOW CORRECTED ---
+                        FichierJoint::create([
+                            'marche_id' => $marche->id,
+                            'lot_id' => null,
+                            'nom_fichier' => $originalName,
+                            'intitule' => $request->input("intitule_general.{$fileKey}", $originalName),
+                            'categorie' => $request->input("categorie_general.{$fileKey}", 'autre'),
+                            'chemin_fichier' => $storedRelativePublicPath,
+                            'type_fichier' => $file->getClientMimeType() ?: 'application/octet-stream'
+                        ]);
                     }
                  }
             }
 
             DB::commit();
 
-            // Load relations for response
-            $marche->load('lots.fichiersJoints', 'fichiersJointsGeneraux', 'convention', 'appelOffre');
-
-            // --- Add Public URLs Manually to response --- <<< MODIFIED HERE
+            $marche->load('lots.fichiersJoints', 'fichiersJointsGeneraux', 'convention', 'appelOffre', 'projectable');
+            
+            // Add URLs manually for the response
             $appBaseUrl = rtrim(config('app.url', 'http://localhost:8000'), '/');
-             // Add URLs to the loaded Eloquent models *before* converting to array
-             if ($marche->relationLoaded('fichiersJointsGeneraux')) {
-                 $marche->fichiersJointsGeneraux->each(fn($f) => $f->url = $f->chemin_fichier ? "{$appBaseUrl}/" . ltrim($f->chemin_fichier, '/') : null);
-             }
-             if ($marche->relationLoaded('lots')) {
-                 $marche->lots->each(function($lot) use ($appBaseUrl) {
-                     if($lot->relationLoaded('fichiersJoints')) {
-                         $lot->fichiersJoints->each(fn($f) => $f->url = $f->chemin_fichier ? "{$appBaseUrl}/" . ltrim($f->chemin_fichier, '/') : null);
-                     }
-                 });
-             }
-             $responseData = $marche->toArray(); // Now convert to array
-             // --- End Add Public URLs ---
+            $marche->fichiersJointsGeneraux->each(fn($f) => $f->url = $f->chemin_fichier ? "{$appBaseUrl}/" . ltrim($f->chemin_fichier, '/') : null);
+            $marche->lots->each(function($lot) use ($appBaseUrl) {
+                $lot->fichiersJoints->each(fn($f) => $f->url = $f->chemin_fichier ? "{$appBaseUrl}/" . ltrim($f->chemin_fichier, '/') : null);
+            });
 
-            return response()->json(['message' => 'Marché, lots et fichiers créés avec succès.', 'marche_public' => $responseData], 201);
+            return response()->json(['message' => 'Marché, lots et fichiers créés avec succès.', 'marche_public' => $marche], 201);
 
         } catch (Throwable $e) {
              DB::rollBack();
-             Log::error("Error creating Marche Public (Direct Public): " . $e->getMessage() . "\nTrace: " . $e->getTraceAsString());
-             // Cleanup logic remains the same...
-            $allStoredRelativePaths = array_unique(array_merge($storedLotFilePathsRelative, $storedGeneralFilePathsRelative));
-            foreach ($allStoredRelativePaths as $relativePath) { /* ... cleanup ... */ }
-            $statusCode = ($e instanceof ValidationException) ? 422 : 500;
-            return response()->json(['message' => 'Erreur serveur lors de la création.', /* ... */ ], $statusCode);
+             Log::error("Error creating Marche Public: " . $e->getMessage() . "\nTrace: " . $e->getTraceAsString());
+             
+             // Cleanup any files that were physically created before the crash
+             foreach ($storedFilePathsRelative as $relativePath) {
+                $absolutePath = public_path($relativePath);
+                if (File::exists($absolutePath)) {
+                    File::delete($absolutePath);
+                }
+             }
+            
+             return response()->json(['message' => 'Erreur serveur lors de la création.'], 500);
         }
     }
 
@@ -254,7 +279,8 @@ class MarchePublicController extends Controller
     {
         Log::info("Fetching MarchePublic ID: {$marches_public->id} (Direct Public Storage - Manual URL)...");
         try {
-             $marches_public->load(['lots.fichiersJoints', 'fichiersJointsGeneraux', 'convention', 'appelOffre']);
+             $marches_public->load(['lots.fichiersJoints', 'fichiersJointsGeneraux', 'convention', 'appelOffre', 
+                'projectable']);
 
               // --- Add Public URLs Manually --- <<< MODIFIED HERE
              $appBaseUrl = rtrim(config('app.url', 'http://localhost:8000'), '/');
@@ -298,10 +324,11 @@ class MarchePublicController extends Controller
         $validationRules = [
             'numero_marche' => ['required','string','max:50', Rule::unique('marche_public','numero_marche')->ignore($marches_public->id)],
             'intitule' => 'required|string',
-            'type_marche' => ['required', Rule::in(['Travaux', 'Fournitures', 'Services','Etudes'])],
+            'type_marche' => ['required'],
             'procedure_passation' => 'nullable|string|max:100', // Make required if needed
-            'mode_passation' => 'nullable|string|max:100', // Make required if needed
+            'mode_passation' => 'nullable|string', // Make required if needed
             'budget_previsionnel' => 'nullable|numeric|min:0',
+            'projectable' => ['nullable', 'string', 'regex:/^(projet|sous-projet)_[a-zA-Z0-9-]+$/'],
             'montant_attribue' => 'nullable|numeric|min:0',
             'source_financement' => 'nullable|string|max:255',
             'attributaire' => 'nullable|string',
@@ -313,8 +340,6 @@ class MarchePublicController extends Controller
             'statut' => ['nullable', Rule::in(['En préparation', 'En cours', 'Terminé', 'Résilié'])],
             'id_convention' => ['nullable', 'integer'],
             'ref_appelOffre' => ['nullable', 'integer', Rule::exists('appel_offre', 'id')],
-            'date_ouverture_plis' => 'nullable|date_format:Y-m-d',
-            'date_fin_ouverture' => 'nullable|date_format:Y-m-d',
             'avancement_physique' => 'nullable|numeric|min:0|max:100',
             'avancement_financier' => 'nullable|numeric|min:0|max:100',
             'date_engagement_tresorerie' => 'nullable|date_format:Y-m-d',
@@ -338,7 +363,8 @@ class MarchePublicController extends Controller
         // --- Prepare Data & Decode JSON ---
         $marcheUpdateData = Arr::except($validatedData, [
             'lots_data', 'lot_files', 'general_files',
-            'general_fichiers_to_delete_ids', '_method' // _method is handled by Laravel routing
+            'general_fichiers_to_delete_ids', '_method',
+            'projectable'  // _method is handled by Laravel routing
         ]);
         Log::debug('Update Request - Marche Data Prepared:', $marcheUpdateData);
 
@@ -398,6 +424,16 @@ class MarchePublicController extends Controller
         DB::beginTransaction();
         Log::info("Update transaction started for ID: {$marches_public->id}");
         try {
+             if ($request->filled('projectable')) {
+                [$type, $id] = explode('_', $request->input('projectable'));
+                $modelClass = $type === 'projet' ? Projet::class : SousProjet::class;
+                $marcheUpdateData['projectable_type'] = $modelClass;
+                $marcheUpdateData['projectable_id'] = $id;
+            } else {
+                // If the field is submitted but empty, unset the relationship
+                $marcheUpdateData['projectable_type'] = null;
+                $marcheUpdateData['projectable_id'] = null;
+            }
             // --- Update Marche Public Data ---
             Log::debug('Update Request - Updating MarchePublic model...');
             $marches_public->update($marcheUpdateData); // Use filtered data
@@ -486,6 +522,8 @@ class MarchePublicController extends Controller
                                  FichierJoint::create([
                                      'marche_id' => $marches_public->id, 'lot_id' => $currentLot->id,
                                      'nom_fichier' => $originalName, 'chemin_fichier' => $storedRelativePublicPath,
+                                     'intitule' => $request->input("intitule_lot.{$index}.{$fileKey}", $originalName),
+                                     'categorie' => $request->input("categorie_lot.{$index}.{$fileKey}", 'autre'),
                                      'type_fichier' => $mimeType,
                                  ]);
                                   Log::info("Created FichierJoint DB record for new lot file.");
@@ -532,6 +570,8 @@ class MarchePublicController extends Controller
                              FichierJoint::create([
                                  'marche_id' => $marches_public->id, 'lot_id' => null,
                                  'nom_fichier' => $originalName, 'chemin_fichier' => $storedRelativePublicPath,
+                                 'intitule' => $request->input("intitule_general.{$fileKey}", $originalName),
+                                 'categorie' => $request->input("categorie_general.{$fileKey}", 'autre'),
                                  'type_fichier' => $mimeType,
                              ]);
                               Log::info("Created FichierJoint DB record for new general file.");

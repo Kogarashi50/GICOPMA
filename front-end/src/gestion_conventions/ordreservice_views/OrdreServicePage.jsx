@@ -8,19 +8,21 @@ import OrdreServiceVisualisation from './OrdreServiceVisualisation'; // Componen
 
 // --- UI & Utilities ---
 import Select from 'react-select';
-import { Badge, Form, Button } from 'react-bootstrap';
+// MODIFIED IMPORT: Added Dropdown
+import { Badge, Form, Button, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    faTimes, faLink, faPlayCircle, faStopCircle, faFileSignature, faPaperclip, faFileContract
+    faTimes, faSyncAlt, faPlayCircle, faStopCircle, faFileSignature, faPaperclip, faFileContract
 } from '@fortawesome/free-solid-svg-icons';
 
 // --- Constants & Helpers ---
 const BASE_API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 const TYPE_OPTIONS = [
     { value: 'commencement', label: 'Commencement' },
-    { value: 'arret', label: 'Arrêt' }
+    { value: 'arret', label: 'Arrêt' },
+    { value: 'reprise', label: 'Ordre de Service de Reprise' }
 ];
-// Helper: Formats date string (e.g., YYYY-MM-DD HH:MM:SS) to DD/MM/YYYY
+
 const formatDate = (dateString) => {
     if (!dateString) return '-';
     try {
@@ -34,53 +36,39 @@ const formatDate = (dateString) => {
     }
 };
 
-// Helper: Gets display properties (label, icon, color) for OrdreService type
 const getTypeDisplay = (typeValue) => {
     switch (typeValue) {
         case 'commencement': return { label: 'Commencement', icon: faPlayCircle, color: 'success' };
         case 'arret': return { label: 'Arrêt', icon: faStopCircle, color: 'danger' };
+        case 'reprise': return { label: 'Reprise', icon: faSyncAlt, color: 'primary' };
         default: return { label: typeValue || 'N/A', icon: faFileSignature, color: 'secondary' };
     }
 };
-
-// *** REMOVED the incorrect getPublicFileUrl helper function ***
-
 // --- End Helpers ---
 
 
 // --- Main Page Component ---
 const OrdreServicePage = () => {
 
-    // State for Marche Public options used in the filter dropdown
     const [marcheOptions, setMarcheOptions] = useState([]);
     const [loadingMarcheOptions, setLoadingMarcheOptions] = useState(true);
 
-    // --- Effect to Fetch Marche Public Options for Filtering ---
     useEffect(() => {
         let isMounted = true;
         setLoadingMarcheOptions(true);
-        console.log("OrdreServicePage: Fetching Marche options for filter...");
-        // Fetch a simplified list of Marches - adjust endpoint/params as needed
         axios.get(`${BASE_API_URL}/marches-publics?fields=id,numero_marche,intitule`)
             .then(response => {
                 if (!isMounted) return;
-                const options = (response.data?.marches_publics || response.data || []).map(m => ({
+                const options = (response.data?.marches_publics || response.data?.data || response.data || []).map(m => ({
                     value: m.id,
                     label: `${m.numero_marche} - ${m.intitule}`.substring(0, 100) + (m.intitule.length > 100 ? '...' : '')
                 }));
                 setMarcheOptions(options);
-                console.log(`Fetched ${options.length} Marche options for filter.`);
             })
-            .catch(error => {
-                if (!isMounted) return;
-                console.error("Error fetching Marche options for filter:", error);
-                setMarcheOptions([]);
-            })
-            .finally(() => {
-                if (isMounted) setLoadingMarcheOptions(false);
-            });
+            .catch(error => { if (isMounted) console.error("Error fetching Marche options for filter:", error); })
+            .finally(() => { if (isMounted) setLoadingMarcheOptions(false); });
         return () => { isMounted = false; };
-    }, []); // Runs once on component mount
+    }, []);
 
     // --- Column Definitions for the DynamicTable ---
     const ordreColumns = useMemo(() => [
@@ -132,43 +120,70 @@ const OrdreServicePage = () => {
             meta: { align: 'center', enableGlobalFilter: false }
         },
         {
-            // Keep accessorKey as 'fichier_joint' to get the original relative path for filename extraction
-            accessorKey: 'fichier_joint',
-            header: 'Fichier',
-            size: 80,
+            // ===================================================================
+            // === MODIFIED COLUMN FOR HANDLING MULTIPLE FILES ===
+            // ===================================================================
+            accessorKey: 'fichiers', // Use the new 'fichiers' array from the API
+            header: 'Fichiers Joints',
+            size: 100,
             enableSorting: false,
-            // *** MODIFIED cell renderer ***
             cell: info => {
-                 // Get the full original data for the row to access BOTH path and URL
-                 const rowData = info.row.original;
-                 const relativePath = rowData.fichier_joint; // Get relative path from original accessor key
-                 const url = rowData.fichier_joint_url; // <<< Get the full URL provided by the backend
-                 const name = relativePath ? relativePath.split('/').pop() : null; // Extract filename from relative path
+                const fichiers = info.getValue(); // This will be the array of file objects
 
-                 return url ? ( // Use the backend-provided URL for the link
-                     <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-secondary p-1" title={name || 'Voir fichier'}>
-                         <FontAwesomeIcon icon={faPaperclip} />
-                     </a>
-                 ) : (
-                    <span className='text-muted'>-</span>
-                 );
+                // Case 1: No files
+                if (!fichiers || fichiers.length === 0) {
+                    return <span className='text-muted'>-</span>;
+                }
+
+                // Case 2: Exactly one file - show a direct link
+                if (fichiers.length === 1) {
+                    const file = fichiers[0];
+                    return (
+                        <a href={file.url} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-secondary p-1" title={file.intitule || file.nom_fichier}>
+                            <FontAwesomeIcon icon={faPaperclip} />
+                        </a>
+                    );
+                }
+
+                // Case 3: Multiple files - show a dropdown
+                return (
+                    <Dropdown>
+                        <Dropdown.Toggle variant="secondary" size="sm" className="p-1">
+                            <FontAwesomeIcon icon={faPaperclip} />
+                            <Badge pill bg="dark" className="ms-1">{fichiers.length}</Badge>
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu align="end">
+                            {fichiers.map(file => (
+                                <Dropdown.Item
+                                    key={file.id}
+                                    as="a"
+                                    href={file.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-truncate"
+                                    style={{maxWidth: '250px'}}
+                                >
+                                    {file.intitule || file.nom_fichier}
+                                </Dropdown.Item>
+                            ))}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                );
             },
             meta: { align: 'center', enableGlobalFilter: false },
         },
-    ], []); // Removed BASE_API_URL dependency as helper is gone
+    ], []);
 
-    // --- Filter Rendering Function for DynamicTable ---
     const renderOrdreFilters = useCallback((table) => {
         if (!table) return null;
-
         const marcheColumn = table.getColumn('marche_public');
         const typeColumn = table.getColumn('type');
         const isAnyColumnFiltered = table.getState().columnFilters.length > 0;
 
         return (
             <Form>
-                {/* Marche Public Filter Dropdown */}
-                <Form.Group controlId="filterMarche" className="mb-3">
+               <Form.Group controlId="filterMarche" className="mb-3">
                    <Form.Label className="small mb-1 fw-bold">Filtrer par Marché Public</Form.Label>
                    <Select
                        inputId="filterMarcheSelect"
@@ -184,8 +199,6 @@ const OrdreServicePage = () => {
                        aria-label="Filtrer par marché public"
                    />
                 </Form.Group>
-
-                {/* Type Filter Dropdown */}
                  <Form.Group controlId="filterTypeOrdre" className="mb-3">
                     <Form.Label className="small mb-1 fw-bold">Filtrer par Type</Form.Label>
                     <Select
@@ -200,20 +213,12 @@ const OrdreServicePage = () => {
                        aria-label="Filtrer par type d'ordre"
                    />
                  </Form.Group>
-
-                {/* Button to Reset Column Filters */}
-                <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={() => table.resetColumnFilters()}
-                    disabled={!isAnyColumnFiltered}
-                    className="w-100 mt-3"
-                >
+                <Button variant="outline-secondary" size="sm" onClick={() => table.resetColumnFilters()} disabled={!isAnyColumnFiltered} className="w-100 mt-3">
                    <FontAwesomeIcon icon={faTimes} className="me-2"/> Réinitialiser les Filtres
                 </Button>
             </Form>
         );
-    }, [marcheOptions, loadingMarcheOptions]); // Dependencies
+    }, [marcheOptions, loadingMarcheOptions]);
 
 
     // --- DynamicTable Configuration ---
@@ -222,47 +227,33 @@ const OrdreServicePage = () => {
         'numero',
         'type',
         'date_emission',
-        'fichier_joint', // The column showing the link
+        'fichiers', // <-- MODIFIED: Update the column key here
         'actions'
     ], []);
 
-    // --- Component Return ---
     return (
         <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
             <DynamicTable
-                // --- API Endpoints & Data Handling ---
                 fetchUrl="/ordres-service"
-                // *** IMPORTANT: Ensure this dataKey matches your backend pagination response ***
-                // If the backend returns { "data": [...], "links": ..., "meta": ... }, use "data"
-                // If it returns { "ordres": [...], ... }, use "ordres"
-                dataKey="data" // Default for Laravel pagination response
-                totalCountKey="meta.total" // Key for total items count in pagination response
-                // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+                dataKey="data"
+                totalCountKey="meta.total"
                 deleteUrlBase="/ordres-service"
                 baseApiUrl={BASE_API_URL}
-
-                // --- Data Configuration ---
                 columns={ordreColumns}
                 itemName="Ordre de Service"
                 itemNamePlural="Ordres de Service"
                 identifierKey="id"
                 displayKeyForDelete="numero"
-
-                // --- Table Features ---
-                itemsPerPage={10} // Or your preferred default
+                itemsPerPage={10}
                 defaultVisibleColumns={defaultVisibleCols}
                 renderFilters={renderOrdreFilters}
                 enableGlobalSearch={true}
                 enableColumnFilters={true}
-                enablePagination={true} // Ensure pagination is enabled
-                enableSorting={true}    // Enable backend sorting
-
-                // --- CRUD Components ---
+                enablePagination={true}
+                enableSorting={true}
                 CreateComponent={OrdreServiceForm}
-                ViewComponent={OrdreServiceVisualisation}
+                ViewComponent={OrdreServiceVisualisation} // Note: This component may also need updating
                 EditComponent={OrdreServiceForm}
-
-                // --- Styling & Layout ---
                 actionColumnWidth={90}
                 tableClassName="table-striped table-hover"
             />

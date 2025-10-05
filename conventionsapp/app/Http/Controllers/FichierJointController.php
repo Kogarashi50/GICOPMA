@@ -21,6 +21,24 @@ class FichierJointController extends Controller
      * Display files for a specific MarchePublic.
      * GET /api/marches-publics/{marche}/fichiers
      */
+    public function updateMetadata(Request $request, FichierJoint $fichier_joint)
+    {
+        // Optionnel : Ajoutez une politique de sécurité pour vérifier que l'utilisateur a le droit de modifier ce fichier.
+        // $this->authorize('update', $fichier_joint);
+
+        $validatedData = $request->validate([
+            'intitule' => 'required|string|max:255',
+            // Validez contre une liste fixe de catégories pour la sécurité
+            'categorie' => ['required', 'string']
+        ]);
+
+        $fichier_joint->update($validatedData);
+
+        return response()->json([
+            'message' => 'Les informations du fichier ont été mises à jour.',
+            'fichier_joint' => $fichier_joint
+        ]);
+    }
     public function indexForMarche(MarchePublic $marche)
     {
          try {
@@ -110,7 +128,12 @@ class FichierJointController extends Controller
         }
     }
 
-
+public function update(Request $request, FichierJoint $fichierJoint)
+    {
+        $validated = $request->validate(['intitule' => 'required|string|max:255']);
+        $fichierJoint->update($validated);
+        return response()->json(['message' => 'Fichier mis à jour.', 'fichier_joint' => $fichierJoint]);
+    }
     /**
      * Provide file for download.
      * GET /api/fichiers-telecharger/{fichier_joint}

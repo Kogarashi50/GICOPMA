@@ -630,6 +630,8 @@ const renderYearlyBreakdown = (engagements) => {
                       appBaseUrl && doc.file_path ? `${appBaseUrl}/${doc.file_path.replace(/^\\/, "")}` : doc.url
                     const fileIcon = getFileIcon(doc.file_type || doc.file_name)
                     const fileSizeMB = doc.file_size ? (doc.file_size / 1024 / 1024).toFixed(2) : null
+                    const mainTitle = doc.Intitule || doc.file_name || 'Fichier'
+                    const secondaryTitle = doc.Intitule ? (doc.file_name || '') : ''
                     return (
                       <div
                         key={doc.Id_Doc}
@@ -657,18 +659,17 @@ const renderYearlyBreakdown = (engagements) => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="link-light text-decoration-none fw-medium stretched-link"
-                                title={`Ouvrir: ${displayData(doc.file_name, "Fichier")}`}
+                                title={`Ouvrir: ${displayData(mainTitle, "Fichier")}`}
                               >
-                                {displayData(doc.file_name, "Fichier sans nom")}
+                                {displayData(mainTitle, "Fichier sans nom")}
                               </a>
                             ) : (
-                              <span className="text-white fw-medium" title={displayData(doc.file_name, "")}>
-                                {displayData(doc.file_name, "Fichier (lien indisponible)")}
+                              <span className="text-white fw-medium" title={displayData(mainTitle, "")}>
+                                {displayData(mainTitle, "Fichier (lien indisponible)")}
                               </span>
                             )}
                             <small className="d-block text-warning">
-                              {displayData(doc.Intitule, "")} {doc.Intitule && fileSizeMB ? " - " : ""}{" "}
-                              {fileSizeMB ? `${fileSizeMB} Mo` : ""}
+                              {secondaryTitle || ''}{secondaryTitle && fileSizeMB ? ' - ' : ''}{fileSizeMB ? `${fileSizeMB} Mo` : ''}
                             </small>
                           </div>
                           {fileDisplayUrl && (
