@@ -56,7 +56,6 @@ class VersementCPController extends Controller
     /**
      * Store a newly created payment record.
      * Includes check to prevent exceeding Montant Convenu.
-     * MERGED: Using Code 1's validation ('moyen_paiement' is required).
      *
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -66,13 +65,11 @@ class VersementCPController extends Controller
         Log::info("API: Tentative création versement.");
         Log::debug("Store VersementCP request data:", $request->all());
 
-        // --- 1. Basic Validation (Using Code 1's 'required' for moyen_paiement) ---
         $validator = Validator::make($request->all(), [
             'id_CP'              => ['required', 'integer', Rule::exists('convention_partenaire', 'Id_CP')],
             'date_versement'     => 'required|date_format:Y-m-d',
             'montant_verse'      => ['required', 'numeric', 'min:0.01', 'regex:/^\d+(\.\d{1,2})?$/'], // Positive, max 2 decimal places
-            'moyen_paiement'     => 'required|string|max:50', // <<< MERGED: Kept 'required' from Code 1
-            'reference_paiement' => 'nullable|string|max:100',
+           
             'commentaire'        => 'nullable|string|max:65535',
         ], [
             // French messages (examples)
@@ -84,8 +81,7 @@ class VersementCPController extends Controller
             'montant_verse.numeric' => 'Le montant versé doit être un nombre.',
             'montant_verse.min' => 'Le montant versé doit être positif.',
             'montant_verse.regex' => 'Le montant versé peut avoir au maximum 2 décimales.',
-            'moyen_paiement.required' => 'Le moyen de paiement est obligatoire.', // Message for required
-            'moyen_paiement.max' => 'Le moyen de paiement ne doit pas dépasser :max caractères.',
+          
             'reference_paiement.max' => 'La référence de paiement ne doit pas dépasser :max caractères.',
         ]);
 
@@ -184,7 +180,6 @@ class VersementCPController extends Controller
 
     /**
      * Update the specified payment record in storage.
-     * MERGED: Using Code 1's validation ('moyen_paiement' is sometimes|required). Added ModelNotFoundException catch.
      */
     public function update(Request $request, string $id): JsonResponse // Accept ID as string from route
     {
@@ -195,12 +190,10 @@ class VersementCPController extends Controller
             // Find the record first
             $versement = VersementCP::findOrFail($id);
 
-            // Validation (Using Code 1's 'sometimes|required' for moyen_paiement)
             $validator = Validator::make($request->all(), [
                 'date_versement'     => 'sometimes|required|date_format:Y-m-d',
                 'montant_verse'      => ['sometimes','required','numeric','min:0.01','regex:/^\d+(\.\d{1,2})?$/'],
-                'moyen_paiement'     => 'sometimes|required|string|max:50', // <<< MERGED: Kept 'sometimes|required'
-                'reference_paiement' => 'nullable|string|max:100',
+                
                 'commentaire'        => 'nullable|string|max:65535',
                 // id_CP should not be updatable here
             ], [

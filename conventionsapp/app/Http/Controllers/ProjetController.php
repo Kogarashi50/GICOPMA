@@ -188,7 +188,6 @@ class ProjetController extends Controller
             'engagements.*.partenaire_id' => ['required', 'integer', Rule::exists('partenaire', 'Id')], // Assuming table 'partenaire', PK 'Id'
             'engagements.*.montant_engage' => 'required|numeric|min:0',
             'engagements.*.date_engagement' => 'required|date_format:Y-m-d', // Ensure frontend sends this format
-            'engagements.*.est_formalise' => 'required|boolean',
             'engagements.*.commentaire' => 'nullable|string|max:65535',
         ];
 
@@ -254,8 +253,6 @@ $validationMessages = [
             'engagements.*.date_engagement.required' => 'La date d\'engagement est requise pour chaque engagement.',
             'engagements.*.date_engagement.date_format' => 'Le format de la date d\'engagement est invalide (AAAA-MM-JJ) pour chaque engagement.',
 
-            'engagements.*.est_formalise.required' => 'Le statut "Formalisé" est requis pour chaque engagement.',
-            'engagements.*.est_formalise.boolean' => 'La valeur pour "Formalisé" est invalide pour chaque engagement.',
 
             'engagements.*.commentaire.string' => 'Le commentaire pour l\'engagement doit être une chaîne de caractères.',
             'engagements.*.commentaire.max' => 'Le commentaire pour l\'engagement ne doit pas dépasser :max caractères.',
@@ -290,8 +287,8 @@ $validationMessages = [
             $projetInputData = collect($validatedData)->except('engagements')->all();
 
             // Create the projet
-            // Ensure Projet model has $primaryKey = 'ID_Projet' if not 'id', and $fillable allows these fields
-            $projet = Projet::create($projetInputData);
+            // Ensure Projet model has $primaryKey = 'ID_Projet' if not 'id', and $fillable allows these field
+            $projet->update($projetInputData);
             Log::info("Projet created with ID_Projet: {$projet->ID_Projet}");
 
             // Create engagements if any
@@ -343,7 +340,7 @@ $validationMessages = [
             'Code_Projet' => [
                 'required',
                 'integer',
-                Rule::unique('projet', 'Code_Projet')->ignore($projet->ID_Projet, 'ID_Projet') // Table 'projet', PK 'ID_Projet'
+                Rule::unique('projet', 'Code_Projet')->ignore($projet->ID_Projet, 'ID_Projet')
             ],
             'Nom_Projet' => 'required|string|max:65535',
             //'Id_Domaine' => ['required', 'integer', Rule::exists('domaine', 'Id')],
@@ -372,7 +369,6 @@ $validationMessages = [
             'engagements.*.partenaire_id' => ['required', 'integer', Rule::exists('partenaire', 'Id')], // PK of 'partenaire' table
             'engagements.*.montant_engage' => 'required|numeric|min:0',
             'engagements.*.date_engagement' => 'required|date_format:Y-m-d',
-            'engagements.*.est_formalise' => 'required|boolean',
             'engagements.*.commentaire' => 'nullable|string|max:65535',
             'confirm_cascade_delete' => 'sometimes|boolean', // For confirming deletion of engagements with versements
         ];
@@ -439,8 +435,6 @@ $validationMessages = [
             'engagements.*.date_engagement.required' => 'La date d\'engagement est requise pour chaque engagement.',
             'engagements.*.date_engagement.date_format' => 'Le format de la date d\'engagement est invalide (AAAA-MM-JJ) pour chaque engagement.',
 
-            'engagements.*.est_formalise.required' => 'Le statut "Formalisé" est requis pour chaque engagement.',
-            'engagements.*.est_formalise.boolean' => 'La valeur pour "Formalisé" est invalide pour chaque engagement.',
 
             'engagements.*.commentaire.string' => 'Le commentaire pour l\'engagement doit être une chaîne de caractères.',
             'engagements.*.commentaire.max' => 'Le commentaire pour l\'engagement ne doit pas dépasser :max caractères.',
@@ -464,12 +458,12 @@ $validationMessages = [
 
         DB::beginTransaction();
         try {
-             $projetInputData = collect($validatedData)->except(['engagements', 'province_ids', 'commune_ids', 'confirm_cascade_delete'])->all();
-            $projet->update($projetInputData);
-            
+            $projetInputData = collect($validatedData)->except(['engagements', 'province_ids', 'commune_ids', 'confirm_cascade_delete'])->all();
+        
+        $projet->update($projetInputData);
             // Sync relationships - sync() handles add/update/delete automatically
             $projet->provinces()->sync($validatedData['province_ids'] ?? []);
-            $projet->communes()->sync($validatedData['commune_ids'] ?? []);
+        $projet->communes()->sync($validatedData['commune_ids'] ?? []);
             // Prepare data for projet update (excluding engagements and confirmation flag)
             $projetInputData = collect($validatedData)->except(['engagements', 'confirm_cascade_delete'])->all();
             $projet->update($projetInputData);

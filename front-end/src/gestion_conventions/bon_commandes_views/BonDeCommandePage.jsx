@@ -138,7 +138,7 @@ const BonDeCommandePage = () => {
 
     // Exclude fields not suitable for global search or direct display
     const searchExclusions = useMemo(() => [
-        'id', 'marche_id', 'contrat_id', 'updated_at', 'mode_paiement',
+        'id', 'marche_id', 'contrat_id', 'updated_at', 
         'contrat', // The full contrat object if loaded
     ], []);
 

@@ -55,7 +55,6 @@ class EngagementFinancier extends Model
         'projet_id',
         'partenaire_id',
         'montant_engage',
-        'est_formalise',
         'commentaire',
         'date_engagement',
     ];
@@ -67,7 +66,6 @@ class EngagementFinancier extends Model
      */
     protected $casts = [
         'montant_engage' => 'decimal:2', // Casts to float/string depending on driver, ensures 2 decimal places on retrieval/setting
-        'est_formalise' => 'boolean',
         'date_engagement' => 'date', // Casts to Carbon instance
     ];
 

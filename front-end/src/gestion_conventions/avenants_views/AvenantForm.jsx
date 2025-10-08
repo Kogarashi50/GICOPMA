@@ -1,4 +1,4 @@
-// src/gestion_conventions/avenants_views/AvenantForm.jsx (or your actual path)
+// src/gestion_conventions/avenants_views/AvenantForm.jsx
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
@@ -13,7 +13,7 @@ import Select from 'react-select';
 import {
     Form, Button, Row, Col, Card, Alert, Spinner,
     InputGroup, FormCheck, ListGroup, Badge, Stack,
-    ToggleButtonGroup, ToggleButton
+    ToggleButtonGroup, ToggleButton, Modal
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 
@@ -75,7 +75,7 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
         objet: '', 
         type_modification: null, 
         montant_modifie: '',
-        annee_avenant: new Date().getFullYear(), // Default to current year
+        annee_avenant: new Date().getFullYear(),
         session: '',
         numero_approbation: '',
         statut: null,
@@ -93,6 +93,7 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
     const [fichiers, setFichiers] = useState([]);
     const [existingFichiers, setExistingFichiers] = useState([]);
     const [fichiersToDelete, setFichiersToDelete] = useState([]);
+    const [editingFile, setEditingFile] = useState(null);
     const [loadingOptions, setLoadingOptions] = useState({ conventions: true, partenaires: true, fonctionnaires: true });
     const [submissionStatus, setSubmissionStatus] = useState({ loading: false, error: null, success: false });
     const [formErrors, setFormErrors] = useState({});
@@ -100,10 +101,10 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
     const isEditing = useMemo(() => itemId !== null, [itemId]);
     const optionsFinishedLoading = useMemo(() => !loadingOptions.conventions && !loadingOptions.partenaires && !loadingOptions.fonctionnaires, [loadingOptions]);
     const storageBaseUrl = useMemo(() => baseApiUrl.replace('/api', ''), [baseApiUrl]);
-    const [selectedConventionDetails, setSelectedConventionDetails] = useState(null); // <<< ADD THIS LINE
+    const [selectedConventionDetails, setSelectedConventionDetails] = useState(null);
+const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold border-0';
 
     const fetchOptions = useCallback(async () => {
-        console.log("AvenantForm: Fetching options using /api/options/...");
         setLoadingOptions({ conventions: true, partenaires: true, fonctionnaires: true });
         try {
             const [convRes, partRes, foncRes] = await Promise.all([
@@ -112,109 +113,96 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
                 axios.get(`${baseApiUrl}/options/fonctionnaires`, { withCredentials: true })
             ]);
 
-            const conventionsData = convRes.data || [];
-            const mappedConvOptions = Array.isArray(conventionsData) ? conventionsData
-                .filter(c => c?.value !== undefined && c?.label !== undefined)
-                .sort((a, b) => String(a.label).localeCompare(String(b.label), undefined, { sensitivity: 'base' })) : [];
+            const mappedConvOptions = (convRes.data || []).filter(c => c?.value !== undefined && c?.label !== undefined).sort((a, b) => String(a.label).localeCompare(String(b.label), undefined, { sensitivity: 'base' }));
             setConventionOptions(mappedConvOptions);
 
-            const partenairesData = partRes.data || [];
-            const mappedPartOptions = Array.isArray(partenairesData) ? partenairesData
-                .filter(p => p?.value !== undefined && p?.label !== undefined)
-                .sort((a, b) => String(a.label).localeCompare(String(b.label), undefined, { sensitivity: 'base' })) : [];
+            const mappedPartOptions = (partRes.data || []).filter(p => p?.value !== undefined && p?.label !== undefined).sort((a, b) => String(a.label).localeCompare(String(b.label), undefined, { sensitivity: 'base' }));
             setPartenaireOptions(mappedPartOptions);
-
+            
             const foncDataResponse = foncRes.data || {};
-            let rawFoncData = [];
-            if (foncDataResponse.fonctionnaires && Array.isArray(foncDataResponse.fonctionnaires)) {
-                rawFoncData = foncDataResponse.fonctionnaires;
-            } else if (Array.isArray(foncDataResponse)) {
-                rawFoncData = foncDataResponse;
-            }
+            let rawFoncData = foncDataResponse.fonctionnaires && Array.isArray(foncDataResponse.fonctionnaires) ? foncDataResponse.fonctionnaires : (Array.isArray(foncDataResponse) ? foncDataResponse : []);
             const mappedFoncOptions = rawFoncData.map(f => ({
                 value: f.id || f.value,
                 label: f.nom_complet || f.label || `Fonctionnaire ID ${f.id || f.value}`
-            })).filter(f => f.value !== undefined && f.label !== undefined)
-               .sort((a, b) => String(a.label).localeCompare(String(b.label)));
+            })).filter(f => f.value !== undefined && f.label !== undefined).sort((a, b) => String(a.label).localeCompare(String(b.label)));
             setFonctionnairesOptions(mappedFoncOptions);
 
         } catch (err) {
             console.error("AvenantForm: Erreur chargement options:", err.response || err);
-            const errorMessage = err.response?.data?.message || "Erreur chargement des listes pour le formulaire.";
-            setSubmissionStatus(prev => ({ ...prev, error: errorMessage, loading: false }));
-            setConventionOptions([]); setPartenaireOptions([]); setFonctionnairesOptions([]);
+            setSubmissionStatus(prev => ({ ...prev, error: "Erreur chargement des listes.", loading: false }));
         } finally {
             setLoadingOptions({ conventions: false, partenaires: false, fonctionnaires: false });
-            console.log("AvenantForm: Finished fetching options.");
         }
     }, [baseApiUrl]);
 
     useEffect(() => { fetchOptions(); }, [fetchOptions]);
-// In AvenantForm.jsx, after your other useEffect hooks
-
 
     useEffect(() => {
         if (!isEditing || !itemId || !optionsFinishedLoading) { setLoadingData(false); return; }
         let isMounted = true;
         const fetchAvenantData = async () => {
-            console.log(`[Avenant Form] Fetching edit data ID: ${itemId}`);
-            setLoadingData(true); setSubmissionStatus({ loading: false, error: null, success: false }); setFormErrors({});
-            setExistingFichiers([]); setFichiers([]); setFichiersToDelete([]); setAvenantPartnerDetails([]);
-            setFormData(prev => ({ ...prev, fonctionnaires: [] }));
+            setLoadingData(true);
+            setSubmissionStatus({ loading: false, error: null, success: false });
+            setFormErrors({});
             try {
                 const response = await axios.get(`${baseApiUrl}/avenants/${itemId}`, { params: { include: 'convention,documents,partnerCommitments.partenaire,partnerCommitments.engagementsAnnuels' }, withCredentials: true });
-                const data = response.data.avenant || response.data;
+                if (!isMounted) return;
 
-                if (!isMounted || !data) { if(isMounted) throw new Error("Avenant non trouvé ou données invalides."); return; }
+                const data = response.data.avenant || response.data;
                 if (data.convention) {
-            setSelectedConventionDetails({
-                Annee_Convention: data.convention.Annee_Convention,
-                duree_convention: data.convention.duree_convention
-            });
-            console.log("Convention details set from included data.");
-        } 
-        // As a fallback, if it wasn't included, fetch it separately.
-        else if (data.convention_id) {
-            try {
-                const convResponse = await axios.get(`${baseApiUrl}/conventions/${data.convention_id}`, { withCredentials: true });
-                const details = convResponse.data.convention || convResponse.data;
-                setSelectedConventionDetails({
-                    Annee_Convention: details.Annee_Convention,
-                    duree_convention: details.duree_convention
-                });
-                console.log("Convention details fetched separately as fallback.");
-            } catch (convError) {
-                console.error("Fallback failed to fetch convention details:", convError);
-                setSelectedConventionDetails(null);
-            }
-        }
-                const findOption = (options, valueToFind, valueKey = 'value') => { if (valueToFind === null || valueToFind === undefined || !options || options.length === 0) return null; const valueStr = String(valueToFind).toLowerCase(); return options.find(opt => String(opt[valueKey]).toLowerCase() === valueStr) || null; };
-                const findMultiOptionsLocal = (options, valuesString) => { if (!valuesString || typeof valuesString !== 'string' || !options?.length) return []; const selectedValues = valuesString.split(';').map(v => String(v).trim().toLowerCase()).filter(v => v); return options.filter(opt => selectedValues.includes(String(opt.value).toLowerCase())); };
-                const selectedTypeOption = findOption(typeModificationOptions, data.type_modification);
-                const fonctionnaireIdString = data.id_fonctionnaire;
-                const selectedFonctionnaireOptions = findMultiOptionsLocal(fonctionnairesOptions, fonctionnaireIdString);
-                const selectedStatutOption = findOption(STATUT_OPTIONS, data.statut);
+                    setSelectedConventionDetails({
+                        Annee_Convention: data.convention.Annee_Convention,
+                        duree_convention: data.convention.duree_convention
+                    });
+                } else if (data.convention_id) {
+                    try {
+                        const convResponse = await axios.get(`${baseApiUrl}/conventions/${data.convention_id}`, { withCredentials: true });
+                        const details = convResponse.data.convention || convResponse.data;
+                        setSelectedConventionDetails({
+                            Annee_Convention: details.Annee_Convention,
+                            duree_convention: details.duree_convention
+                        });
+                    } catch (convError) {
+                        console.error("Fallback failed to fetch convention details:", convError);
+                        setSelectedConventionDetails(null);
+                    }
+                }
+                const findOption = (options, value) => options.find(opt => String(opt.value).toLowerCase() === String(value).toLowerCase()) || null;
+                const findMultiOptions = (options, valuesStr) => {
+                    if (!valuesStr || !options?.length) return [];
+                    const selectedValues = String(valuesStr).split(';').map(v => v.trim().toLowerCase());
+                    return options.filter(opt => selectedValues.includes(String(opt.value).toLowerCase()));
+                };
+
                 setFormData({
-                    convention_id: data.convention_id || initialFormData.convention_id,
+                    convention_id: data.convention_id || '',
                     numero_avenant: data.numero_avenant || '',
                     date_signature: data.date_signature || '',
                     objet: data.objet || '',
                     annee_avenant: data.annee_avenant || new Date().getFullYear(),
                     session: data.session || '',
                     numero_approbation: data.numero_approbation || '',
-                    statut: selectedStatutOption,
+                    statut: findOption(STATUT_OPTIONS, data.statut),
                     date_visa: data.date_visa || '',
-                    type_modification: selectedTypeOption,
+                    type_modification: findOption(TYPE_MODIFICATION_OPTIONS, data.type_modification),
                     montant_modifie: data.montant_modifie != null ? String(data.montant_modifie) : '',
                     nouvelle_date_fin: data.nouvelle_date_fin || '',
                     remarques: data.remarques || '',
-                    fonctionnaires: selectedFonctionnaireOptions,
+                    fonctionnaires: findMultiOptions(fonctionnairesOptions, data.id_fonctionnaire),
                 });
+
+                // --- FIX: Store existing files with their primary key `id` for reliable updates/deletes ---
                 const fetchedFiles = Array.isArray(data.documents) ? data.documents : [];
-                setExistingFichiers(fetchedFiles.map(f => ({ id: f.Id_Doc || f.id, file_name: f.file_name || f.nom_fichier, fichier_url: f.fichier_url || `${storageBaseUrl}/${f.file_path}` })));
-                const fetchedCommitments = data.partner_commitments || [];
-                if (Array.isArray(fetchedCommitments) && selectedTypeOption?.value === 'partenaire') {
-                    const initialPartnerDetails = fetchedCommitments.map((commit) => {
+                setExistingFichiers(fetchedFiles.map(f => ({
+                    id: f.id, // The primary key from the database
+                    Id_Doc: f.Id_Doc, // The unique string identifier
+                    file_name: f.file_name || f.nom_fichier,
+                    fichier_url: f.fichier_url || `${storageBaseUrl}/${f.file_path}`,
+                    intitule: f.Intitule || f.intitule || ''
+                })));
+
+                if (Array.isArray(data.partner_commitments) && data.type_modification === 'partenaire') {
+                    const initialPartnerDetails = data.partner_commitments.map(commit => {
                         const partnerOption = partenaireOptions.find(opt => opt.value === commit.Id_Partenaire);
                         return {
                             id: commit.Id_Partenaire,
@@ -227,19 +215,28 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
                             date_signature: commit.date_signature || '',
                             details_signature: commit.details_signature || ''
                         };
-                    }).filter(p => p && p.id);
+                    }).filter(p => p?.id);
                     setAvenantPartnerDetails(initialPartnerDetails);
-                } else { setAvenantPartnerDetails([]); }
-                setFichiers([]); setFichiersToDelete([]);
-            } catch (err) { console.error("Erreur chargement données avenant:", err.response?.data || err.message || err); if (isMounted) setSubmissionStatus({ loading: false, error: err.response?.data?.message || err.message || "Erreur chargement données.", success: false }); }
-            finally { if (isMounted) setLoadingData(false); }
+                } else {
+                    setAvenantPartnerDetails([]);
+                }
+                
+                setFichiers([]);
+                setFichiersToDelete([]);
+
+            } catch (err) {
+                if (isMounted) setSubmissionStatus({ loading: false, error: "Erreur chargement des données.", success: false });
+            } finally {
+                if (isMounted) setLoadingData(false);
+            }
         };
         if (optionsFinishedLoading) fetchAvenantData();
         return () => { isMounted = false; };
-    }, [itemId, isEditing, baseApiUrl, optionsFinishedLoading, partenaireOptions, fonctionnairesOptions, typeModificationOptions, initialFormData.convention_id, storageBaseUrl]);
+    }, [itemId, isEditing, baseApiUrl, optionsFinishedLoading, partenaireOptions, fonctionnairesOptions]);
 
     useEffect(() => { if (!isEditing && optionsFinishedLoading) { setFormData(initialFormData); setFichiers([]); setExistingFichiers([]); setFichiersToDelete([]); setAvenantPartnerDetails([]); setFormErrors({}); setSubmissionStatus({ loading: false, error: null, success: false }); setLoadingData(false); } }, [isEditing, optionsFinishedLoading, initialFormData]);
     
+    // ... (All other handlers like validateForm, handleChange, etc., remain the same)
     const validateForm = useCallback(() => { 
         const errors = {}; 
         if (!formData.convention_id) errors.convention_id = "Convention requise."; 
@@ -403,8 +400,18 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
             })
         );
     };
-
-    const handleFileChange = useCallback((e) => { const filesToAdd = Array.from(e.target.files ?? []); if (!filesToAdd.length) return; setFichiers(prev => { const names = new Set(prev.map(f => f.name)); return [...prev, ...filesToAdd.filter(f => !names.has(f.name))]; }); e.target.value = null; if (formErrors.fichiers || formErrors['fichiers.*']) setFormErrors(prev => ({ ...prev, 'fichiers': undefined, 'fichiers.*': undefined })); }, [formErrors.fichiers, formErrors['fichiers.*']]);
+    const handleFileChange = useCallback((e) => {
+        const filesToAdd = Array.from(e.target.files ?? []);
+        if (!filesToAdd.length) return;
+        setFichiers(prev => {
+            const existingNames = new Set(prev.map(fw => fw.file.name));
+            const newUniqueFiles = filesToAdd
+                .filter(f => !existingNames.has(f.name))
+                .map(f => ({ file: f, intitule: f.name.replace(/\.[^/.]+$/, "") })); // Default intitule
+            return [...prev, ...newUniqueFiles];
+        });
+        e.target.value = null;
+    }, []);
     
     const removeNewFile = useCallback((fileIndex) => { setFichiers(prev => prev.filter((_, idx) => idx !== fileIndex)); }, []);
     
@@ -412,61 +419,59 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
     
     const handleSubmit = useCallback(async (e) => { 
         e.preventDefault(); 
-        if (!formData.convention_id) { 
-            setSubmissionStatus({ loading: false, error: "La sélection d'une convention parente est requise.", success: false }); 
-            document.getElementById('formConvention_id')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
-            return;
-        } 
         if (!validateForm()) { 
-            setSubmissionStatus({ loading: false, error: "Veuillez corriger les erreurs indiquées.", success: false }); 
-            const firstErrorKey = Object.keys(formErrors)[0]; 
-            let errorElementId = firstErrorKey ? `form${firstErrorKey.charAt(0).toUpperCase() + firstErrorKey.slice(1)}` : null; 
-            if (firstErrorKey?.startsWith('montant_') || firstErrorKey?.startsWith('date_sig_') || firstErrorKey?.startsWith('autre_engagement_')) { 
-                errorElementId = `formAvenantDetail_${firstErrorKey.split('_').pop()}`; 
-            } else if (firstErrorKey === 'partenaires') { 
-                errorElementId = 'formPartenaireSelectConditional'; 
-            } else if (firstErrorKey === 'fichiers') { 
-                errorElementId = 'avenantFileGroup'; 
-            } 
-            const elementToScroll = errorElementId ? document.getElementById(errorElementId) : document.querySelector('.is-invalid'); 
-            elementToScroll?.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+            setSubmissionStatus({ loading: false, error: "Veuillez corriger les erreurs.", success: false }); 
+            const firstErrorEl = document.querySelector('.is-invalid');
+            firstErrorEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return; 
         } 
         setSubmissionStatus({ loading: true, error: null, success: false }); 
         const dataToSubmit = new FormData(); 
-        dataToSubmit.append('convention_id', formData.convention_id); 
-        dataToSubmit.append('numero_avenant', formData.numero_avenant); 
-        dataToSubmit.append('date_signature', formData.date_signature); 
-        dataToSubmit.append('annee_avenant', formData.annee_avenant);
-        dataToSubmit.append('session', formData.session);
-        dataToSubmit.append('numero_approbation', formData.numero_approbation);
-        dataToSubmit.append('statut', formData.statut?.value || '');
-        if (formData.statut?.value === 'visé') {
-            dataToSubmit.append('date_visa', formData.date_visa || '');
+
+        // Append main form data
+        Object.entries(formData).forEach(([key, value]) => {
+            if (key === 'statut' || key === 'type_modification') {
+                dataToSubmit.append(key, value?.value || '');
+            } else if (key === 'fonctionnaires') {
+                dataToSubmit.append('id_fonctionnaire', value.map(f => f.value).join(';'));
+            } else {
+                dataToSubmit.append(key, value);
+            }
+        });
+
+        if (formData.type_modification?.value === 'montant') {
+            dataToSubmit.set('montant_modifie', parseCurrency(formData.montant_modifie) ?? '');
         }
-        dataToSubmit.append('objet', formData.objet); 
-        dataToSubmit.append('type_modification', formData.type_modification?.value || ''); 
-        if (formData.type_modification?.value === 'montant') { 
-            dataToSubmit.append('montant_modifie', parseCurrency(formData.montant_modifie) ?? ''); 
-        } 
-        if (formData.type_modification?.value === 'durée') { 
-            dataToSubmit.append('nouvelle_date_fin', formData.nouvelle_date_fin || ''); 
-        } 
-        dataToSubmit.append('remarques', formData.remarques || ''); 
-        const fonctionnaireIds = formData.fonctionnaires.map(f => f.value).join(';'); 
-        dataToSubmit.append('id_fonctionnaire', fonctionnaireIds); 
-        fichiers.forEach((file, index) => dataToSubmit.append(`fichiers[${index}]`, file, file.name)); 
-        if (isEditing && fichiersToDelete.length > 0) { 
-            fichiersToDelete.forEach((id) => dataToSubmit.append(`fichiers_to_delete[]`, id)); 
-        } 
+
+        // --- FIX: Append new files and their titles correctly ---
+        fichiers.forEach((fileWrapper, index) => {
+            dataToSubmit.append(`fichiers[${index}]`, fileWrapper.file);
+            dataToSubmit.append(`intitules[${index}]`, fileWrapper.intitule);
+        });
+
+        // --- FIX: Append data for existing files correctly ---
+        if (isEditing) {
+            // Send metadata for existing files that might have changed titles
+            const docsMeta = existingFichiers
+                .map(d => ({ id: d.id, intitule: d.intitule.trim() }));
+            if (docsMeta.length > 0) {
+                dataToSubmit.append('existing_documents_meta', JSON.stringify(docsMeta));
+            }
+
+            // Send IDs of files marked for deletion
+            if (fichiersToDelete.length > 0) {
+                fichiersToDelete.forEach(id => dataToSubmit.append('fichiers_to_delete[]', id));
+            }
+        }
+        
         if (formData.type_modification?.value === 'partenaire') {
             const partnerData = avenantPartnerDetails.map(p => ({
                 id: p.id,
                 montant: p.engagement_type === 'financier' && p.montant ? parseCurrency(String(p.montant)) : null,
-                autre_engagement: p.engagement_type === 'autre' && p.autre_engagement ? p.autre_engagement : null,
+                autre_engagement: p.engagement_type === 'autre' ? p.autre_engagement : null,
                 is_signatory: p.is_signatory,
-                date_signature: p.is_signatory && p.date_signature ? p.date_signature : null,
-                details_signature: p.is_signatory && p.details_signature ? p.details_signature : null,
+                date_signature: p.is_signatory ? p.date_signature : null,
+                details_signature: p.is_signatory ? p.details_signature : null,
                 engagements_annuels: p.engagements_annuels?.map(e => ({
                     annee: e.annee,
                     montant_prevu: parseCurrency(e.montant_prevu)
@@ -474,64 +479,47 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
             }));
             dataToSubmit.append('avenant_partner_commitments', JSON.stringify(partnerData));
         }
+
         if (isEditing) { 
             dataToSubmit.append('_method', 'PUT'); 
         } 
+        
         const url = isEditing ? `${baseApiUrl}/avenants/${itemId}` : `${baseApiUrl}/avenants`; 
-        const config = { headers: { 'Content-Type': 'multipart/form-data', 'Accept': 'application/json' }, withCredentials: true }; 
+        const config = { headers: { 'Content-Type': 'multipart/form-data' }, withCredentials: true }; 
+        
         try { 
             const response = await axios.post(url, dataToSubmit, config); 
             setSubmissionStatus({ loading: false, error: null, success: true }); 
-            if (isEditing && onItemUpdated) onItemUpdated(response.data.avenant); 
-            else if (!isEditing && onItemCreated) onItemCreated(response.data.avenant); 
+            if (isEditing) {
+                onItemUpdated(response.data.avenant);
+            } else {
+                onItemCreated(response.data.avenant);
+            }
             setTimeout(onClose, 1500); 
         } catch (err) { 
-            const errorMsg = err.response?.data?.message || err.message || "Erreur serveur."; 
-            let serverErrors = err.response?.data?.errors || {}; 
-            const mappedErrors = {}; 
-            if (err.response?.status === 422 && typeof serverErrors === 'object') { 
-                for (const key in serverErrors) { 
-                    if (key.startsWith('fichiers.')) mappedErrors['fichiers'] = (mappedErrors['fichiers'] || '') + serverErrors[key].join(' '); 
-                    else if (key === 'fichiers_to_delete' || key.startsWith('fichiers_to_delete.')) mappedErrors['fichiers_delete'] = (mappedErrors['fichiers_delete'] || '') + serverErrors[key].join(' '); 
-                    else if (key.startsWith('avenant_partner_commitments.')) { 
-                        const match = key.match(/\.(\d+)\.?(.*)?/); 
-                        const errMessage = serverErrors[key].join(' '); 
-                        if (match && avenantPartnerDetails[match[1]]) { 
-                            const partnerId = avenantPartnerDetails[match[1]].id; 
-                            const fieldName = match[2]; 
-                            if (fieldName === 'montant' || errMessage.toLowerCase().includes('montant')) mappedErrors[`montant_${partnerId}`] = errMessage; 
-                            else if (fieldName === 'autre_engagement' || errMessage.toLowerCase().includes('engagement')) mappedErrors[`autre_engagement_${partnerId}`] = errMessage;
-                            else if (fieldName === 'date_signature' || errMessage.toLowerCase().includes('date signature') || errMessage.toLowerCase().includes('date_signature')) mappedErrors[`date_sig_${partnerId}`] = errMessage; 
-                            else mappedErrors['partenaires'] = (mappedErrors['partenaires'] || '') + `Erreur Part. ${match[1]+1}: ${errMessage} `; 
-                        } else { 
-                            mappedErrors['partenaires'] = (mappedErrors['partenaires'] || '') + errMessage + ' '; 
-                        } 
-                    } else if (key === 'id_fonctionnaire') mappedErrors['id_fonctionnaire'] = serverErrors[key].join(' '); 
-                    else { 
-                        const formKey = key === 'type_modification' ? 'type_modification' : (Object.keys(formData).find(fk => fk.toLowerCase() === key.toLowerCase()) || key); 
-                        mappedErrors[formKey] = serverErrors[key].join(' '); 
-                    } 
-                } 
-                setFormErrors(mappedErrors); 
-            } else { 
-                setFormErrors({}); 
-            } 
+            const errorMsg = err.response?.data?.message || "Erreur serveur."; 
+            const serverErrors = err.response?.data?.errors || {}; 
+            setFormErrors(serverErrors); 
             setSubmissionStatus({ loading: false, error: errorMsg, success: false }); 
         } 
-    }, [isEditing, itemId, baseApiUrl, formData, fichiers, fichiersToDelete, avenantPartnerDetails, validateForm, onClose, onItemCreated, onItemUpdated]);
+    }, [isEditing, itemId, baseApiUrl, formData, fichiers, fichiersToDelete, existingFichiers, avenantPartnerDetails, validateForm, onClose, onItemCreated, onItemUpdated]);
 
     const isSubmitDisabled = submissionStatus.loading || loadingData || !optionsFinishedLoading;
 
     if (loadingData || !optionsFinishedLoading) { return ( <div className="d-flex justify-content-center align-items-center p-5" style={{minHeight: '400px'}}> <Spinner animation="border" variant="primary" /> <span className='ms-3 text-muted'>Chargement du formulaire...</span> </div> ); }
+    
+    // --- FIX: Filter out files marked for deletion from the visible list ---
     const visibleExistingFichiers = existingFichiers.filter(f => !fichiersToDelete.includes(f.id));
 
     return (
         <div className="p-3 p-md-4 avenant-form-container bg-white" style={{ borderRadius: '15px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', maxHeight: 'calc(90vh - 100px)', overflowY: 'auto'}}>
-            <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom"><div><h5 className="text-uppercase fw-bold text-secondary mb-1">{isEditing ? 'Modifier' : 'Ajouter un nouveau'}</h5><h2 className="mb-0 fw-bold">Avenant{conventionCode ? ` à la Convention ${conventionCode}` : ''}</h2></div><Button variant="warning" className='btn rounded-5 fw-bold px-5 py-2 shadow-sm border' onClick={onClose} size="sm" title="Retour">Revenir à la liste</Button></div>
+            <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom"><div><h5 className="text-uppercase fw-bold text-secondary mb-1">{isEditing ? 'Modifier' : 'Ajouter un nouveau'}</h5><h2 className="mb-0 fw-bold">Avenant{conventionCode ? ` à la Convention ${conventionCode}` : ''}</h2></div>
+                <Button variant="warning" onClick={onClose} size="sm" className={buttonCloseClass}><b>Revenir à la liste</b></Button>
+            </div>
 
             <div className="flex-grow-1">
-                 {submissionStatus.error && !submissionStatus.loading && ( <Alert variant="danger" className="mb-3 py-2 d-flex align-items-center"> <FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/> {submissionStatus.error} </Alert> )}
-                 {submissionStatus.success && ( <Alert variant="success" className="mb-3 py-2">Avenant {isEditing ? 'modifié' : 'ajouté'} avec succès !</Alert> )}
+                 {submissionStatus.error && !submissionStatus.loading && ( <Alert variant="danger" className="mb-3"> <FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/> {submissionStatus.error} </Alert> )}
+                 {submissionStatus.success && ( <Alert variant="success" className="mb-3">Avenant {isEditing ? 'modifié' : 'ajouté'} avec succès !</Alert> )}
                 <Form noValidate onSubmit={handleSubmit} className='px-md-3'>
                     <Form.Group as={Row} className="mb-3 align-items-center" controlId="formConvention_id">
                         <Form.Label column sm={3} className="small fw-medium text-sm-end">Convention <span className="text-danger">*</span></Form.Label>
@@ -540,6 +528,7 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
                             {formErrors.convention_id && <div className="invalid-feedback d-block ps-1 small">{formErrors.convention_id}</div>}
                         </Col>
                     </Form.Group>
+                    
                     <Row className="g-3 mb-3">
                         <Form.Group as={Col} md={4} controlId="formNumeroApprobation">
                             <Form.Label className="small mb-1 fw-medium">N° Approbation <span className="text-danger">*</span></Form.Label>
@@ -617,82 +606,76 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
                                 </Col>
                             </Row>
 
+                            {partner.engagement_type === 'financier' && selectedConventionDetails && (
+                                (() => {
+                                    let durationInMonths = selectedConventionDetails.duree_convention;
+                                    if (!durationInMonths && formData.type_modification?.value === 'durée' && formData.nouvelle_date_fin && formData.annee_avenant) {
+                                        const startYear = parseInt(formData.annee_avenant, 10);
+                                        const endDate = new Date(formData.nouvelle_date_fin);
+                                        const endYear = endDate.getFullYear();
+                                        const endMonth = endDate.getMonth();
+                                        durationInMonths = (endYear - startYear) * 12 + endMonth + 1;
+                                    }
 
-{partner.engagement_type === 'financier' && selectedConventionDetails && ( // <<< Check for selectedConventionDetails
-    (() => {
-                let durationInMonths = selectedConventionDetails.duree_convention;
-          if (!durationInMonths && formData.type_modification?.value === 'durée' && formData.nouvelle_date_fin && formData.annee_avenant) {
-            const startYear = parseInt(formData.annee_avenant, 10);
-            const endDate = new Date(formData.nouvelle_date_fin);
-            const endYear = endDate.getFullYear();
-            const endMonth = endDate.getMonth();
-            durationInMonths = (endYear - startYear) * 12 + endMonth + 1;
-        }
+                                    const engagementYears = calculateEngagementYears(
+                                        formData.annee_avenant,
+                                        durationInMonths
+                                    );
 
-        // vvv THIS IS THE FIX vvv
-        // Use real data from the fetched convention details
-         const engagementYears = calculateEngagementYears(
-            formData.annee_avenant,
-            durationInMonths
-        );
+                                    if (engagementYears.length === 0) {
+                                        return (
+                                            <Row className="mt-2 mb-2 px-sm-3 justify-content-end">
+                                                <Col sm={12}>
+                                                    <div className="p-2 border rounded-3 bg-light">
+                                                        <p className="small text-muted mb-0 fst-italic">
+                                                            <FontAwesomeIcon icon={faExclamationTriangle} className="me-2 text-warning"/>
+                                                            La durée de la convention parente n'est pas définie. La répartition annuelle ne peut être affichée.
+                                                        </p>
+                                                    </div>
+                                                </Col>
+                                            </Row>
+                                        );
+                                    }
+                                    const yearlyTotal = partner.engagements_annuels?.reduce((sum, item) => sum + parseCurrency(item.montant_prevu), 0) || 0;
+                                    const totalCommitment = parseCurrency(partner.montant);
+                                    const isTotalMismatch = yearlyTotal !== totalCommitment;
 
-if (engagementYears.length === 0) {
-            // If still no years, show a message instead of nothing
-            return (
-                 <Row className="mt-2 mb-2 px-sm-3 justify-content-end">
-                    <Col sm={12}>
-                         <div className="p-2 border rounded-3 bg-light">
-                            <p className="small text-muted mb-0 fst-italic">
-                                <FontAwesomeIcon icon={faExclamationTriangle} className="me-2 text-warning"/>
-                                La durée de la convention parente n'est pas définie. La répartition annuelle ne peut être affichée.
-                            </p>
-                        </div>
-                    </Col>
-                </Row>
-            );
-        }
-        // vvv THIS LOGIC IS NOW THE SAME AS IN ConventionForm vvv
-        const yearlyTotal = partner.engagements_annuels?.reduce((sum, item) => sum + parseCurrency(item.montant_prevu), 0) || 0;
-        const totalCommitment = parseCurrency(partner.montant);
-        const isTotalMismatch = yearlyTotal !== totalCommitment;
-
-        return (
-            <Row className="mt-2 mb-2 px-sm-3 justify-content-end">
-                <Col sm={12}>
-                    <div className="p-2 border rounded-3 bg-light">
-                        <p className="small fw-medium text-muted mb-2">Répartition annuelle prévisionnelle :</p>
-                        <Row className="g-2">
-                            {engagementYears.map(year => {
-                                const engagementForYear = partner.engagements_annuels?.find(e => Number(e.annee) === year);
-                                return (
-                                    <Col key={year} xs={6} sm={4} md={3}>
-                                        <InputGroup size="sm">
-                                            <InputGroup.Text>{year}</InputGroup.Text>
-                                            <Form.Control
-                                                type="number"
-                                                step="0.01"
-                                                placeholder="Montant"
-                                                value={engagementForYear?.montant_prevu || ''}
-                                                onChange={(e) => handleAvenantYearlyAmountChange(partner.id, year, e.target.value)}
-                                            />
-                                        </InputGroup>
-                                    </Col>
-                                );
-                            })}
-                        </Row>
-                        {/* The warning will now show up correctly */}
-                        {isTotalMismatch && totalCommitment > 0 && (
-                            <Alert variant="warning" className="mt-2 py-1 px-2 small mb-0">
-                                <FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/>
-                                La somme de la répartition ({yearlyTotal.toLocaleString('fr-MA')} MAD) ne correspond pas à l'engagement total ({totalCommitment.toLocaleString('fr-MA')} MAD).
-                            </Alert>
-                        )}
-                    </div>
-                </Col>
-            </Row>
-        );
-    })()
-)}
+                                    return (
+                                        <Row className="mt-2 mb-2 px-sm-3 justify-content-end">
+                                            <Col sm={12}>
+                                                <div className="p-2 border rounded-3 bg-light">
+                                                    <p className="small fw-medium text-muted mb-2">Répartition annuelle prévisionnelle :</p>
+                                                    <Row className="g-2">
+                                                        {engagementYears.map(year => {
+                                                            const engagementForYear = partner.engagements_annuels?.find(e => Number(e.annee) === year);
+                                                            return (
+                                                                <Col key={year} xs={6} sm={4} md={3}>
+                                                                    <InputGroup size="sm">
+                                                                        <InputGroup.Text>{year}</InputGroup.Text>
+                                                                        <Form.Control
+                                                                            type="number"
+                                                                            step="0.01"
+                                                                            placeholder="Montant"
+                                                                            value={engagementForYear?.montant_prevu || ''}
+                                                                            onChange={(e) => handleAvenantYearlyAmountChange(partner.id, year, e.target.value)}
+                                                                        />
+                                                                    </InputGroup>
+                                                                </Col>
+                                                            );
+                                                        })}
+                                                    </Row>
+                                                    {isTotalMismatch && totalCommitment > 0 && (
+                                                        <Alert variant="warning" className="mt-2 py-1 px-2 small mb-0">
+                                                            <FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/>
+                                                            La somme de la répartition ({yearlyTotal.toLocaleString('fr-MA')} MAD) ne correspond pas à l'engagement total ({totalCommitment.toLocaleString('fr-MA')} MAD).
+                                                        </Alert>
+                                                    )}
+                                                </div>
+                                            </Col>
+                                        </Row>
+                                    );
+                                })()
+                            )}
                             <Row className="mt-1 mb-1 px-sm-3 align-items-center">
                                 <Col md={4} className="d-flex justify-content-start">
                                      <FormCheck type="switch" id={`avenant-signatory-check-${partner.id}`} label="Signataire?" checked={partner.is_signatory} onChange={(e) => handleAvenantSignatoryChange(partner.id, e.target.checked)} className="form-check-sm small"/>
@@ -707,8 +690,83 @@ if (engagementYears.length === 0) {
                         </div>
                     ))}</div> )} </Card.Body></Card> )}
                     <Form.Group className="mb-3" controlId="formRemarques"><Form.Label className="small mb-1 fw-medium">Remarques</Form.Label><Form.Control className="p-3 rounded-5 shadow-sm bg-white border-1" as="textarea" rows={2} name="remarques" value={formData.remarques} onChange={handleChange} size="sm" placeholder="Observations diverses..."/></Form.Group>
-                    <Form.Group as={Row} className="mb-3" controlId="avenantFileGroup"><Form.Label column sm={3} className="small fw-medium text-sm-end"> Fichiers Joints </Form.Label><Col sm={9}><Card className="border-dashed rounded-3"><Card.Body className='p-3'><div className='mb-2'><Button variant="outline-warning" size="sm" className="me-2 rounded-pill px-3" onClick={() => document.getElementById('avenant_fichiers_hidden_input')?.click()}><FontAwesomeIcon icon={faPlus} className="me-1" /> Ajouter</Button><span className='small text-muted fst-italic'>Ajouter un ou plusieurs fichiers</span><Form.Control id="avenant_fichiers_hidden_input" type="file" multiple onChange={handleFileChange} style={{ display: 'none' }} isInvalid={!!formErrors.fichiers || !!formErrors['fichiers.*']} accept=".pdf,.doc,.docx,image/*,.xls,.xlsx" /><Form.Control.Feedback type="invalid" style={{display: (formErrors.fichiers || formErrors['fichiers.*']) ? 'block' : 'none'}}>{formErrors.fichiers || formErrors['fichiers.*']}</Form.Control.Feedback></div>{isEditing && visibleExistingFichiers.length > 0 && (<div className='mt-2 pt-2 border-top'><span className="me-2 small text-muted fw-bold">Fichiers Actuels:</span><Stack direction="horizontal" gap={1} className="mt-1 flex-wrap" style={{fontSize: '0.85em'}}>{visibleExistingFichiers.map((file) => (<Badge key={`existing-av-file-${file.id}`} pill bg='light' text='dark' className="d-flex border p-1 pe-2 align-items-center fw-normal shadow-sm"><FontAwesomeIcon icon={faPaperclip} className='me-1 ms-1 text-secondary'/><a href={file.fichier_url || '#'} target="_blank" rel="noopener noreferrer" className='me-1 text-truncate text-decoration-none link-primary' style={{maxWidth: '180px'}} title={file.file_name}>{file.file_name || 'Fichier inconnu'}</a><Button variant='link' size="sm" aria-label="Supprimer existant" className="p-0 m-0 ms-1 lh-1 text-danger" onClick={() => removeExistingFile(file.id)} title="Marquer pour suppression"><FontAwesomeIcon icon={faTrashAlt} /></Button></Badge>))}</Stack></div>)}{isEditing && fichiersToDelete.length > 0 && existingFichiers.some(f => fichiersToDelete.includes(f.id)) && (<div className='mt-2 pt-2 border-top border-danger border-opacity-25'><span className="me-2 small text-danger fw-bold">Fichiers Marqués pour Suppression:</span><Stack direction="horizontal" gap={1} className="mt-1 flex-wrap" style={{fontSize: '0.85em'}}>{existingFichiers.filter(f => fichiersToDelete.includes(f.id)).map((file) => (<Badge key={`deleted-av-file-${file.id}`} pill bg='danger' text='white' className="d-flex border p-1 pe-2 align-items-center fw-normal shadow-sm text-decoration-line-through"><FontAwesomeIcon icon={faTrashAlt} className='me-1 ms-1'/><span className='me-1 text-truncate' style={{maxWidth: '180px'}} title={file.file_name}>{file.file_name || 'Fichier inconnu'}</span></Badge>))}</Stack></div>)}{fichiers.length > 0 && (<div className={`mt-2 pt-2 ${visibleExistingFichiers.length > 0 || fichiersToDelete.length > 0 ? 'border-top' : ''}`}><span className="me-2 small text-muted fw-bold">Nouveaux Fichiers:</span><Stack direction="horizontal" gap={1} className="mt-1 flex-wrap" style={{fontSize: '0.85em'}}>{fichiers.map((file, fileIndex) => (<Badge key={`new-av-file-${file.name}-${fileIndex}`} pill bg="success" text="white" className="d-flex align-items-center fw-normal p-1 pe-2 shadow-sm"><FontAwesomeIcon icon={faPaperclip} className='me-1 ms-1'/><span className='me-1 text-truncate' style={{maxWidth: '180px'}} title={file.name}>{file.name}</span><Button variant="close" size="sm" aria-label="Retirer nouveau" className="p-0 m-0 ms-1 lh-1 btn-close-white" onClick={() => removeNewFile(fileIndex)}></Button></Badge>))}</Stack></div>)}{fichiers.length === 0 && visibleExistingFichiers.length === 0 && (<div className="mt-2 pt-2 small text-muted fst-italic border-top">Aucun fichier joint.</div>)}</Card.Body></Card></Col></Form.Group>
-                    <Row className="mt-4 pt-3 border-top justify-content-center"><Col xs="auto"><Button variant="danger" onClick={onClose} className="btn px-5 rounded-pill shadow-sm" disabled={submissionStatus.loading}>Annuler</Button></Col><Col xs="auto"><Button type="submit" variant="primary" className="btn px-4 rounded-pill align-items-center d-flex justify-content-center shadow-sm" disabled={isSubmitDisabled}>{submissionStatus.loading ? ( <><Spinner as="span" animation="border" size="sm" className="me-2"/> Enregistrement...</> ) : ( isEditing ? 'Enregistrer Modifications' : 'Ajouter Avenant' )}</Button></Col></Row>
+                    
+                    <Form.Group as={Row} className="mb-3" controlId="avenantFileGroup">
+                        <Form.Label column sm={3} className="small fw-medium text-sm-end">Fichiers Joints</Form.Label>
+                        <Col sm={9}>
+                            <Card className="border-dashed">
+                                <Card.Body className='p-3'>
+                                    <div className='mb-2'>
+                                        <Button variant="outline-secondary" size="sm" className="me-2" onClick={() => document.getElementById('avenant_fichiers_hidden_input')?.click()}>
+                                            <FontAwesomeIcon icon={faPlus} className="me-2" /> Ajouter un fichier
+                                        </Button>
+                                        <Form.Control id="avenant_fichiers_hidden_input" type="file" multiple onChange={handleFileChange} style={{ display: 'none' }} isInvalid={!!formErrors.fichiers} />
+                                        <Form.Control.Feedback type="invalid">{formErrors.fichiers}</Form.Control.Feedback>
+                                    </div>
+                                    
+                                    {isEditing && visibleExistingFichiers.length > 0 && (
+                                        <ListGroup variant="flush" className="mb-2">
+                                            {visibleExistingFichiers.map(file => (
+                                                <ListGroup.Item key={file.id} className="d-flex justify-content-between align-items-center p-2">
+                                                    <span className="text-truncate" title={file.file_name}>
+                                                        <FontAwesomeIcon icon={getFileIcon(file.file_name)} className="me-2 text-muted" />
+                                                        {file.intitule || file.file_name}
+                                                    </span>
+                                                    <div>
+                                                        <Button variant="outline-primary" size="sm" className="me-2" onClick={() => setEditingFile({ isExisting: true, data: { ...file } })}>Modifier</Button>
+                                                        <Button variant="outline-danger" size="sm" onClick={() => removeExistingFile(file.id)}><FontAwesomeIcon icon={faTrashAlt} /></Button>
+                                                    </div>
+                                                </ListGroup.Item>
+                                            ))}
+                                        </ListGroup>
+                                    )}
+
+                                    {fichiers.length > 0 && (
+                                        <ListGroup variant="flush">
+                                            {fichiers.map((fw, index) => (
+                                                <ListGroup.Item key={index} className="d-flex justify-content-between align-items-center p-2">
+                                                    <span className="text-truncate" title={fw.file.name}>
+                                                        <FontAwesomeIcon icon={getFileIcon(fw.file.name)} className="me-2 text-success" />
+                                                        {fw.intitule}
+                                                    </span>
+                                                    <div>
+                                                        <Button variant="outline-primary" size="sm" className="me-2" onClick={() => setEditingFile({ isExisting: false, data: { ...fw }, index })}>Modifier</Button>
+                                                        <Button variant="outline-danger" size="sm" onClick={() => removeNewFile(index)}><FontAwesomeIcon icon={faTrashAlt} /></Button>
+                                                    </div>
+                                                </ListGroup.Item>
+                                            ))}
+                                        </ListGroup>
+                                    )}
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Form.Group>
+                    
+                    <Modal show={!!editingFile} onHide={() => setEditingFile(null)} centered>
+                        <Modal.Header closeButton><Modal.Title>Modifier l'intitulé</Modal.Title></Modal.Header>
+                        <Modal.Body>
+                            <p className="text-muted small text-truncate">Fichier: {editingFile?.data?.file_name || editingFile?.data?.file?.name}</p>
+                            <Form.Group>
+                                <Form.Label>Intitulé du fichier</Form.Label>
+                                <Form.Control type="text" value={editingFile?.data?.intitule || ''} onChange={(e) => setEditingFile(prev => ({ ...prev, data: { ...prev.data, intitule: e.target.value } }))} autoFocus/>
+                            </Form.Group>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="danger" onClick={() => setEditingFile(null)}>Annuler</Button>
+                            <Button variant="primary" onClick={() => {
+                                if (!editingFile) return;
+                                const { index, data, isExisting } = editingFile;
+                                if (isExisting) {
+                                    setExistingFichiers(prev => prev.map(f => f.id === data.id ? { ...f, intitule: data.intitule } : f));
+                                } else {
+                                    setFichiers(prev => prev.map((fw, i) => i === index ? { ...fw, intitule: data.intitule } : fw));
+                                }
+                                setEditingFile(null);
+                            }}>Enregistrer</Button>
+                        </Modal.Footer>
+                    </Modal>
+
+                    <Row className="mt-4 pt-3 border-top justify-content-center"><Col xs="auto"><Button variant="danger" onClick={onClose} className="px-5" disabled={submissionStatus.loading}>Annuler</Button></Col><Col xs="auto"><Button type="submit" variant="primary" className="px-5" disabled={isSubmitDisabled}>{submissionStatus.loading ? ( <><Spinner as="span" animation="border" size="sm" className="me-2"/> Enregistrement...</> ) : ( isEditing ? 'Enregistrer Modifications' : 'Ajouter Avenant' )}</Button></Col></Row>
                 </Form>
             </div>
         </div>
@@ -728,8 +786,8 @@ AvenantForm.defaultProps = {
     itemId: null,
     initialConventionId: null,
     conventionCode: '',
-    onItemCreated: (createdItem) => console.log('Avenant Created:', createdItem),
-    onItemUpdated: (updatedItem) => console.log('Avenant Updated:', updatedItem),
+    onItemCreated: () => {},
+    onItemUpdated: () => {},
     baseApiUrl: 'http://localhost:8000/api',
 };
 

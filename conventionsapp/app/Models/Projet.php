@@ -52,7 +52,6 @@ class Projet extends Model
      */
     protected $fillable = [
         // Keep the exact casing as defined in your previous model
-        "ID_Projet", // Typically, you might not want the PK in fillable if it's auto-incrementing
         "Nom_Projet",
         //"Id_Domaine",
         "Id_Programme",

@@ -43,6 +43,7 @@ class FichierBonCommandeEtContrat extends Model
         'id_bc',
         'id_cdc', // Contrat Droit Commun ID
         'nom_fichier',
+        'intitule', // <-- ADD THIS LINE
         'chemin_fichier',
         'type_fichier',
         // 'date_ajout', // Only if NOT using standard timestamps

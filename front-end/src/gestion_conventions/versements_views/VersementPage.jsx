@@ -37,10 +37,7 @@ const formatCurrency = (amount) => {
     return number.toLocaleString('fr-MA', { style: 'currency', currency: 'MAD', minimumFractionDigits: 2 });
 };
 
-const PAIEMENT_METHODE_OPTIONS = [
-    { value: "Virement", label: "Virement Bancaire" }, { value: "Chèque", label: "Chèque" },
-    { value: "Espèces", label: "Espèces" }, { value: "Autre", label: "Autre" },
-];
+
 // --- End Helpers ---
 
 
@@ -89,26 +86,21 @@ const RenderVersementFiltersComponent = ({
     table,
     externalFilterConvPartId,
     setExternalFilterConvPartId,
-    paiementMethodeOptions,
     optionsLoading,
 }) => {
     // Get initial values from table state
     const initialDateFilter = table.getColumn('date_versement')?.getFilterValue() || {};
     const initialAmountFilter = table.getColumn('montant_verse')?.getFilterValue() || {};
-    const initialMoyenFilter = table.getColumn('moyen_paiement')?.getFilterValue();
 
     // Local state for filter inputs
     const [localDateDebut, setLocalDateDebut] = useState(initialDateFilter.start || '');
     const [localDateFin, setLocalDateFin] = useState(initialDateFilter.end || '');
-    const [localMoyenPaiement, setLocalMoyenPaiement] = useState(
-        paiementMethodeOptions.find(opt => opt.value === initialMoyenFilter) || null
-    );
+
     const [localMontantMin, setLocalMontantMin] = useState(initialAmountFilter.min || '');
     const [localMontantMax, setLocalMontantMax] = useState(initialAmountFilter.max || '');
 
     // Get column instances
     const dateColumn = table.getColumn('date_versement');
-    const moyenPaiementColumn = table.getColumn('moyen_paiement');
     const montantColumn = table.getColumn('montant_verse');
 
     // Apply date/amount range filters
@@ -122,15 +114,11 @@ const RenderVersementFiltersComponent = ({
     };
 
     // Handle select change
-    const handleSelectChange = (selectedOption) => {
-        setLocalMoyenPaiement(selectedOption);
-        moyenPaiementColumn?.setFilterValue(selectedOption?.value ?? undefined);
-    };
 
     // Reset all filters
     const resetAllFilters = () => {
         setLocalDateDebut(''); setLocalDateFin('');
-        setLocalMoyenPaiement(null);
+        
         setLocalMontantMin(''); setLocalMontantMax('');
         setExternalFilterConvPartId(''); // Reset external state -> triggers URL change / refetch
         table.resetColumnFilters();
@@ -171,17 +159,7 @@ const RenderVersementFiltersComponent = ({
                     </Form.Group>
                 </Col>
 
-                {/* Moyen Paiement Filter */}
-                <Col xs={12} >
-                    <Form.Group controlId="filterMoyenPaiement">
-                        <Form.Label size="sm" className="mb-1 fw-bold">Moyen Paiement</Form.Label>
-                        <Select
-                            options={paiementMethodeOptions} value={localMoyenPaiement} onChange={handleSelectChange}
-                            placeholder="Tous" isClearable size="sm" styles={selectStyles} isLoading={optionsLoading}
-                            aria-label="Filtrer par moyen de paiement"
-                         />
-                    </Form.Group>
-                </Col>
+                
 
                 {/* Montant Range Filter */}
                  <Col xs={12} >
@@ -260,13 +238,7 @@ const VersementPage = () => {
             size: 150, meta: { filterVariant: 'range', enableGlobalFilter: false },
             filterFn: 'amountRange'
         },
-        {
-            accessorKey: 'moyen_paiement', header: 'Moyen Paiem.',
-            cell: info => info.getValue() || '-',
-            size: 140, meta: { filterVariant: 'select', filterOptions: PAIEMENT_METHODE_OPTIONS, enableGlobalFilter: true },
-            filterFn: 'equalsString'
-        },
-        { accessorKey: 'reference_paiement', header: 'Référence', cell: info => <div className="text-truncate" style={{ maxWidth: '100px' }} title={info.getValue()}>{info.getValue() || '-'}</div>, size: 100, meta: { enableGlobalFilter: true } },
+        
         { accessorKey: 'commentaire', header: 'Commentaire', cell: info => <div className="text-truncate" style={{ maxWidth: '170px' }} title={info.getValue()}>{info.getValue() || '-'}</div>, size: 170, enableHiding: true, meta: { enableGlobalFilter: true } },
     ], [/* No external dependencies here if PAIEMENT_METHODE_OPTIONS is constant */]);
 
@@ -277,15 +249,14 @@ const VersementPage = () => {
             table={table}
             externalFilterConvPartId={filterConvPartId}
             setExternalFilterConvPartId={setFilterConvPartId}
-            paiementMethodeOptions={PAIEMENT_METHODE_OPTIONS} // Pass options
             optionsLoading={optionsLoading}
         />
     ), [filterConvPartId, optionsLoading]); // Dependencies
 
 
     // --- DynamicTable Configuration ---
-    const defaultVisibleColumns = useMemo(() => [ 'convention_details', 'partenaire_details', 'date_versement', 'montant_verse', 'moyen_paiement', 'reference_paiement', 'actions' ], []);
-    const availableColumnKeys = useMemo(() => [ 'id', 'convention_details', 'partenaire_details', 'date_versement', 'montant_verse', 'moyen_paiement', 'reference_paiement', 'commentaire' ], []);
+    const defaultVisibleColumns = useMemo(() => [ 'convention_details', 'partenaire_details', 'date_versement', 'montant_verse',  'actions' ], []);
+    const availableColumnKeys = useMemo(() => [ 'id', 'convention_details', 'partenaire_details', 'date_versement', 'montant_verse', 'commentaire' ], []);
     const searchExclusions = useMemo(() => [ 'id', 'montant_verse', 'date_versement' ], []);
 
     // API Fetch URL depends on filterConvPartId state
@@ -371,7 +342,6 @@ RenderVersementFiltersComponent.propTypes = {
   table: PropTypes.object.isRequired,
   externalFilterConvPartId: PropTypes.string.isRequired,
   setExternalFilterConvPartId: PropTypes.func.isRequired,
-  paiementMethodeOptions: PropTypes.array.isRequired,
   optionsLoading: PropTypes.bool.isRequired,
 };
 

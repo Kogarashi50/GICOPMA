@@ -73,7 +73,6 @@ const ContratDroitCommunPage = () => {
             meta: { align: 'center', enableGlobalFilter: false },
             cell: info => info.getValue() || '-',
         },
-        // Add other columns as needed (e.g., mode_paiement, observations preview)
     ], []);
 
     // --- Filter Rendering Function (Optional Example) ---

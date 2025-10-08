@@ -96,6 +96,7 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
     const [existingFiles, setExistingFiles] = useState([]);
     const [filesToDelete, setFilesToDelete] = useState([]);
     const [editingFile, setEditingFile] = useState(null); // { isExisting: bool, data: fileObject, location: { index: num } }
+    const FORM_HEADER_CLOSE_BUTTON_CLASS = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold border-0';
 
     // --- Data Fetching ---
     const fetchFonctionnaires = useCallback(async () => {
@@ -378,9 +379,11 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
                     <h5 className="text-uppercase fw-bold text-secondary mb-1">{isEditMode ? 'Modifier' : 'Nouvel'}</h5>
                     <h2 className="mb-0 fw-bold">Appel d'Offre {isEditMode ? `(${formData.numero || '...'})` : ''}</h2>
                 </div>
+                <Button variant="warning" className={FORM_HEADER_CLOSE_BUTTON_CLASS} onClick={onClose} size="sm">Revenir à la liste</Button>
+
             </div>
 
-            <h5 className="mb-3 mt-2">Détails de l'Appel d'Offre</h5>
+            <h5 className="mb-3 mt-2 text-primary">Détails de l'Appel d'Offre</h5>
              <Row className="g-3">
                  <Form.Group as={Col} md="6" className="mb-3">
                     <Form.Label htmlFor="numero">Numéro AO <span className="text-danger">*</span></Form.Label>
@@ -442,7 +445,7 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
                     <div className="invalid-feedback d-block ps-2 small mt-1">{validationErrors.id_fonctionnaire}</div>
                  }
             </Form.Group>
-            <h5 className="mb-3 mt-4 pt-3 border-top">Informations Financières et Délais</h5>
+            <h5 className="mb-3 mt-4 pt-3 border-top text-primary">Informations Financières et Délais</h5>
             {/* --- Estimations Section --- */}
             <Row className="g-3">
                 <Form.Group as={Col} md="4" className="mb-3">
@@ -496,7 +499,7 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
             </Row>
 
             {/* --- Publication Section --- */}
-            <h5 className="mb-3 mt-4 pt-3 border-top">Publication</h5>
+            <h5 className="mb-3 mt-4 pt-3 border-top text-primary">Publication</h5>
              <Row className="g-3 align-items-center">
                 <Form.Group as={Col} md="4" className="mb-3">
                     <Form.Label htmlFor="date_publication">Date Publication</Form.Label>
@@ -536,12 +539,12 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
                 )}
             </Row>
             {/* --- File Management Section --- */}
-            <h5 className="mt-4 mb-3">Pièces Jointes</h5>
+            <h5 className="mt-4 mb-3 text-primary">Pièces Jointes</h5>
             <Card className="mb-3">
                 <Card.Body>
                     {isEditMode && existingFiles.length > 0 && (
                         <>
-                            <h6>Fichiers Actuels</h6>
+                            <h5>Fichiers Actuels</h5>
                             <Stack direction="horizontal" gap={2} className="flex-wrap mb-3">
                                 {existingFiles.map((file, index) => (
                                     <Badge
@@ -571,7 +574,7 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
 
                     {newFiles.length > 0 && (
                         <>
-                            <h6 className={isEditMode && existingFiles.length > 0 ? 'mt-3' : ''}>Nouveaux Fichiers</h6>
+                            <h5 className={isEditMode && existingFiles.length > 0 ? 'mt-3' : ''}>Nouveaux Fichiers</h5>
                             <Stack direction="horizontal" gap={2} className="flex-wrap">
                                 {newFiles.map((fileWrapper, index) => (
                                     <Badge
@@ -612,7 +615,7 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
             </Card>
             {/* --- Submit/Cancel Buttons --- */}
             <div className="text-center mt-4 pt-3 border-top">
-                <Button variant="secondary" onClick={onClose} className="me-3 rounded-pill px-5" disabled={isOverallLoading}>
+                <Button variant="danger" onClick={onClose} className="me-3 rounded-pill px-5" disabled={isOverallLoading}>
                     Annuler
                 </Button>
                 <Button variant="primary" type="submit" className="rounded-pill px-5" disabled={isOverallLoading}>

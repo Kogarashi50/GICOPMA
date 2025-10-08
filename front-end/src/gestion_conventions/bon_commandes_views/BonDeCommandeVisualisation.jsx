@@ -241,7 +241,6 @@ const BonDeCommandeVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                     {renderField("État", bonCommandeData.etat, faInfoCircle, "mb-3 bc-data-point", true)}
                 </Col>
                 <Col md={5} className='border mx-5 rounded-5 shadow-sm p-5 bg-white'>
-                    {renderField("Mode Paiement", bonCommandeData.mode_paiement, faTag)}
                     {renderField( "Marché Associé", bonCommandeData.marche_public ? `${bonCommandeData.marche_public.numero_marche || bonCommandeData.marche_public.intitule || `ID: ${bonCommandeData.marche_public.id}`}` : '-', faClipboardCheck )}
                     {renderField( "Contrat Associé", bonCommandeData.contrat ? `${bonCommandeData.contrat.numero_contrat || bonCommandeData.contrat.objet || `ID: ${bonCommandeData.contrat.id}`}` : '-', faFileContract )}
                     {renderField("Créé le", formatDateSimple(bonCommandeData.created_at), faClock)}
@@ -273,7 +272,7 @@ const BonDeCommandeVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                                 file && file.id ? (
                                     <ListGroup.Item key={file.id} className="border rounded-4 p-2 d-flex align-items-center bg-dark  m-1 text-white">
                                         <FontAwesomeIcon icon={faFileAlt} className='me-2 text-warning'/>
-                                        <span className="text-truncate" title={file.nom_fichier || 'Nom inconnu'}>{file.nom_fichier || 'Fichier sans nom'}</span>
+                                        <span className="text-truncate" title={file.nom_fichier || 'Nom inconnu'}>{file.intitule || file.nom_fichier || 'Fichier sans nom'}</span>
                                         {file.chemin_fichier && (<a href={`${STORAGE_URL}/${file.chemin_fichier.replace(/^\//, '')}`} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-warning ms-2" title="Voir / Télécharger" > <FontAwesomeIcon icon={faDownload} /> </a> )}
                                     </ListGroup.Item>
                                 ) : null

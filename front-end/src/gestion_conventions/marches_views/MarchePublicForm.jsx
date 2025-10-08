@@ -682,7 +682,7 @@ const handleSubmit = useCallback(async (e) => {
             </Form.Group>
              <Row className="mb-3 g-3">
                   <Form.Group as={Col} md={12} controlId="formFonctionnaireMarche">
-                     <Form.Label className="small mb-1 fw-medium"> <FontAwesomeIcon icon={faUsers} className="me-1" /> Fonctionnaire(s) Associé(s) </Form.Label>
+                     <Form.Label className="mb-1 fw-medium"> <FontAwesomeIcon icon={faUsers} className="me-1" /> Fonctionnaire(s) Associé(s) </Form.Label>
                      <Select inputId="fonctionnaires-marche-select" name="fonctionnaires" options={fonctionnairesOptions} value={formData.fonctionnaires} onChange={handleFonctionnaireChange} placeholder={loadingOptions.fonctionnaires ? "Chargement..." : "Sélectionner (Optionnel)..."} isClearable closeMenuOnSelect={false} isMulti isLoading={loadingOptions.fonctionnaires} isDisabled={loadingOptions.fonctionnaires} styles={selectStyles} className={validationErrors.id_fonctionnaire ? 'is-invalid' : ''} aria-label="Sélectionner Fonctionnaires" menuPortalTarget={document.body} />
                      {validationErrors.id_fonctionnaire && <div className="invalid-feedback d-block ps-2 small mt-1">{validationErrors.id_fonctionnaire}</div> }
                   </Form.Group>

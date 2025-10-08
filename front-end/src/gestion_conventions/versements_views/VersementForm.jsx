@@ -106,7 +106,7 @@ const VersementForm = ({
 }) => {
     // --- State ---
     const isEditing = useMemo(() => itemId !== null, [itemId]);
-    const [formData, setFormData] = useState({ date_versement: '', montant_verse: '', moyen_paiement: '', reference_paiement: '', commentaire: '' });
+    const [formData, setFormData] = useState({ date_versement: '', montant_verse: '', commentaire: '' });
 
     // State for dropdowns and derived info
     const [conventionOptions, setConventionOptions] = useState([]);
@@ -188,8 +188,7 @@ const VersementForm = ({
                 setFormData({
                     date_versement: data.date_versement?.split('T')[0] ?? '',
                     montant_verse: String(data.montant_verse ?? ''),
-                    moyen_paiement: data.moyen_paiement ?? '',
-                    reference_paiement: data.reference_paiement ?? '',
+                    
                     commentaire: data.commentaire ?? ''
                 });
                 setOriginalMontantVerse(currentMontantVerseNum);
@@ -437,7 +436,6 @@ const VersementForm = ({
              }
         }
 
-        // if (!formData.moyen_paiement?.trim()) currentErrors.moyen_paiement = "Moyen de paiement requis.";
 
         setFormErrors(currentErrors);
         return Object.values(currentErrors).every(error => !error);
@@ -462,8 +460,7 @@ const VersementForm = ({
              ...(isEditing ? {} : { id_CP: commitmentId }),
              date_versement: formData.date_versement,
              montant_verse: parseCurrency(formData.montant_verse),
-             moyen_paiement: formData.moyen_paiement,
-             reference_paiement: formData.reference_paiement || null,
+             
              commentaire: formData.commentaire || null,
         };
 
@@ -484,7 +481,7 @@ const VersementForm = ({
             }
              setTimeout(() => {
                  if (!isEditing) {
-                     setFormData({ date_versement: '', montant_verse: '', moyen_paiement: '', reference_paiement: '', commentaire: '' });
+                     setFormData({ date_versement: '', montant_verse: '',  commentaire: '' });
                      setSelectedConvention(null);
                  }
                   onClose();
@@ -618,7 +615,7 @@ const VersementForm = ({
                     {/* === Section 2: Versement Details === */}
                     <h5 className="mb-3 mt-4 fw-semibold text-warning border-bottom pb-2">Détails du Versement</h5>
                      <Row className="mb-1 g-3">
-                         <Form.Group as={Col} md={4} controlId="formDateVersement">
+                         <Form.Group as={Col} md={6} controlId="formDateVersement">
                              <Form.Label className="small mb-1 fw-medium">Date Versement <span className="text-danger">*</span></Form.Label>
                              <Form.Control
                                 className={FORM_CONTROL_CLASS}
@@ -627,7 +624,7 @@ const VersementForm = ({
                              <Form.Control.Feedback type="invalid">{formErrors.date_versement}</Form.Control.Feedback>
                          </Form.Group>
 
-                         <Form.Group as={Col} md={4} controlId="formMontantVerse">
+                         <Form.Group as={Col} md={6} controlId="formMontantVerse">
                              <Form.Label className="small mb-1 fw-medium">Montant Versé (MAD) <span className="text-danger">*</span></Form.Label>
                              <InputGroup size="sm" hasValidation>
                                  <Form.Control
@@ -655,29 +652,9 @@ const VersementForm = ({
                              )}
                          </Form.Group>
 
-                         <Form.Group as={Col} md={4} controlId="formMoyenPaiement">
-                             <Form.Label className="small mb-1 fw-medium">Moyen de Paiement </Form.Label>
-                             <Form.Select
-                                className={FORM_SELECT_CLASS}
-                                name="moyen_paiement" value={formData.moyen_paiement} onChange={handleChange} 
-                                isInvalid={!!formErrors.moyen_paiement} size="sm" disabled={submissionStatus.loading}>
-                                 <option value="">-- Sélectionner --</option>
-                                 {PAIEMENT_METHODE_OPTIONS.map(opt => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-                             </Form.Select>
-                             <Form.Control.Feedback type="invalid">{formErrors.moyen_paiement}</Form.Control.Feedback>
-                         </Form.Group>
+                         
                      </Row>
-                     {/* Reference & Commentaire */}
-                     <Row className="mb-1 g-3">
-                         <Form.Group as={Col} md={12} controlId="formReferencePaiement">
-                             <Form.Label className="small mb-1 fw-medium">Référence Paiement</Form.Label>
-                             <Form.Control
-                                className={FORM_CONTROL_CLASS}
-                                isInvalid={!!formErrors.reference_paiement} type="text" name="reference_paiement"
-                                value={formData.reference_paiement} onChange={handleChange} size="sm" maxLength={100} disabled={submissionStatus.loading}/>
-                             <Form.Control.Feedback type="invalid">{formErrors.reference_paiement}</Form.Control.Feedback>
-                         </Form.Group>
-                     </Row>
+                     
                      <Row className="mb-3 g-3">
                          <Form.Group as={Col} md={12} controlId="formCommentaire">
                              <Form.Label className="small mb-1 fw-medium">Commentaire</Form.Label>

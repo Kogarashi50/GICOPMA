@@ -58,9 +58,7 @@ class VersementController extends Controller
                 $searchTerm = '%' . $request->search . '%';
                 Log::debug("Applying search term: " . $request->search); // Log the raw search term
                 $query->where(function ($q) use ($searchTerm) {
-                    $q->where('moyen_paiement', 'like', $searchTerm)
-                      ->orWhere('reference_paiement', 'like', $searchTerm)
-                      ->orWhere('commentaire', 'like', $searchTerm)
+                    $q->Where('commentaire', 'like', $searchTerm)
                       // Search in related project fields
                       ->orWhereHas('engagementFinancier.projet', function($subQ) use ($searchTerm) {
                           $subQ->where('Nom_Projet', 'like', $searchTerm)
@@ -115,8 +113,6 @@ class VersementController extends Controller
             'engagement_id' => 'required|integer|exists:engagements_financiers,id',
             'date_versement' => 'required|date_format:Y-m-d',
             'montant_verse' => 'required|numeric|min:0.01', // Ensure positive amount
-            'moyen_paiement' => 'nullable|string|max:50',   // Changed to nullable
-            'reference_paiement' => 'nullable|string|max:100',
             'commentaire' => 'nullable|string',
         ], [ /* Custom messages */
             'engagement_id.required' => 'L\'engagement financier est requis.',
@@ -128,7 +124,6 @@ class VersementController extends Controller
             'montant_verse.min' => 'Le montant versé doit être strictement positif.',
             // No message needed for moyen_paiement required
             'moyen_paiement.max' => 'Le moyen de paiement ne doit pas dépasser 50 caractères.',
-            'reference_paiement.max' => 'La référence de paiement ne doit pas dépasser 100 caractères.',
          ]);
 
         if ($validator->fails()) {
@@ -266,8 +261,7 @@ class VersementController extends Controller
             'engagement_id' => 'sometimes|required|integer|exists:engagements_financiers,id', // Required if present
             'date_versement' => 'sometimes|required|date_format:Y-m-d', // Required if present
             'montant_verse' => 'sometimes|required|numeric|min:0.01', // Required if present, must be positive
-            'moyen_paiement' => 'sometimes|nullable|string|max:50', // Optional if present (Changed)
-            'reference_paiement' => 'nullable|string|max:100', // Always optional
+
             'commentaire' => 'nullable|string', // Always optional
         ], [ /* Custom error messages - can reuse from store */
             'engagement_id.required' => 'L\'engagement financier est requis si fourni.',
@@ -277,8 +271,7 @@ class VersementController extends Controller
             'montant_verse.required' => 'Le montant versé est requis si fourni.',
             'montant_verse.numeric' => 'Le montant versé doit être un nombre.',
             'montant_verse.min' => 'Le montant versé doit être strictement positif.',
-            'moyen_paiement.max' => 'Le moyen de paiement ne doit pas dépasser 50 caractères.',
-            'reference_paiement.max' => 'La référence de paiement ne doit pas dépasser 100 caractères.',
+
          ]);
 
          if ($validator->fails()) {

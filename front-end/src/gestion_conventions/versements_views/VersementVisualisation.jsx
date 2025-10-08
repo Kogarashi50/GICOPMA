@@ -65,12 +65,11 @@ const VersementVisualisation = ({ itemId, onClose, baseApiUrl }) => {
     // Prepare data safely
     const convention = versement?.conv_part?.convention;
     const partenaire = versement?.conv_part?.partenaire;
-    //const conventionCode = convention?.code || '';
-    const conventionIntitule = convention?.intitule || '(Sans intitulé)';
+    const conventionIntitule = convention?.Intitule || '(Sans intitulé)';
     const partenaireDescription = partenaire?.Description || partenaire?.Description_Arr;
     const montantConvenu = versement?.conv_part?.Montant_Convenu;
 
-    const cardTitle = `Versement: ${versement?.reference_paiement || `#${itemId}`}`;
+    const cardTitle = `Versement:  #${itemId}`;
 
     return (
         <Card className="shadow-sm border-0 h-100 more-rounded-modal-content">
@@ -115,12 +114,10 @@ const VersementVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                                 <h6 className="text-muted fw-bold mb-3">DÉTAILS VERSEMENT</h6>
                                 <DetailItem icon={faCalendarAlt} label="Date Versement" value={formatDate(versement.date_versement)} />
                                 <DetailItem icon={faMoneyBillWave} label="Montant Versé" value={formatCurrency(versement.montant_verse)} />
-                                <DetailItem icon={faLandmark} label="Moyen Paiement" value={versement.moyen_paiement} />
                             </Col>
                             <Col md={6}>
                                 {/* Add a spacer or adjust if needed, or keep heading */}
                                 <h6 className="text-muted fw-bold mb-3 visually-hidden">Autres Détails</h6> {/* Hidden heading for structure */}
-                                <DetailItem icon={faReceipt} label="Référence Paiement" value={versement.reference_paiement} />
                                 <DetailItem icon={faCommentDots} label="Commentaire" value={versement.commentaire} isTextArea={true} />
                             </Col>
                         </Row>

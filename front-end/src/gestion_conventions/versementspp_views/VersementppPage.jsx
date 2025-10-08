@@ -32,19 +32,7 @@ const formatDateSimple = (dateString) => {
 };
 
 // More detailed date format (if needed for timestamps like created_at if they existed)
-const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    try {
-        const date = new Date(dateString);
-        if (!isNaN(date.getTime())) {
-            return date.toLocaleString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-        }
-        return dateString; // Fallback
-    } catch (e) {
-        console.error("Error formatting timestamp:", dateString, e);
-        return dateString; // Fallback
-    }
-};
+
 // --- End Helpers ---
 
 const VersementsPPPage = () => {
@@ -65,25 +53,17 @@ const VersementsPPPage = () => {
             cell: info => formatCurrency(info.getValue()),
             meta: { filterVariant: 'range', enableGlobalFilter: true } // Range filter, include in global search
         },
-        {
-            accessorKey: 'moyen_paiement', header: 'Moyen Paiement', size: 150,
-            meta: { filterVariant: 'text', enableGlobalFilter: true } // Text filter
-        },
-        {
-            accessorKey: 'reference_paiement', header: 'Référence', size: 130,
-            cell: info => <div className="text-truncate" style={{ maxWidth: '130px' }} title={info.getValue()}>{info.getValue() || '-'}</div>,
-            meta: { filterVariant: 'text', enableGlobalFilter: true } // Text filter
-        },
+        
 
         // **Data from Related EngagementFinancier -> Projet**
         {
             id: 'projet_code', // Use unique ID if accessorFn is used
-            header: 'Code Projet', size: 110,
+            header: 'Code Projet', size: 200,
             accessorFn: row => row.engagement_financier?.projet?.Code_Projet || '-', // Safely access nested data
             meta: { filterVariant: 'text', enableGlobalFilter: true } // Text filter
         },
         {
-            id: 'projet_nom', header: 'Nom Projet', size: 310,
+            id: 'projet_nom', header: 'Intitulé Projet', size: 310,
             accessorFn: row => row.engagement_financier?.projet?.Nom_Projet || '-',
             cell: info => <div className="text-truncate" style={{ maxWidth: '310px' }} title={info.getValue()}>{info.getValue()}</div>,
             meta: { filterVariant: 'text', enableGlobalFilter: true } // Text filter

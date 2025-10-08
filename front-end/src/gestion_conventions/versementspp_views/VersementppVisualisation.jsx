@@ -101,12 +101,7 @@ const VersementPPVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                                  <dt className={DT_CLASS}><FontAwesomeIcon icon={faEuroSign} className="me-1 text-muted"/> Montant Versé:</dt>
                                  <dd className={`${DD_CLASS} fw-bold text-success`}>{formatCurrency(versementData.montant_verse)}</dd>
 
-                                 <dt className={DT_CLASS}><FontAwesomeIcon icon={faCreditCard} className="me-1 text-muted"/> Moyen Paiement:</dt>
-                                 <dd className={DD_CLASS}>{displayData(versementData.moyen_paiement)}</dd>
-
-                                 <dt className={DT_CLASS}><FontAwesomeIcon icon={faInfoCircle} className="me-1 text-muted"/> Référence:</dt>
-                                 <dd className={DD_CLASS}>{displayData(versementData.reference_paiement)}</dd>
-                            </dl>
+                                </dl>
                         </Card.Body>
                     </Card>
                 </Col>

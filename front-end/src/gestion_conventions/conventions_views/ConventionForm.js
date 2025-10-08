@@ -547,7 +547,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
 </Card>
                         <Row className="mb-3 g-3">
                             <Form.Group as={Col} md={8} controlId="formIntitule">
-                                <Form.Label className="small mb-1 fw-medium">Intitulé <span className="text-danger">*</span></Form.Label>
+                                <Form.Label className=" mb-1 fw-medium">Intitulé <span className="text-danger">*</span></Form.Label>
                                 <Form.Control
                                     ref={intituleRef}
                                     className={textareaClass}
@@ -563,14 +563,14 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                     maxLength={INTITULE_MAX}
                                     onFocus={autosizeIntitule}
                                 />
-                                <div className="form-text small d-flex justify-content-between">
+                                <div className="form-text  d-flex justify-content-between">
                                     <span>Utilisez des termes clairs et précis.</span>
                                     <span>{(formData.Intitule || '').length}/{INTITULE_MAX}</span>
                                 </div>
                                 <Form.Control.Feedback type="invalid">{formErrors.Intitule}</Form.Control.Feedback>
                             </Form.Group>
                             <Form.Group as={Col} md={4} controlId="formAnnee_Convention">
-                                <Form.Label className="small mb-1 fw-medium">Année Convention <span className="text-danger">*</span></Form.Label>
+                                <Form.Label className=" mb-1 fw-medium">Année Convention <span className="text-danger">*</span></Form.Label>
                                 <Form.Control className={inputClass} isInvalid={!!formErrors.Annee_Convention} required type="number" name="Annee_Convention" value={formData.Annee_Convention} onChange={handleChange} size="sm" placeholder="YYYY" min="1900" max={new Date().getFullYear() + 10}/>
                                 <Form.Control.Feedback type="invalid">{formErrors.Annee_Convention}</Form.Control.Feedback>
                             </Form.Group>
@@ -578,7 +578,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                             
                                                 <Row className="mb-3 g-3">
                                                     <Form.Group as={Col} md={4} controlId="formNumeroApprobation">
-                                                        <Form.Label className="small mb-1 fw-medium">Numéro d'approbation <span className="text-danger">*</span></Form.Label>
+                                                        <Form.Label className=" mb-1 fw-medium">Numéro d'approbation <span className="text-danger">*</span></Form.Label>
                                                         <Form.Control 
                                                             className={inputClass} 
                                                             isInvalid={!!formErrors.numero_approbation} 
@@ -591,7 +591,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                                         <Form.Control.Feedback type="invalid">{formErrors.numero_approbation}</Form.Control.Feedback>
                                                     </Form.Group>
                                                     <Form.Group as={Col} md={4} controlId="formDureeConvention">
-        <Form.Label className="small mb-1 fw-medium">Durée de la convention (mois)</Form.Label>
+        <Form.Label className=" mb-1 fw-medium">Durée de la convention (mois)</Form.Label>
         <Form.Control 
             className={inputClass} 
             isInvalid={!!formErrors.duree_convention} 
@@ -605,7 +605,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
         <Form.Control.Feedback type="invalid">{formErrors.duree_convention}</Form.Control.Feedback>
     </Form.Group>
                                                     <Form.Group as={Col} md={4} controlId="formSession">
-                                                        <Form.Label className="small mb-1 fw-medium">Session (Mois) <span className="text-danger">*</span></Form.Label>
+                                                        <Form.Label className=" mb-1 fw-medium">Session (Mois) <span className="text-danger">*</span></Form.Label>
                                                         <Form.Select
                                                             className={inputClass}
                                                             name="session"
@@ -637,10 +637,10 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                             <Card.Header className='bg-light py-2'><h6 className='mb-0 fw-semibold text-secondary '>Partenaires & Engagements</h6></Card.Header>
                             <Card.Body className="pb-2 pt-3">
                                 <Form.Group as={Row} className="mb-3" id="formPartenaires">
-                                    <Form.Label column sm={3} className="small pt-1 fw-medium text-sm-end">Sélection Partenaires</Form.Label>
+                                    <Form.Label column sm={3} className=" pt-1 fw-medium text-sm-end">Sélection Partenaires</Form.Label>
                                     <Col sm={9}>
                                         <Select inputId='partenaire-select-input' name="partenaireSelector" options={allPartenairesOptions} value={allPartenairesOptions.filter(opt => selectedPartnerDetails.some(p => p.id === opt.value))} onChange={handlePartnerSelectionChange} styles={selectStyles} placeholder="- Choisir ou ajouter -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.partenaires} className={formErrors.partenaires || formErrors.signatories ? 'is-invalid' : ''} classNamePrefix="react-select"/>
-                                        {(formErrors.partenaires || formErrors.signatories) && <div className="invalid-feedback d-block ps-1 small">{formErrors.partenaires} {formErrors.signatories}</div>}
+                                        {(formErrors.partenaires || formErrors.signatories) && <div className="invalid-feedback d-block ps-1 ">{formErrors.partenaires} {formErrors.signatories}</div>}
                                     </Col>
                                 </Form.Group>
                                 {selectedPartnerDetails.length > 0 && ( <div className="mt-3 border-top pt-3">
@@ -649,7 +649,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                             <Row className="mb-2 align-items-center px-sm-3">
     <Col sm={12} md={4} className="mb-2 mb-md-0">
         <Form.Group>
-            <Form.Label className="small mb-1 fw-medium text-muted">Type d'engagement</Form.Label>
+            <Form.Label className=" mb-1 fw-medium text-muted">Type d'engagement</Form.Label>
             <ToggleButtonGroup
                 type="radio"
                 name={`engagement-type-${partner.tempId}`}
@@ -672,7 +672,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
     <Col sm={12} md={5} className="mb-2 mb-md-0">
         {partner.engagement_type === 'financier' ? (
             <Form.Group>
-                <Form.Label className="small mb-1 fw-medium text-muted">Montant (MAD)</Form.Label>
+                <Form.Label className=" mb-1 fw-medium text-muted">Montant (MAD)</Form.Label>
                 <InputGroup size="sm" className="flex-nowrap">
                     <Form.Control
                         type="number" step="0.01" min="0"
@@ -688,7 +688,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
             </Form.Group>
         ) : (
             <Form.Group>
-                <Form.Label className="small mb-1 fw-medium text-muted">Description de l'engagement</Form.Label>
+                <Form.Label className=" mb-1 fw-medium text-muted">Description de l'engagement</Form.Label>
                 <Form.Control
                     as="textarea" rows={1}
                     value={partner.autre_engagement}
@@ -710,7 +710,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
             label="Signataire?"
             checked={partner.is_signatory}
             onChange={(e) => handleSignatoryChange(partner.tempId, e.target.checked)}
-            className="form-check-lg small"
+            className="form-check-lg "
         />
     </Col>
 </Row>
@@ -727,7 +727,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                 <Row className="mt-2 mb-2 px-sm-3 justify-content-end">
                     <Col sm={12}>
                         <div className="p-2 border rounded-3 bg-light">
-                            <p className="small fw-medium text-muted mb-2">Répartition annuelle prévisionnelle :</p>
+                            <p className=" fw-medium text-muted mb-2">Répartition annuelle prévisionnelle :</p>
                             <Row className="g-2">
                                 {engagementYears.map(year => {
                                     const engagementForYear = partner.engagements_annuels?.find(e => Number(e.annee) === year);
@@ -748,7 +748,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                 })}
                             </Row>
                             {isTotalMismatch && totalCommitment > 0 && (
-                                <Alert variant="warning" className="mt-2 py-1 px-2 small mb-0">
+                                <Alert variant="warning" className="mt-2 py-1 px-2  mb-0">
                                     <FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/>
                                     La somme de la répartition ({yearlyTotal.toLocaleString('fr-MA')} MAD) ne correspond pas à l'engagement total ({totalCommitment.toLocaleString('fr-MA')} MAD).
                                 </Alert>
@@ -761,8 +761,8 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
     )}
                                             {partner.is_signatory && ( <Row className="mt-2 mb-1 px-sm-3">
                                                 <Col sm={5} md={4} className="d-none d-sm-block"></Col>
-                                                <Col xs={12} sm={4} md={4} className="mb-2 mb-sm-0"> <Form.Group controlId={`formDateSig_${partner.id}`}><Form.Label className="small mb-0 fw-medium text-muted">Date Signature</Form.Label><Form.Control type="date" size="sm" value={partner.date_signature} onChange={(e) => handleSignatureDateChange(partner.tempId, e.target.value)} className="form-control-sm rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors[`date_sig_${partner.id}`]} required={partner.is_signatory}/><Form.Control.Feedback type="invalid" className="small">{formErrors[`date_sig_${partner.id}`]}</Form.Control.Feedback></Form.Group> </Col>
-                                                <Col xs={12} sm={3} md={4}> <Form.Group controlId={`formDetailsSig_${partner.id}`}><Form.Label className="small mb-0 fw-medium text-muted">Détails Signature</Form.Label><Form.Control type="text" size="sm" value={partner.details_signature} onChange={(e) => handleSignatureDetailsChange(partner.tempId, e.target.value)} placeholder="Lieu, observations..." className="form-control-sm rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors[`details_sig_${partner.id}`]}/><Form.Control.Feedback type="invalid" className="small">{formErrors[`details_sig_${partner.id}`]}</Form.Control.Feedback></Form.Group> </Col>
+                                                <Col xs={12} sm={4} md={4} className="mb-2 mb-sm-0"> <Form.Group controlId={`formDateSig_${partner.id}`}><Form.Label className=" mb-0 fw-medium text-muted">Date Signature</Form.Label><Form.Control type="date" size="sm" value={partner.date_signature} onChange={(e) => handleSignatureDateChange(partner.tempId, e.target.value)} className="form-control-sm rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors[`date_sig_${partner.id}`]} required={partner.is_signatory}/><Form.Control.Feedback type="invalid" className="">{formErrors[`date_sig_${partner.id}`]}</Form.Control.Feedback></Form.Group> </Col>
+                                                <Col xs={12} sm={3} md={4}> <Form.Group controlId={`formDetailsSig_${partner.id}`}><Form.Label className=" mb-0 fw-medium text-muted">Détails Signature</Form.Label><Form.Control type="text" size="sm" value={partner.details_signature} onChange={(e) => handleSignatureDetailsChange(partner.tempId, e.target.value)} placeholder="Lieu, observations..." className="form-control-sm rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors[`details_sig_${partner.id}`]}/><Form.Control.Feedback type="invalid" className="">{formErrors[`details_sig_${partner.id}`]}</Form.Control.Feedback></Form.Group> </Col>
                                             </Row> )}
                                         </div>
                                     ))}
@@ -777,7 +777,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
         <Row>
             <Col md={12} className="mb-3">
                 <Form.Group controlId="formMembresTechnique">
-                    <Form.Label className="small mb-1 fw-medium">Membres du Comité Technique</Form.Label>
+                    <Form.Label className=" mb-1 fw-medium">Membres du Comité Technique</Form.Label>
                     <CreatableSelect
                         isMulti
 
@@ -796,7 +796,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
             </Col>
             <Col md={12}>
                 <Form.Group controlId="formMembresPilotage">
-                    <Form.Label className="small mb-1 fw-medium">Membres du Comité de Pilotage</Form.Label>
+                    <Form.Label className=" mb-1 fw-medium">Membres du Comité de Pilotage</Form.Label>
                      <CreatableSelect
                         isMulti
                         isClearable
@@ -816,15 +816,15 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
     </Card.Body>
 </Card>
                         <Row className="mb-3 g-3">
-                             <Form.Group as={Col} md={6} lg={6} controlId="formMaitre_Ouvrage"><Form.Label className="small mb-1 fw-medium">Maitre Ouvrage</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Maitre_Ouvrage} type="text" name="Maitre_Ouvrage" value={formData.Maitre_Ouvrage} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Maitre_Ouvrage}</Form.Control.Feedback></Form.Group>
+                             <Form.Group as={Col} md={6} lg={6} controlId="formMaitre_Ouvrage"><Form.Label className=" mb-1 fw-medium">Maitre Ouvrage</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Maitre_Ouvrage} type="text" name="Maitre_Ouvrage" value={formData.Maitre_Ouvrage} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Maitre_Ouvrage}</Form.Control.Feedback></Form.Group>
                              
 
-                            {formData.type === 'cadre' && (<Form.Group as={Col} md={6} lg={6} controlId="formId_Programme"><Form.Label className="small mb-1 fw-medium">Programme</Form.Label><Select inputId='programme-select-input' name="programmeId" menuPlacement="auto" options={programmesOptions} value={formData.programmeId} onChange={handleProgrammeChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.programmes} className={formErrors.Id_Programme ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Programme ? 'block' : 'none'}}>{formErrors.Id_Programme}</Form.Control.Feedback></Form.Group>)}
-                             {formData.type === 'specifique' && (<Form.Group as={Col} md={6} lg={6} controlId="formId_Projet"><Form.Label className="small mb-1 fw-medium">Projet</Form.Label><Select inputId='projet-select-input' name="projetId" menuPlacement="auto" options={projetsOptions} value={formData.projetId} onChange={handleProjetChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.projets} className={formErrors.Id_Projet ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Projet ? 'block' : 'none'}}>{formErrors.Id_Projet}</Form.Control.Feedback></Form.Group>)}
+                            {formData.type === 'cadre' && (<Form.Group as={Col} md={6} lg={6} controlId="formId_Programme"><Form.Label className=" mb-1 fw-medium">Programme</Form.Label><Select inputId='programme-select-input' name="programmeId" menuPlacement="auto" options={programmesOptions} value={formData.programmeId} onChange={handleProgrammeChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.programmes} className={formErrors.Id_Programme ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Programme ? 'block' : 'none'}}>{formErrors.Id_Programme}</Form.Control.Feedback></Form.Group>)}
+                             {formData.type === 'specifique' && (<Form.Group as={Col} md={6} lg={6} controlId="formId_Projet"><Form.Label className=" mb-1 fw-medium">Projet</Form.Label><Select inputId='projet-select-input' name="projetId" menuPlacement="auto" options={projetsOptions} value={formData.projetId} onChange={handleProjetChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.projets} className={formErrors.Id_Projet ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Projet ? 'block' : 'none'}}>{formErrors.Id_Projet}</Form.Control.Feedback></Form.Group>)}
                         </Row>
                         <Row className="mb-3 g-3">
     <Form.Group as={Col} md={6} controlId="formMaitreOuvrageDelegue">
-        <Form.Label className="small mb-1 fw-medium">Maitre d'ouvrage délégué</Form.Label>
+        <Form.Label className=" mb-1 fw-medium">Maitre d'ouvrage délégué</Form.Label>
         <Form.Control 
             className={inputClass} 
             isInvalid={!!formErrors.maitre_ouvrage_delegue} 
@@ -836,14 +836,14 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
         />
         <Form.Control.Feedback type="invalid">{formErrors.maitre_ouvrage_delegue}</Form.Control.Feedback>
     </Form.Group>
-    <Form.Group as={Col} md={6} lg={6} controlId="formProvince"><Form.Label className="small mb-1 fw-medium">Localisation (Provinces)</Form.Label><Select inputId='province-select-input' name="provinces" menuPlacement="auto" options={provincesOptions} value={formData.provinces} onChange={handleProvinceChange} styles={selectStyles} placeholder="- Selectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.provinces} className={formErrors.Province ? 'is-invalid' : ''} classNamePrefix="react-select"/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Province ? 'block' : 'none'}}>{formErrors.Province}</Form.Control.Feedback></Form.Group>
+    <Form.Group as={Col} md={6} lg={6} controlId="formProvince"><Form.Label className=" mb-1 fw-medium">Localisation (Provinces)</Form.Label><Select inputId='province-select-input' name="provinces" menuPlacement="auto" options={provincesOptions} value={formData.provinces} onChange={handleProvinceChange} styles={selectStyles} placeholder="- Selectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.provinces} className={formErrors.Province ? 'is-invalid' : ''} classNamePrefix="react-select"/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Province ? 'block' : 'none'}}>{formErrors.Province}</Form.Control.Feedback></Form.Group>
 
 </Row>
                         <Row className="mb-3 g-3">
-                            <Form.Group as={Col} md={4} controlId="formStatut"><Form.Label className="small mb-1 fw-medium">Statut <span className="text-danger">*</span></Form.Label><Select inputId='statut-select-input' name="Statut" options={groupedStatutOptions} value={formData.Statut} onChange={handleStatutChange} styles={selectStyles} placeholder="- Sélectionner Statut -" isClearable formatGroupLabel={(group) => (<div style={{ fontWeight: 'bold', color: '#555', borderTop: '1px solid #eee', paddingTop: '5px', marginTop:'5px' }}>{group.label}</div>)} className={formErrors.Statut ? 'is-invalid' : ''} classNamePrefix="react-select"/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Statut ? 'block' : 'none'}}>{formErrors.Statut}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col} md={4} controlId="formStatut"><Form.Label className=" mb-1 fw-medium">Statut <span className="text-danger">*</span></Form.Label><Select inputId='statut-select-input' name="Statut" options={groupedStatutOptions} value={formData.Statut} onChange={handleStatutChange} styles={selectStyles} placeholder="- Sélectionner Statut -" isClearable formatGroupLabel={(group) => (<div style={{ fontWeight: 'bold', color: '#555', borderTop: '1px solid #eee', paddingTop: '5px', marginTop:'5px' }}>{group.label}</div>)} className={formErrors.Statut ? 'is-invalid' : ''} classNamePrefix="react-select"/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Statut ? 'block' : 'none'}}>{formErrors.Statut}</Form.Control.Feedback></Form.Group>
                             {formData.Statut?.value === 'visé' && (
                                 <><Form.Group as={Col} md={4} controlId="formDateVisa">
-                                    <Form.Label className="small mb-1 fw-medium">Date de visa</Form.Label>
+                                    <Form.Label className=" mb-1 fw-medium">Date de visa</Form.Label>
                                     <Form.Control 
                                         className={inputClass} 
                                         isInvalid={!!formErrors.date_visa} 
@@ -857,7 +857,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                     <Form.Control.Feedback type="invalid">{formErrors.date_visa}</Form.Control.Feedback>
                                 </Form.Group>
                                 <Form.Group as={Col} md={4} controlId="formDateReceptionVise">
-                               <Form.Label className="small mb-1 fw-medium">Date de réception de convention visée</Form.Label>
+                               <Form.Label className=" mb-1 fw-medium">Date de réception de convention visée</Form.Label>
                               <Form.Control 
                               className={inputClass} 
                               isInvalid={!!formErrors.date_reception_vise} 
@@ -866,7 +866,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                 <Form.Control.Feedback type="invalid">{formErrors.date_reception_vise}</Form.Control.Feedback>
                              </Form.Group></>
                             )}
-                            <Form.Group as={Col} md={4} controlId="formOperationalisation"><Form.Label className="small mb-1 fw-medium">Opérationnel</Form.Label>
+                            <Form.Group as={Col} md={4} controlId="formOperationalisation"><Form.Label className=" mb-1 fw-medium">Opérationnel</Form.Label>
                                 <div> 
                                         <Form.Check
                                             inline
@@ -897,27 +897,27 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                         )}
                                     </div>                                    </Form.Group>
                             <Form.Group as={Col} md={4} controlId="formId_Fonctionnaire">
-                                <Form.Label className="small mb-1 fw-medium"><FontAwesomeIcon icon={faUsers} className="me-1" /> Points Focaux</Form.Label>
+                                <Form.Label className=" mb-1 fw-medium"><FontAwesomeIcon icon={faUsers} className="me-1" /> Points Focaux</Form.Label>
                                 <Select inputId='fonctionnaire-select-input' name="fonctionnaires" menuPlacement="auto" options={fonctionnairesOptions} value={formData.fonctionnaires} onChange={handleFonctionnaireChange} styles={selectStyles} placeholder="- Selectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.fonctionnaires} className={formErrors.id_fonctionnaire ? 'is-invalid' : ''} classNamePrefix="react-select"/>
                                 <Form.Control.Feedback type="invalid" style={{ display: formErrors.id_fonctionnaire ? 'block' : 'none'}}>{formErrors.id_fonctionnaire}</Form.Control.Feedback>
                             </Form.Group>
                         </Row>
                         <Row className="mb-3 g-3">
-                            <Form.Group as={Col} md={6} controlId="formReference"><Form.Label className="small mb-1 fw-medium">Reference</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Reference} type="text" name="Reference" value={formData.Reference} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Reference}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col} md={6} controlId="formReference"><Form.Label className=" mb-1 fw-medium">Reference</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Reference} type="text" name="Reference" value={formData.Reference} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Reference}</Form.Control.Feedback></Form.Group>
 
-                            {/* <Form.Group as={Col} md={6} controlId="formClassification_prov"><Form.Label className="small mb-1 fw-medium">Classification Prov</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Classification_prov} type="text" name="Classification_prov" value={formData.Classification_prov} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Classification_prov}</Form.Control.Feedback></Form.Group> */}
-                            <Form.Group as={Col} md={6} controlId="formCategorie"><Form.Label className="small mb-1 fw-medium">Categorie</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Categorie} type="text" name="Categorie" value={formData.Categorie} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Categorie}</Form.Control.Feedback></Form.Group>
+                            {/* <Form.Group as={Col} md={6} controlId="formClassification_prov"><Form.Label className=" mb-1 fw-medium">Classification Prov</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Classification_prov} type="text" name="Classification_prov" value={formData.Classification_prov} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Classification_prov}</Form.Control.Feedback></Form.Group> */}
+                            <Form.Group as={Col} md={6} controlId="formCategorie"><Form.Label className=" mb-1 fw-medium">Categorie</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Categorie} type="text" name="Categorie" value={formData.Categorie} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Categorie}</Form.Control.Feedback></Form.Group>
                         </Row>
                          {/* <Row className="mb-3 g-3">
-                            <Form.Group as={Col} md={4} controlId="formGroupe"><Form.Label className="small mb-1 fw-medium">Groupe</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Groupe} type="number" name="Groupe" value={formData.Groupe} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Groupe}</Form.Control.Feedback></Form.Group>
-                            <Form.Group as={Col} md={4} controlId="formRang"><Form.Label className="small mb-1 fw-medium">Rang</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Rang} type="text" name="Rang" value={formData.Rang} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Rang}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col} md={4} controlId="formGroupe"><Form.Label className=" mb-1 fw-medium">Groupe</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Groupe} type="number" name="Groupe" value={formData.Groupe} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Groupe}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col} md={4} controlId="formRang"><Form.Label className=" mb-1 fw-medium">Rang</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Rang} type="text" name="Rang" value={formData.Rang} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Rang}</Form.Control.Feedback></Form.Group>
                         </Row> */}
                          <Card className="mb-4 shadow-sm border-light" id="file-management-card">
                             <Card.Header className='bg-light py-2'><h6 className='mb-0 fw-semibold text-secondary'>Gestion des Fichiers</h6></Card.Header>
                             <Card.Body className="pb-3 pt-3">
                                 {isEditing && existingDocuments.length > 0 && (
                                     <>
-                                        <h6 className="small text-muted mb-2">Fichiers Actuels :</h6>
+                                        <h6 className=" text-muted mb-2">Fichiers Actuels :</h6>
                                         <ListGroup variant="flush" className="mb-3 existing-files-list border rounded-3">
                                             {existingDocuments.map((doc) => (
                                                 <ListGroup.Item key={doc.id} className={`px-2 py-2 border-bottom ${documentsToDelete.includes(doc.id) ? 'bg-light text-muted text-decoration-line-through' : ''}`} style={{ transition: 'background-color 0.3s ease' }}>
@@ -925,12 +925,12 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                                         <div className="d-flex align-items-center text-truncate me-2">
                                                             <FontAwesomeIcon icon={getFileIcon(doc.type || doc.name)} className="me-2 text-secondary" fixedWidth title={doc.type || 'Type inconnu'}/>
                                                             {doc.url ? (
-                                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" title={`Voir ${doc.name}`} className={`text-truncate me-2 small fw-medium ${documentsToDelete.includes(doc.id) ? 'text-muted' : 'link-primary'}`} style={{ maxWidth: '250px' }}>
+                                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" title={`Voir ${doc.name}`} className={`text-truncate me-2  fw-medium ${documentsToDelete.includes(doc.id) ? 'text-muted' : 'link-primary'}`} style={{ maxWidth: '250px' }}>
                                                                     {doc.name}
                                                                     <FontAwesomeIcon icon={faExternalLinkAlt} size="xs" className="ms-1"/>
                                                                 </a>
                                                             ) : (
-                                                                <span title={doc.name} className={`text-truncate me-2 small fw-medium ${documentsToDelete.includes(doc.id) ? 'text-muted' : ''}`} style={{ maxWidth: '250px' }}>{doc.name}</span>
+                                                                <span title={doc.name} className={`text-truncate me-2  fw-medium ${documentsToDelete.includes(doc.id) ? 'text-muted' : ''}`} style={{ maxWidth: '250px' }}>{doc.name}</span>
                                                             )}
                                                         </div>
                                                         <div className="flex-grow-1 d-flex align-items-center gap-2">
@@ -945,7 +945,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                                                     disabled={documentsToDelete.includes(doc.id)}
                                                                     maxLength={FILE_INTITULE_MAX}
                                                                 />
-                                                                <div className="form-text small text-muted d-flex justify-content-end mt-1">
+                                                                <div className="form-text  text-muted d-flex justify-content-end mt-1">
                                                                     {(doc.intitule || '').length}/{FILE_INTITULE_MAX}
                                                                 </div>
                                                             </div>
@@ -959,19 +959,19 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                                 </ListGroup.Item>
                                             ))}
                                         </ListGroup>
-                                        {formErrors.fichiers_delete && <Form.Text className="text-danger small d-block mb-2">{formErrors.fichiers_delete}</Form.Text>}
+                                        {formErrors.fichiers_delete && <Form.Text className="text-danger  d-block mb-2">{formErrors.fichiers_delete}</Form.Text>}
                                     </>
                                 )}
                                 {newFiles.length > 0 && (
                                     <>
-                                        <h6 className="small text-muted mb-2 mt-3">Nouveaux Fichiers à Ajouter :</h6>
+                                        <h6 className=" text-muted mb-2 mt-3">Nouveaux Fichiers à Ajouter :</h6>
                                         <ListGroup variant="flush" className="mb-3 new-files-list border rounded-3">
                                             {newFiles.map((fw, index) => (
                                                 <ListGroup.Item key={`${(fw.file?.name || fw.name)}-${(fw.file?.size || fw.size)}-${index}`} className="px-2 py-2 border-bottom">
                                                     <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
                                                         <div className="d-flex align-items-center text-truncate me-2">
                                                             <FontAwesomeIcon icon={getFileIcon((fw.file?.type || fw.file?.name || ''))} className="me-2 text-secondary" fixedWidth />
-                                                            <span className="text-truncate me-2 small" title={fw.file?.name} style={{ maxWidth: '250px' }}>{fw.file?.name}</span>
+                                                            <span className="text-truncate me-2 " title={fw.file?.name} style={{ maxWidth: '250px' }}>{fw.file?.name}</span>
                                                         </div>
                                                         <div className="flex-grow-1 d-flex align-items-center gap-2">
                                                             <div className="flex-grow-1">
@@ -984,11 +984,11 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                                                     className="form-control-sm rounded-3 shadow-sm"
                                                                     maxLength={FILE_INTITULE_MAX}
                                                                 />
-                                                                <div className="form-text small text-muted d-flex justify-content-end mt-1">
+                                                                <div className="form-text  text-muted d-flex justify-content-end mt-1">
                                                                     {(fw.intitule || '').length}/{FILE_INTITULE_MAX}
                                                                 </div>
                                                             </div>
-                                                            <Badge bg="light" text="dark" pill className="small fw-normal">{((fw.file?.size || 0) / 1024 / 1024).toFixed(2)} Mo</Badge>
+                                                            <Badge bg="light" text="dark" pill className=" fw-normal">{((fw.file?.size || 0) / 1024 / 1024).toFixed(2)} Mo</Badge>
                                                             <Button variant="outline-warning" size="sm" onClick={() => handleRemoveNewFile(index)} title="Retirer ce fichier"><FontAwesomeIcon icon={faTimes} /></Button>
                                                         </div>
                                                     </div>
@@ -1000,19 +1000,19 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                 <Form.Group id="formFichiers" className={`mt-3 text-center ${formErrors.fichiers ? 'is-invalid' : ''}`}>
                                     <Form.Label htmlFor="file-upload-input" className="btn btn-outline-secondary rounded-pill shadow-sm px-4 py-2"> <FontAwesomeIcon icon={faPlusCircle} className="me-2" /> {isEditing ? 'Ajouter Fichiers' : 'Sélectionner Fichiers'} </Form.Label>
                                     <Form.Control type="file" id="file-upload-input" multiple onChange={handleFileChange} style={{ display: 'none' }} accept=".pdf,.doc,.docx,image/*,.xls,.xlsx"/>
-                                    <Form.Control.Feedback type="invalid" className="d-block text-center mt-1 small">{formErrors.fichiers}</Form.Control.Feedback>
+                                    <Form.Control.Feedback type="invalid" className="d-block text-center mt-1 ">{formErrors.fichiers}</Form.Control.Feedback>
                                 </Form.Group>
                             </Card.Body>
                         </Card>
                         <Row className="mb-3 g-3">
-                            <Form.Group as={Col} md={6} controlId="formObjet"><Form.Label className="small mb-1 fw-medium">Objet</Form.Label><Form.Control className={textareaClass} isInvalid={!!formErrors.Objet} as="textarea" rows={1} name="Objet" value={formData.Objet} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Objet}</Form.Control.Feedback></Form.Group>
-                            <Form.Group as={Col} md={6} controlId="formObjectifs"><Form.Label className="small mb-1 fw-medium">Objectifs</Form.Label><Form.Control className={textareaClass} isInvalid={!!formErrors.Objectifs} as="textarea" rows={1} name="Objectifs" value={formData.Objectifs} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Objectifs}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col} md={6} controlId="formObjet"><Form.Label className=" mb-1 fw-medium">Objet</Form.Label><Form.Control className={textareaClass} isInvalid={!!formErrors.Objet} as="textarea" rows={1} name="Objet" value={formData.Objet} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Objet}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col} md={6} controlId="formObjectifs"><Form.Label className=" mb-1 fw-medium">Objectifs</Form.Label><Form.Control className={textareaClass} isInvalid={!!formErrors.Objectifs} as="textarea" rows={1} name="Objectifs" value={formData.Objectifs} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Objectifs}</Form.Control.Feedback></Form.Group>
                         </Row>
                         <Row className="mb-4 g-3">
-                            <Form.Group as={Col} md={12} controlId="formCout_Global"><Form.Label className="small mb-1 fw-medium">Cout Global (MAD)</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Cout_Global} type="number" step="0.01" min="0" name="Cout_Global" value={formData.Cout_Global} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Cout_Global}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col} md={12} controlId="formCout_Global"><Form.Label className=" mb-1 fw-medium">Cout Global (MAD)</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Cout_Global} type="number" step="0.01" min="0" name="Cout_Global" value={formData.Cout_Global} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Cout_Global}</Form.Control.Feedback></Form.Group>
                         </Row>
                         <Row className="mb-3 g-3">
-                            <Form.Group as={Col} controlId="formObservations"><Form.Label className="small mb-1 fw-medium">Observations</Form.Label><Form.Control className={textareaClass} style={{borderRadius: '1rem'}} isInvalid={!!formErrors.observations} as="textarea" rows={3} name="observations" value={formData.observations} onChange={handleChange} size="sm" placeholder="Ajouter des observations ou remarques..."/><Form.Control.Feedback type="invalid">{formErrors.observations}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col} controlId="formObservations"><Form.Label className=" mb-1 fw-medium">Observations</Form.Label><Form.Control className={textareaClass} style={{borderRadius: '1rem'}} isInvalid={!!formErrors.observations} as="textarea" rows={3} name="observations" value={formData.observations} onChange={handleChange} size="sm" placeholder="Ajouter des observations ou remarques..."/><Form.Control.Feedback type="invalid">{formErrors.observations}</Form.Control.Feedback></Form.Group>
                         </Row>
                         <Row className="mt-4 pt-2 justify-content-center flex-shrink-0">
                             <Col xs="auto"> <Button variant="danger" onClick={onClose} className="btn px-5 rounded-5 py-2 shadow-sm" disabled={submissionStatus.loading}> Annuler </Button> </Col>
@@ -1025,7 +1025,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                 <Modal.Header closeButton><Modal.Title><FontAwesomeIcon icon={faExclamationTriangle} className="text-warning me-2" /> Confirmation Requise</Modal.Title></Modal.Header>
                 <Modal.Body>
                     <p>{confirmModalData.message || "Confirmer la suppression des engagements partenaires (et versements associés) ?"}</p>
-                    {confirmModalData.details && confirmModalData.details.length > 0 && ( <div className='mb-3'> <p className="mb-1 small text-muted">Engagements concernés :</p> <ListGroup variant="flush" style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.8rem' }}> {confirmModalData.details.map((detail, index) => ( <ListGroup.Item key={index} className="px-2 py-1">{detail}</ListGroup.Item> ))} </ListGroup> </div> )}
+                    {confirmModalData.details && confirmModalData.details.length > 0 && ( <div className='mb-3'> <p className="mb-1  text-muted">Engagements concernés :</p> <ListGroup variant="flush" style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.8rem' }}> {confirmModalData.details.map((detail, index) => ( <ListGroup.Item key={index} className="px-2 py-1">{detail}</ListGroup.Item> ))} </ListGroup> </div> )}
                     <p className="fw-bold text-danger mt-3">Cette action est irréversible.</p>
                 </Modal.Body>
                 <Modal.Footer>

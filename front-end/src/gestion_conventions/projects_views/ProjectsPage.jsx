@@ -235,7 +235,7 @@ const ProjetsPage = () => {
     const projetColumns = useMemo(() => [
         // --- Core Visible Columns ---
         { accessorKey: 'Code_Projet', header: 'Code', size: 50, meta: { enableGlobalFilter: true } },
-        { accessorKey: 'Nom_Projet', header: 'Nom Projet', size: 190, cell: info => <div className="text-truncate" style={{ maxWidth: '230px' }} title={info.getValue()}>{info.getValue() || '-'}</div>, meta: { enableGlobalFilter: true } },
+        { accessorKey: 'Nom_Projet', header: 'Intitulé', size: 190, cell: info => <div className="text-truncate" style={{ maxWidth: '230px' }} title={info.getValue()}>{info.getValue() || '-'}</div>, meta: { enableGlobalFilter: true } },
         
         // --- Relational Columns for Display and Filtering ---
         { 
