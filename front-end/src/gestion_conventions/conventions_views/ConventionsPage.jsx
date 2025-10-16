@@ -206,8 +206,8 @@ const ConventionsPage = () => {
         },
         {
             accessorKey: 'Maitre_Ouvrage',
-            header: 'Maitre Ouvrage',
-            cell: info => <div className="text-truncate" style={{ maxWidth: '180px' }} title={info.getValue()}>{info.getValue() || '-'}</div>,
+            header: 'M. Ouvrage',
+            cell: info => <div className="text-truncate" style={{ maxWidth: '200px' }} title={info.getValue()}>{info.getValue() || '-'}</div>,
             meta: { enableGlobalFilter: true },
             filterFn: 'equalsString'
         },
@@ -353,7 +353,7 @@ const ConventionsPage = () => {
     // --- DynamicTable Configuration ---
     const defaultCols = useMemo(() => [
         'Code', 'Intitule', 'type', 'rattachement', 'Statut',
-        'Annee_Convention', 'Cout_Global',
+        'Annee_Convention', 'Maitre_Ouvrage',
         'actions', 'partenaires'
     ], []);
     const availableCols = useMemo(() => [

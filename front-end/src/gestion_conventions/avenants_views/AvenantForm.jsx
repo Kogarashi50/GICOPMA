@@ -66,7 +66,14 @@ const getFileIcon = (filenameOrMimeType) => {
     return faFileAlt; 
 };
 
-const TYPE_MODIFICATION_OPTIONS = [ { value: 'montant', label: 'Modification Montant' }, { value: 'durée', label: 'Modification Durée' }, { value: 'partenaire', label: 'Modification Partenaire(s)' }, { value: 'autre', label: 'Autre Modification' }, ];
+// MISSION 1: Updated the options array with new value and improved labels
+const TYPE_MODIFICATION_OPTIONS = [ 
+    { value: 'montant', label: 'Modification du Montant' }, 
+    { value: 'durée', label: 'Prolongation de Durée' }, 
+    { value: 'partenaire', label: 'Changement de Partenaire(s)' }, 
+    { value: 'technique_administratif', label: 'Mise à Jour Technique/Administrative' }, 
+    { value: 'autre', label: 'Autres Modifications' }, 
+];
 
 const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, initialConventionId = null, conventionCode = '', baseApiUrl = 'http://localhost:8000/api' }) => {
     const initialFormData = useMemo(() => ({ convention_id: initialConventionId || '', 
@@ -191,11 +198,10 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                     fonctionnaires: findMultiOptions(fonctionnairesOptions, data.id_fonctionnaire),
                 });
 
-                // --- FIX: Store existing files with their primary key `id` for reliable updates/deletes ---
                 const fetchedFiles = Array.isArray(data.documents) ? data.documents : [];
                 setExistingFichiers(fetchedFiles.map(f => ({
-                    id: f.id, // The primary key from the database
-                    Id_Doc: f.Id_Doc, // The unique string identifier
+                    id: f.id,
+                    Id_Doc: f.Id_Doc,
                     file_name: f.file_name || f.nom_fichier,
                     fichier_url: f.fichier_url || `${storageBaseUrl}/${f.file_path}`,
                     intitule: f.Intitule || f.intitule || ''
@@ -236,12 +242,17 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
 
     useEffect(() => { if (!isEditing && optionsFinishedLoading) { setFormData(initialFormData); setFichiers([]); setExistingFichiers([]); setFichiersToDelete([]); setAvenantPartnerDetails([]); setFormErrors({}); setSubmissionStatus({ loading: false, error: null, success: false }); setLoadingData(false); } }, [isEditing, optionsFinishedLoading, initialFormData]);
     
-    // ... (All other handlers like validateForm, handleChange, etc., remain the same)
+    // MISSION 2: Updated validation logic for date_signature
     const validateForm = useCallback(() => { 
         const errors = {}; 
         if (!formData.convention_id) errors.convention_id = "Convention requise."; 
         if (!formData.numero_avenant?.trim()) errors.numero_avenant = "Numéro avenant requis."; 
-        if (!formData.date_signature) errors.date_signature = "Date signature requise."; 
+        
+        // Only require date_signature if status is 'signé'
+        if (formData.statut?.value === 'signé' && !formData.date_signature) {
+            errors.date_signature = "Date signature requise pour le statut 'Signé'.";
+        }
+        
         if (!formData.type_modification) errors.type_modification = "Type modification requis."; 
         const typeValue = formData.type_modification?.value; 
         if (typeValue === 'montant') { 
@@ -273,14 +284,17 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
         return Object.keys(errors).length === 0; 
     }, [formData, avenantPartnerDetails]);
 
+    // MISSION 2: Automatically clear date_signature if status is not 'signé'
     const handleStatutChange = useCallback((selectedOption) => {
         setFormData(prev => ({
             ...prev,
             statut: selectedOption,
-            date_visa: selectedOption?.value === 'visé' ? prev.date_visa : ''
+            date_visa: selectedOption?.value === 'visé' ? prev.date_visa : '',
+            date_signature: selectedOption?.value === 'signé' ? prev.date_signature : '' // Keep date if 'signé', clear otherwise
         }));
         if (formErrors.statut) setFormErrors(prev => ({ ...prev, statut: undefined }));
-    }, [formErrors.statut]);
+        if (formErrors.date_signature) setFormErrors(prev => ({ ...prev, date_signature: undefined })); // Also clear validation error
+    }, [formErrors.statut, formErrors.date_signature]);
 
     const handleChange = useCallback((e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); if (formErrors[name]) setFormErrors(prev => { const next = {...prev}; delete next[name]; return next; }); }, [formErrors]);
     
@@ -302,7 +316,7 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                 setSelectedConventionDetails(null);
             }
         } else {
-            setSelectedConventionDetails(null); // Clear details if convention is deselected
+            setSelectedConventionDetails(null);
         }
             if (formErrors.convention_id) setFormErrors(prev => ({ ...prev, convention_id: undefined })); 
         } else if (name === 'type_modification') { 
@@ -407,7 +421,7 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
             const existingNames = new Set(prev.map(fw => fw.file.name));
             const newUniqueFiles = filesToAdd
                 .filter(f => !existingNames.has(f.name))
-                .map(f => ({ file: f, intitule: f.name.replace(/\.[^/.]+$/, "") })); // Default intitule
+                .map(f => ({ file: f, intitule: f.name.replace(/\.[^/.]+$/, "") }));
             return [...prev, ...newUniqueFiles];
         });
         e.target.value = null;
@@ -428,7 +442,6 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
         setSubmissionStatus({ loading: true, error: null, success: false }); 
         const dataToSubmit = new FormData(); 
 
-        // Append main form data
         Object.entries(formData).forEach(([key, value]) => {
             if (key === 'statut' || key === 'type_modification') {
                 dataToSubmit.append(key, value?.value || '');
@@ -443,22 +456,17 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
             dataToSubmit.set('montant_modifie', parseCurrency(formData.montant_modifie) ?? '');
         }
 
-        // --- FIX: Append new files and their titles correctly ---
         fichiers.forEach((fileWrapper, index) => {
             dataToSubmit.append(`fichiers[${index}]`, fileWrapper.file);
             dataToSubmit.append(`intitules[${index}]`, fileWrapper.intitule);
         });
 
-        // --- FIX: Append data for existing files correctly ---
         if (isEditing) {
-            // Send metadata for existing files that might have changed titles
             const docsMeta = existingFichiers
                 .map(d => ({ id: d.id, intitule: d.intitule.trim() }));
             if (docsMeta.length > 0) {
                 dataToSubmit.append('existing_documents_meta', JSON.stringify(docsMeta));
             }
-
-            // Send IDs of files marked for deletion
             if (fichiersToDelete.length > 0) {
                 fichiersToDelete.forEach(id => dataToSubmit.append('fichiers_to_delete[]', id));
             }
@@ -508,7 +516,6 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
 
     if (loadingData || !optionsFinishedLoading) { return ( <div className="d-flex justify-content-center align-items-center p-5" style={{minHeight: '400px'}}> <Spinner animation="border" variant="primary" /> <span className='ms-3 text-muted'>Chargement du formulaire...</span> </div> ); }
     
-    // --- FIX: Filter out files marked for deletion from the visible list ---
     const visibleExistingFichiers = existingFichiers.filter(f => !fichiersToDelete.includes(f.id));
 
     return (
@@ -550,16 +557,23 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                         </Form.Group>
                     </Row>
                     <Row className="g-3 mb-3">
-                         <Form.Group as={Col} md={4} controlId="formNumero_avenant"><Form.Label className="small mb-1 fw-medium">N° Avenant <span className="text-danger">*</span></Form.Label><Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.numero_avenant} type="text" name="numero_avenant" value={formData.numero_avenant} onChange={handleChange} size="sm" placeholder="Ex: Avenant N°1"/><Form.Control.Feedback type="invalid">{formErrors.numero_avenant}</Form.Control.Feedback></Form.Group>
-                         <Form.Group as={Col} md={4} controlId="formDate_signature"><Form.Label className="small mb-1 fw-medium">Date Signature<span className="text-danger">*</span></Form.Label><Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.date_signature} type="date" name="date_signature" value={formData.date_signature} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.date_signature}</Form.Control.Feedback></Form.Group>
-                         <Form.Group as={Col} md={4} controlId="formType_modification"><Form.Label className="small mb-1 fw-medium">Type Modification <span className="text-danger">*</span></Form.Label><Select inputId='type-modif-select-input' name="type_modification" options={typeModificationOptions} value={formData.type_modification} onChange={handleSelectChange} styles={selectStyles} placeholder="- Sélectionner Type -" isClearable className={formErrors.type_modification ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body} menuPlacement="auto"/><Form.Control.Feedback type="invalid" style={{display: formErrors.type_modification ? 'block' : 'none'}}>{formErrors.type_modification}</Form.Control.Feedback></Form.Group>
-                     </Row>
-                     <Row className="g-3 mb-3">
-                        <Form.Group as={Col} md={4} controlId="formStatut">
+                         <Form.Group as={Col}  controlId="formNumero_avenant"><Form.Label className="small mb-1 fw-medium">N° Avenant <span className="text-danger">*</span></Form.Label><Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.numero_avenant} type="text" name="numero_avenant" value={formData.numero_avenant} onChange={handleChange} size="sm" placeholder="Ex: Avenant N°1"/><Form.Control.Feedback type="invalid">{formErrors.numero_avenant}</Form.Control.Feedback></Form.Group>
+                         <Form.Group as={Col}  controlId="formStatut">
                             <Form.Label className="small mb-1 fw-medium">Statut <span className="text-danger">*</span></Form.Label>
                             <Select inputId='statut-select-input' name="statut" options={STATUT_OPTIONS} value={formData.statut} onChange={handleStatutChange} styles={selectStyles} placeholder="- Sélectionner Statut -" isClearable className={formErrors.statut ? 'is-invalid' : ''} classNamePrefix="react-select"/>
                             <Form.Control.Feedback type="invalid" style={{display: formErrors.statut ? 'block' : 'none'}}>{formErrors.statut}</Form.Control.Feedback>
                         </Form.Group>
+                         {/* MISSION 2: Conditionally render the date_signature field */}
+                         {formData.statut?.value === 'signé' && (
+                             <Form.Group as={Col} md={4} controlId="formDate_signature">
+                                 <Form.Label className="small mb-1 fw-medium">Date Signature<span className="text-danger">*</span></Form.Label>
+                                 <Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.date_signature} type="date" name="date_signature" value={formData.date_signature} onChange={handleChange} size="sm"/>
+                                 <Form.Control.Feedback type="invalid">{formErrors.date_signature}</Form.Control.Feedback>
+                             </Form.Group>
+                         )}
+                     </Row>
+                     <Row className="g-3 mb-3">
+                        <Form.Group as={Col}  controlId="formType_modification"><Form.Label className="small mb-1 fw-medium">Type Modification <span className="text-danger">*</span></Form.Label><Select inputId='type-modif-select-input' name="type_modification" options={typeModificationOptions} value={formData.type_modification} onChange={handleSelectChange} styles={selectStyles} placeholder="- Sélectionner Type -" isClearable className={formErrors.type_modification ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body} menuPlacement="auto"/><Form.Control.Feedback type="invalid" style={{display: formErrors.type_modification ? 'block' : 'none'}}>{formErrors.type_modification}</Form.Control.Feedback></Form.Group>
                         {formData.statut?.value === 'visé' && (
                             <Form.Group as={Col} md={4} controlId="formDateVisa">
                                 <Form.Label className="small mb-1 fw-medium">Date de visa <span className="text-danger">*</span></Form.Label>
@@ -568,14 +582,7 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                             </Form.Group>
                         )}
                     </Row>
-                     <Form.Group className="mb-3" controlId="formObjet"><Form.Label className="small mb-1 fw-medium">Objet</Form.Label><Form.Control className="p-3 rounded-5 shadow-sm bg-white border-1" isInvalid={!!formErrors.objet} as="textarea" rows={2} name="objet" value={formData.objet} onChange={handleChange} size="sm" placeholder="Description modifications..."/><Form.Control.Feedback type="invalid">{formErrors.objet}</Form.Control.Feedback></Form.Group>
-                    <Form.Group as={Row} className="mb-3 align-items-center" controlId="formId_FonctionnaireAvenant">
-                        <Form.Label column sm={3} className="small fw-medium text-sm-end"> <FontAwesomeIcon icon={faUsers} className="me-1 text-secondary"/> Points Focaux </Form.Label>
-                        <Col sm={9}>
-                            <Select inputId='avenant-fonctionnaire-select' name="fonctionnaires" menuPlacement="auto" options={fonctionnairesOptions} value={formData.fonctionnaires} onChange={handleFonctionnaireChange} styles={selectStyles} placeholder="- Sélectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.fonctionnaires} className={formErrors.id_fonctionnaire ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body}/>
-                            <Form.Control.Feedback type="invalid" style={{ display: formErrors.id_fonctionnaire ? 'block' : 'none'}}> {formErrors.id_fonctionnaire} </Form.Control.Feedback>
-                        </Col>
-                     </Form.Group>
+                     
                     <Row className="g-3 mb-3">{formData.type_modification?.value === 'montant' && ( <Form.Group as={Col} md={6} controlId="formMontant_modifie"><Form.Label className="small mb-1 fw-medium">Nouveau Montant <span className="text-danger">*</span></Form.Label><InputGroup size="sm"><Form.Control className="p-2 rounded-start-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.montant_modifie} type="number" step="0.01" min="0" name="montant_modifie" value={formData.montant_modifie} onChange={handleChange} placeholder="0.00"/><InputGroup.Text className="rounded-end-pill">MAD</InputGroup.Text><Form.Control.Feedback type="invalid">{formErrors.montant_modifie}</Form.Control.Feedback></InputGroup></Form.Group> )} {formData.type_modification?.value === 'durée' && ( <Form.Group as={Col} md={6} controlId="formNouvelle_date_fin"><Form.Label className="small mb-1 fw-medium">Nouvelle Date Fin <span className="text-danger">*</span></Form.Label><Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.nouvelle_date_fin} type="date" name="nouvelle_date_fin" value={formData.nouvelle_date_fin} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.nouvelle_date_fin}</Form.Control.Feedback></Form.Group> )} </Row>
                     {formData.type_modification?.value === 'partenaire' && ( <Card className="mb-3 shadow-sm border-light"><Card.Header className='bg-light py-2'><h6 className='mb-0 fw-semibold text-secondary'>Détails Modification Partenaires</h6></Card.Header><Card.Body className="pb-2 pt-3"><Form.Group as={Row} className="mb-3" controlId="formPartenaireSelectConditional"><Form.Label column sm={3} className="small pt-1 fw-medium text-sm-end"> Sélection Partenaires <span className="text-danger">*</span></Form.Label><Col sm={9}><Select inputId='avenant-partenaire-select-conditional' name="partenaireSelector" options={partenaireOptions} value={partenaireOptions.filter(opt => avenantPartnerDetails.some(p => p.id === opt.value))} onChange={handleAvenantPartnerSelectionChange} styles={selectStyles} placeholder="- Choisir partenaires concernés -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.partenaires} className={formErrors.partenaires ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body} menuPlacement="auto"/><Form.Control.Feedback type="invalid" style={{display: formErrors.partenaires ? 'block' : 'none'}}>{formErrors.partenaires}</Form.Control.Feedback></Col></Form.Group>{avenantPartnerDetails.length > 0 && ( <div className="mt-3 border-top pt-3">{avenantPartnerDetails.map((partner, index) => (
                         <div key={partner.id} id={`formAvenantDetail_${partner.id}`} className={`mb-3 ${index < avenantPartnerDetails.length - 1 ? 'border-bottom pb-3' : ''}`}>
@@ -690,7 +697,14 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                         </div>
                     ))}</div> )} </Card.Body></Card> )}
                     <Form.Group className="mb-3" controlId="formRemarques"><Form.Label className="small mb-1 fw-medium">Remarques</Form.Label><Form.Control className="p-3 rounded-5 shadow-sm bg-white border-1" as="textarea" rows={2} name="remarques" value={formData.remarques} onChange={handleChange} size="sm" placeholder="Observations diverses..."/></Form.Group>
-                    
+                    <Form.Group className="mb-3" controlId="formObjet"><Form.Label className="small mb-1 fw-medium">Objet</Form.Label><Form.Control className="p-3 rounded-5 shadow-sm bg-white border-1" isInvalid={!!formErrors.objet} as="textarea" rows={2} name="objet" value={formData.objet} onChange={handleChange} size="sm" placeholder="Description modifications..."/><Form.Control.Feedback type="invalid">{formErrors.objet}</Form.Control.Feedback></Form.Group>
+                    <Form.Group as={Row} className="mb-3 align-items-center" controlId="formId_FonctionnaireAvenant">
+                        <Form.Label column sm={3} className="small fw-medium text-sm-end"> <FontAwesomeIcon icon={faUsers} className="me-1 text-secondary"/> Points Focaux </Form.Label>
+                        <Col sm={9}>
+                            <Select inputId='avenant-fonctionnaire-select' name="fonctionnaires" menuPlacement="auto" options={fonctionnairesOptions} value={formData.fonctionnaires} onChange={handleFonctionnaireChange} styles={selectStyles} placeholder="- Sélectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.fonctionnaires} className={formErrors.id_fonctionnaire ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body}/>
+                            <Form.Control.Feedback type="invalid" style={{ display: formErrors.id_fonctionnaire ? 'block' : 'none'}}> {formErrors.id_fonctionnaire} </Form.Control.Feedback>
+                        </Col>
+                     </Form.Group>
                     <Form.Group as={Row} className="mb-3" controlId="avenantFileGroup">
                         <Form.Label column sm={3} className="small fw-medium text-sm-end">Fichiers Joints</Form.Label>
                         <Col sm={9}>

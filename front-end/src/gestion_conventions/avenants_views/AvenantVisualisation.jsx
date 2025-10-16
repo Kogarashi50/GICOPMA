@@ -64,6 +64,8 @@ const typeModificationOptions = [
     { value: 'montant', label: 'Modification Montant' },
     { value: 'durée', label: 'Modification Durée' },
     { value: 'partenaire', label: 'Modification Partenaire(s)' },
+             { value: 'technique_administratif', label: 'Technique Administratif' },
+
     { value: 'autre', label: 'Autre Modification' },
 ];
 const getTypeModificationInfo = (typeValue) => {
@@ -467,7 +469,7 @@ const AvenantVisualisation = ({
                             {avenantData.documents.map(doc => {
                                 // Use V1's appBaseUrl logic
                                 const fileUrl = appBaseUrl && doc.file_path ? `${appBaseUrl}/${doc.file_path.replace(/^\//, '')}` : doc.fichier_url;
-                                const filename = doc.file_name || 'Fichier sans nom';
+                                const filename =doc.Intitule || doc.file_name ||  'Fichier sans nom';
                                 const fileIcon = getFileIcon(filename);
                                 return (
                                      <ListGroup.Item key={doc.Id_Doc} className="px-3 rounded-4 m-2 py-2 d-flex justify-content-between align-items-center bg-dark text-white"> {/* V1 Style */}

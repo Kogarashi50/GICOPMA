@@ -79,6 +79,8 @@ const AvenantsPage = () => {
     const [typeModificationOptions] = useState([ // Keep static options directly in state
         { value: 'montant', label: 'Montant' },
         { value: 'durée', label: 'Durée' },
+         { value: 'technique_administratif', label: 'Tech. admin.' },
+
         { value: 'partenaire', label: 'Partenaire(s)' },
         { value: 'autre', label: 'Autre' },
     ]);
@@ -124,7 +126,7 @@ const AvenantsPage = () => {
             id: 'convention',
             header: 'Convention Parent',
             accessorFn: row => row.convention ? `${row.convention?.Code} - ${row.convention?.Intitule}` : `ID: ${row.convention_id}`,
-            cell: info => <div className="text-truncate" title={info.getValue()} style={{ maxWidth: '300px' }}>{info.getValue() || '-'}</div>, // Fallback if null/empty
+            cell: info => <div className="text-truncate" title={info.getValue()} style={{ maxWidth: '200px' }}>{info.getValue() || '-'}</div>, // Fallback if null/empty
             size: 300,
             meta: { enableGlobalFilter: true } // Allow searching in this column
         },
@@ -145,8 +147,8 @@ const AvenantsPage = () => {
             meta: { enableGlobalFilter: true }
         },
         {
-             accessorKey: 'objet', header: 'Objet', size: 200,
-             cell: info => <div className="text-truncate" title={info.getValue()} style={{ width: '300px' }}>{info.getValue()||'-'}</div>, // <<< Using Code 2's fallback
+             accessorKey: 'objet', header: 'Objet', size: 150,
+             cell: info => <div className="text-truncate" title={info.getValue()} style={{ width: '150px' }}>{info.getValue()||'-'}</div>, // <<< Using Code 2's fallback
              meta: { enableGlobalFilter: true }
          },
          {

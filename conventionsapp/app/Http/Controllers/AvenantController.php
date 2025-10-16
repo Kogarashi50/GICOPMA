@@ -36,7 +36,7 @@ class AvenantController extends Controller
                 $query->with($relations);
             }
 
-            $avenants = $query->orderBy('date_signature', 'desc')->get();
+            $avenants = $query->orderBy('date_creation', 'desc')->get(); // Changed to date_creation for logical order
             return response()->json(['avenants' => $avenants], 200);
 
         } catch (\Exception $e) {
@@ -51,12 +51,17 @@ class AvenantController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            // FIX: Corrected table name from 'convention' to 'conventions'
             'convention_id' => 'required|integer|exists:convention,id',
             'numero_avenant' => 'required|string|max:255',
-            'date_signature' => 'required|date',
+            
+            // MISSION 2: date_signature is now required only if statut is 'signé'
+            'date_signature' => 'nullable|required_if:statut,signé|date',
+            
             'objet' => 'nullable|string',
-            'type_modification' => ['required', Rule::in(['montant', 'durée', 'partenaire', 'autre'])],
+            
+            // MISSION 1: Added 'technique_administratif' to the list of allowed types
+            'type_modification' => ['required', Rule::in(['montant', 'durée', 'partenaire', 'technique_administratif', 'autre'])],
+            
             'montant_modifie' => 'nullable|required_if:type_modification,montant|numeric|min:0',
             'nouvelle_date_fin' => 'nullable|required_if:type_modification,durée|date|after_or_equal:date_signature',
             'id_fonctionnaire' => 'nullable|string',
@@ -79,7 +84,14 @@ class AvenantController extends Controller
         }
 
         $validatedData = $validator->validated();
-
+ $sessionValue = $validatedData['session'] ?? 'NS';
+        $sessionFormatted = is_numeric($sessionValue) ? str_pad($sessionValue, 2, '0', STR_PAD_LEFT) : 'NS';
+        $validatedData['code'] = sprintf(
+            '%s/%s/%s',
+            $validatedData['numero_approbation'] ?? 'NA',
+            $sessionFormatted,
+            $validatedData['annee_avenant']
+        );
         DB::beginTransaction();
         try {
             $avenantData = Arr::except($validatedData, ['fichiers', 'intitules', 'avenant_partner_commitments']);
@@ -92,7 +104,6 @@ class AvenantController extends Controller
                     $intitule = $request->input("intitules.{$index}", pathinfo($originalName, PATHINFO_FILENAME));
 
                     $avenant->documents()->create([
-                        // FIX: Changed 'intitule' key to 'Intitule' to match the database column name
                         'Intitule' => $intitule,
                         'file_name' => $originalName,
                         'file_path' => $path,
@@ -160,12 +171,17 @@ class AvenantController extends Controller
         $avenant = Avenant::findOrFail($id);
         
         $validator = Validator::make($request->all(), [
-            // FIX: Corrected table name from 'convention' to 'conventions'
             'convention_id' => 'required|integer|exists:convention,id',
             'numero_avenant' => 'required|string|max:255',
-            'date_signature' => 'required|date',
+
+            // MISSION 2: date_signature is now required only if statut is 'signé'
+            'date_signature' => 'nullable|required_if:statut,signé|date',
+
             'objet' => 'nullable|string',
-            'type_modification' => ['required', Rule::in(['montant', 'durée', 'partenaire', 'autre'])],
+
+            // MISSION 1: Added 'technique_administratif' to the list of allowed types
+            'type_modification' => ['required', Rule::in(['montant', 'durée', 'partenaire', 'technique_administratif', 'autre'])],
+            
             'montant_modifie' => 'nullable|required_if:type_modification,montant|numeric|min:0',
             'nouvelle_date_fin' => 'nullable|required_if:type_modification,durée|date|after_or_equal:date_signature',
             'id_fonctionnaire' => 'nullable|string',
@@ -191,7 +207,14 @@ class AvenantController extends Controller
         }
 
         $validatedData = $validator->validated();
-        
+         $sessionValue = $validatedData['session'] ?? 'NS';
+        $sessionFormatted = is_numeric($sessionValue) ? str_pad($sessionValue, 2, '0', STR_PAD_LEFT) : 'NS';
+        $validatedData['code'] = sprintf(
+            '%s/%s/%s',
+            $validatedData['numero_approbation'] ?? 'NA',
+            $sessionFormatted,
+            $validatedData['annee_avenant']
+        );
         DB::beginTransaction();
         try {
             $avenantData = Arr::except($validatedData, ['fichiers', 'intitules', 'existing_documents_meta', 'fichiers_to_delete', 'avenant_partner_commitments']);
@@ -201,7 +224,6 @@ class AvenantController extends Controller
                 $existingDocsMeta = json_decode($request->input('existing_documents_meta', '[]'), true);
                 foreach ($existingDocsMeta as $meta) {
                     if (!empty($meta['id']) && isset($meta['intitule'])) {
-                        // FIX: Changed 'intitule' key to 'Intitule'
                         Document::where('id', $meta['id'])->where('avenant_id', $avenant->id)->update(['Intitule' => $meta['intitule']]);
                     }
                 }
@@ -220,7 +242,6 @@ class AvenantController extends Controller
                      $originalName = $file->getClientOriginalName();
                      $path = $file->store('avenant_documents/' . $avenant->id, 'public');
                      $intitule = $request->input("intitules.{$index}", pathinfo($originalName, PATHINFO_FILENAME));
-                     // FIX: Changed 'intitule' key to 'Intitule'
                      $avenant->documents()->create(['Intitule' => $intitule, 'file_name' => $originalName, 'file_path' => $path, 'mime_type' => $file->getClientMimeType()]);
                 }
             }

@@ -29,6 +29,7 @@ class Convention extends Model
      */
     protected $fillable = [
         'code',
+        'code_provisoire',
         'fichier', // Filename stored here, actual file info in Document model
         'classification_prov',
         'categorie',
@@ -50,7 +51,9 @@ class Convention extends Model
         'rang',
         'id_fonctionnaire',
         'numero_approbation', // Add this
-        'session',   
+        'session',
+         'convention_cadre_id', // ADD THIS
+   
         'type',
         'date_visa',
         'date_reception_vise',
@@ -89,7 +92,18 @@ public function programme(): BelongsTo
     {
         return $this->hasMany(Document::class, 'Id_Conv', 'id');
     }
+public function conventionCadre(): BelongsTo
+    {
+        return $this->belongsTo(Convention::class, 'convention_cadre_id');
+    }
 
+    /**
+     * Get all the child "specifique" conventions for a "cadre" convention.
+     */
+    public function conventionsSpecifiques(): HasMany
+    {
+        return $this->hasMany(Convention::class, 'convention_cadre_id', 'id');
+    }
 
     public function convParts()
     {

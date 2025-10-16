@@ -4,7 +4,7 @@ import {
   faProjectDiagram, faSitemap, faFileContract, faHandshake, faShapes,
   faHelmetSafety, faCity, faClipboardCheck, faMap, faUsersCog, faTasks,
   faFileInvoiceDollar, faChevronDown, faFileSignature, faFileAlt, faTachometerAlt,
-  faUserTag, faScroll, faGavel // Added faGavel for Appel d'Offre
+  faUserTag, faScroll, faGavel, faCommentDots // Added faCommentDots for Observations
 } from "@fortawesome/free-solid-svg-icons";
 
 // --- Permission Constants ---
@@ -31,7 +31,11 @@ const PERMISSIONS = {
     DELETE_APPELOFFRES: 'delete appeloffres',         // Corrected: No underscore
     VIEW_APPELOFFRE_DETAILS: 'view appeloffre details', // Added this permission
     // -------------------------------------------------------------
-
+    VIEW_OBSERVATIONS: 'view observations',
+    CREATE_OBSERVATIONS: 'create observations',
+    UPDATE_OBSERVATIONS: 'update observations',
+    DELETE_OBSERVATIONS: 'delete observations',
+    
     VIEW_CHANTIERS: 'view chantiers', CREATE_CHANTIERS: 'create chantiers', UPDATE_CHANTIERS: 'update chantiers', DELETE_CHANTIERS: 'delete chantiers',
     VIEW_PROGRAMMES: 'view programmes', CREATE_PROGRAMMES: 'create programmes', UPDATE_PROGRAMMES: 'update programmes', DELETE_PROGRAMMES: 'delete programmes',
     VIEW_DOMAINES: 'view domaines', CREATE_DOMAINES: 'create domaines', UPDATE_DOMAINES: 'update domaines', DELETE_DOMAINES: 'delete domaines',
@@ -142,6 +146,15 @@ const menuItems = [
   { id: 97, icon: faUserTag, label: "Historique d'activité", path: "/historique", type: 'item', requiredPermission: PERMISSIONS.VIEW_HISTORY },
 
 
+  // --- New Section Heading: OBSERVATIONS ---
+  { id: 104, type: 'heading', label: "OBSERVATIONS", path: '#' },
+  {
+    id: 33, // Make sure this ID is unique
+    label: "Observations",
+    path: "/observations",
+    icon: faCommentDots, // Using the new icon
+    requiredPermission: PERMISSIONS.VIEW_OBSERVATIONS
+  },
 ];
 
 // Export necessary icons and constants

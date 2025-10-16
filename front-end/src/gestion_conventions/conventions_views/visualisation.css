@@ -7,6 +7,7 @@
     margin-bottom: 0.5rem; /* Space below each item */
     margin-left: 0; /* Override default dl margin if needed */
   }
+  
   .text-truncate-multiline { /* Optional for long text fields */
       display: -webkit-box;
       -webkit-line-clamp: 3; /* Show 3 lines */

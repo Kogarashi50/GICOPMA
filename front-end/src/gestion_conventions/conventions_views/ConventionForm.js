@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    // Combined Icons
     faSpinner, faExclamationTriangle, faTimes, faTrashAlt, faUndo,
     faFilePdf, faFileWord, faFileExcel, faFileImage, faFileAlt,
-    faPlusCircle, faExternalLinkAlt, faUsers 
+    faPlusCircle, faExternalLinkAlt, faUsers,
+    faHandshake, faUserShield, faFolderOpen // ADDED: New icons for styling
 } from '@fortawesome/free-solid-svg-icons';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
@@ -54,10 +54,10 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
     const INTITULE_MAX = 250;
     const FILE_INTITULE_MAX = 120;
     const [formData, setFormData] = useState({
-        Code: '', Classification_prov: '', Categorie: '', Intitule: '', Reference: '',
+        Code: '', code_provisoire: '', Classification_prov: '', Categorie: '', Intitule: '', Reference: '',
         Annee_Convention: '', Objet: '', Objectifs: '', provinces: [], Maitre_Ouvrage: '',
         Cout_Global: '', Statut: null, Operationalisation: 'Non', Groupe: '', Rang: '',
-        programmeId: null, projetId: null, observations: '',
+        programmeId: null, projetId: null, conventionCadreId: null, observations: '',
         fonctionnaires: [],
         type: 'specifique', 
         date_reception_vise: '',
@@ -75,7 +75,8 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
     const [allPartenairesOptions, setAllPartenairesOptions] = useState([]);
     const [projetsOptions, setProjetsOptions] = useState([]);
     const [fonctionnairesOptions, setFonctionnairesOptions] = useState([]);
-    const [loadingOptions, setLoadingOptions] = useState({ programmes: true, partenaires: true, provinces: true, projets: true, fonctionnaires: true });
+    const [conventionCadreOptions, setConventionCadreOptions] = useState([]);
+    const [loadingOptions, setLoadingOptions] = useState({ programmes: true, partenaires: true, provinces: true, projets: true, fonctionnaires: true, conventionsCadre: true });
     const [submissionStatus, setSubmissionStatus] = useState({ loading: false, error: null, success: false });
     const [formErrors, setFormErrors] = useState({});
     const [loadingData, setLoadingData] = useState(!!itemId);
@@ -87,54 +88,59 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
     const [dataToResubmit, setDataToResubmit] = useState(null);
 
     const isEditing = useMemo(() => itemId !== null, [itemId]);
-    const optionsFinishedLoading = useMemo(() => !loadingOptions.programmes && !loadingOptions.partenaires && !loadingOptions.provinces && !loadingOptions.projets && !loadingOptions.fonctionnaires, [loadingOptions]);
+    const optionsFinishedLoading = useMemo(() => !loadingOptions.programmes && !loadingOptions.partenaires && !loadingOptions.provinces && !loadingOptions.projets && !loadingOptions.fonctionnaires && !loadingOptions.conventionsCadre, [loadingOptions]);
     const storageBaseUrl = useMemo(() => baseApiUrl.replace('/api', ''), [baseApiUrl]);
     const STATUT_OPTIONS = useMemo(() => [  { value: "en cours d'approbation", label: "En Cours d'Approbation", color: "warning" }, { value: "approuvé", label: "Approuvé", color: "success" }, { value: "non visé", label: "Non Visé", color: "danger" }, { value: "en cours de visa", label: "En Cours de Visa", color: "warning" }, { value: "visé", label: "Visé", color: "info" }, { value: "non signé", label: "Non Signé", color: "secondary"}, { value: "en cours de signature", label: "En Cours de Signature", color: "warning" }, { value: "signé", label: "Signé", color: "primary" } ], []);
     const groupedStatutOptions = useMemo(() => { const groups = []; const groupLabels = ["Approbation", "Visa", "Signature"]; const groupSize = 3; for (let i = 0; i < STATUT_OPTIONS.length; i += groupSize) { groups.push({ label: groupLabels[Math.floor(i / groupSize)], options: STATUT_OPTIONS.slice(i, i + groupSize) }); } return groups; }, [STATUT_OPTIONS]);
 
-    // Autosize for Intitulé textarea (better UX when editing)
     const autosizeIntitule = useCallback(() => {
         const el = intituleRef.current;
         if (!el) return;
         el.style.height = 'auto';
-        el.style.height = Math.min(el.scrollHeight, 200) + 'px'; // cap height
+        el.style.height = Math.min(el.scrollHeight, 200) + 'px';
     }, []);
     useEffect(() => { autosizeIntitule(); }, [formData.Intitule, autosizeIntitule]);
 
     const fetchOptions = useCallback(async () => {
-        console.log("Fetching options using /api/options/...");
-        setLoadingOptions({ programmes: true, partenaires: true, provinces: true, projets: true, fonctionnaires: true });
+        console.log("Fetching options...");
+        setLoadingOptions({ programmes: true, partenaires: true, provinces: true, projets: true, fonctionnaires: true, conventionsCadre: true });
+        
+        const getArray = (response, key) => {
+            const data = response?.data;
+            if (key && data && Array.isArray(data[key])) return data[key];
+            if (Array.isArray(data)) return data;
+            return [];
+        };
+
         try {
-            const [progRes, partRes, provRes, projRes, foncRes] = await Promise.all([
-                axios.get(`${baseApiUrl}/options/programmes`, { withCredentials: true }),    // MODIFIED URL
-                axios.get(`${baseApiUrl}/options/partenaires`, { withCredentials: true }),   // MODIFIED URL
-                axios.get(`${baseApiUrl}/options/provinces`, { withCredentials: true }),     // MODIFIED URL
-                axios.get(`${baseApiUrl}/options/projets`, { withCredentials: true }),       // MODIFIED URL
-                axios.get(`${baseApiUrl}/options/fonctionnaires`, { withCredentials: true }) // MODIFIED URL
+            const cadreOptionsUrl = `${baseApiUrl}/conventions/options/cadre`;
+            const params = isEditing && itemId ? { params: { exclude: itemId } } : {};
+
+            const [progRes, partRes, provRes, projRes, foncRes, cadreRes] = await Promise.all([
+                axios.get(`${baseApiUrl}/options/programmes`, { withCredentials: true }),
+                axios.get(`${baseApiUrl}/options/partenaires`, { withCredentials: true }),
+                axios.get(`${baseApiUrl}/options/provinces`, { withCredentials: true }),
+                axios.get(`${baseApiUrl}/options/projets`, { withCredentials: true }),
+                axios.get(`${baseApiUrl}/options/fonctionnaires`, { withCredentials: true }),
+                axios.get(cadreOptionsUrl, { ...params, withCredentials: true }),
             ]);
 
-            // This mapping assumes backend /options routes might return data nested (e.g. { "programmes": [...]})
-            // OR directly as an array. The `|| res.data || []` handles both.
-            // If ALL /options routes CONSISTENTLY return the array directly, you can simplify
-            // e.g., setProgrammesOptions(progRes.data || []);
-            setProgrammesOptions((progRes.data.programmes || progRes.data || []).map(p => ({ value: p.Id || p.id || p.value , label: p.Description || p.label })));
-            setAllPartenairesOptions((partRes.data.partenaires || partRes.data || []).map(p => ({ value: p.Id || p.value, label: p.Description_Arr || p.Description || p.label || `Partenaire ID ${p.Id || p.value}` })));
+            setProgrammesOptions(getArray(progRes, 'programmes').map(p => ({ value: p.Id || p.id || p.value , label: p.Description || p.label })));
+            setAllPartenairesOptions(getArray(partRes, 'partenaires').map(p => ({ value: p.Id || p.value, label: p.Description_Arr || p.Description || p.label || `Partenaire ID ${p.Id || p.value}` })));
+            setProvincesOptions(getArray(provRes)); 
+            setProjetsOptions(getArray(projRes, 'projets').map(p => ({ value: p.ID_Projet || p.value, label: (p.Code_Projet ? `${p.Code_Projet} - ` : '') + (p.Nom_Projet || p.label || 'N/A') })));
+            setFonctionnairesOptions(getArray(foncRes, 'fonctionnaires').map(f => ({ value: f.id || f.value, label: f.nom_complet || f.label || `ID ${f.id || f.value}` })));
+            setConventionCadreOptions(getArray(cadreRes)); 
             
-            // For provinces, if your ProvinceController::getOptions returns [{value,label}] directly:
-            setProvincesOptions(provRes.data || []); 
-            // If ProvinceController::getOptions returns { "provinces": [...] }:
-            // setProvincesOptions((provRes.data.provinces || provRes.data || []).map(p => ({ value: p.Id || p.value, label: p.Description || p.Code || p.label })));
-
-            setProjetsOptions((projRes.data.projets || projRes.data || []).map(p => ({ value: p.ID_Projet || p.value, label: (p.Code_Projet ? `${p.Code_Projet} - ` : '') + (p.Nom_Projet || p.label || 'N/A') })));
-            setFonctionnairesOptions((foncRes.data.fonctionnaires || foncRes.data || []).map(f => ({ value: f.id || f.value, label: f.nom_complet || f.label || `ID ${f.id || f.value}` })));
-            
-            console.log("Options loaded via /api/options/.");
+            console.log("All options loaded.");
         } catch (err) { 
-            console.error("Erreur chargement options via /api/options/:", err); 
+            console.error("Erreur chargement options:", err); 
             setSubmissionStatus(prev => ({ ...prev, error: "Erreur chargement des listes pour le formulaire." })); 
         }
-        finally { setLoadingOptions({ programmes: false, partenaires: false, provinces: false, projets: false, fonctionnaires: false }); }
-    }, [baseApiUrl]);
+        finally { 
+            setLoadingOptions({ programmes: false, partenaires: false, provinces: false, projets: false, fonctionnaires: false, conventionsCadre: false }); 
+        }
+    }, [baseApiUrl, isEditing, itemId]);
 
     useEffect(() => { fetchOptions(); }, [fetchOptions]);
 
@@ -159,13 +165,14 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
 
                 const selectedStatutOption = findOption(STATUT_OPTIONS, data.Statut, 'value');
                 const selectedProgrammeOption = findOption(programmesOptions, data.Id_Programme || data.id_programme || data.programme?.Id);
-                const selectedProjetOption = findOption(projetsOptions, data.id_projet || data.ID_Projet || data.projet?.ID_Projet); // Corrected key
+                const selectedProjetOption = findOption(projetsOptions, data.id_projet || data.ID_Projet || data.projet?.ID_Projet);
                 const selectedProvinceOptions = findMultiOptions(provincesOptions, data.localisation);
                 const selectedFonctionnaireOptions = findMultiOptions(fonctionnairesOptions, data.id_fonctionnaire);
+                const selectedConventionCadre = findOption(conventionCadreOptions, data.convention_cadre_id);
 
                 setFormData({
                     Code: String(data.Code ?? ''), 
-                    // === ADD THESE TWO LINES ===
+                    code_provisoire: String(data.code_provisoire ?? ''),
                     numero_approbation: String(data.numero_approbation ?? ''),
                     date_reception_vise: data.date_reception_vise || '',
                     duree_convention: String(data.duree_convention ?? ''),
@@ -174,7 +181,6 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
                     type: String(data.type ?? ''), 
                     membres_comite_technique: (data.membres_comite_technique || []).map(member => ({ value: member, label: member })),
                     membres_comite_pilotage: (data.membres_comite_pilotage || []).map(member => ({ value: member, label: member })),
-                    // === END OF ADDITION ===
                     Classification_prov: String(data.Classification_prov ?? ''), 
                     Categorie: String(data.Categorie ?? ''), 
                     Intitule: String(data.Intitule ?? ''), 
@@ -185,9 +191,14 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
                     Maitre_Ouvrage: String(data.Maitre_Ouvrage ?? ''), 
                     Cout_Global: String(data.Cout_Global ?? ''), 
                     Statut: selectedStatutOption, 
-                    date_visa: data.date_visa || '', // <-- ADD THIS LINE
+                    date_visa: data.date_visa || '',
                     Operationalisation: String(data.Operationalisation ?? ''), 
-                    Groupe: String(data.Groupe ?? ''), Rang: String(data.Rang ?? ''), observations: String(data.observations ?? ''), provinces: selectedProvinceOptions, programmeId: selectedProgrammeOption, projetId: selectedProjetOption, fonctionnaires: selectedFonctionnaireOptions
+                    Groupe: String(data.Groupe ?? ''), Rang: String(data.Rang ?? ''), observations: String(data.observations ?? ''), 
+                    provinces: selectedProvinceOptions, 
+                    programmeId: selectedProgrammeOption, 
+                    projetId: selectedProjetOption, 
+                    conventionCadreId: selectedConventionCadre,
+                    fonctionnaires: selectedFonctionnaireOptions
                 });
 
                 const commitmentsArray = data.partner_commitments || [];
@@ -199,7 +210,7 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
                     engagement_type: (commit.autre_engagement) ? 'autre' : 'financier',
                     montant: String(commit.Montant_Convenu ?? ''),
                     autre_engagement: commit.autre_engagement || '',
-                    engagements_annuels: commit.engagements_annuels || [], // <<< ADD THIS LINE
+                    engagements_annuels: commit.engagements_annuels || [],
                     is_signatory: !!commit.is_signatory,
                      date_signature: commit.date_signature || '',
                      details_signature: commit.details_signature || '',
@@ -213,11 +224,11 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
         };
         fetchConventionData();
         return () => { isMounted = false; };
-    }, [itemId, baseApiUrl, optionsFinishedLoading, allPartenairesOptions, programmesOptions, provincesOptions, projetsOptions, STATUT_OPTIONS, storageBaseUrl, fonctionnairesOptions]);
+    }, [itemId, baseApiUrl, optionsFinishedLoading, allPartenairesOptions, programmesOptions, provincesOptions, projetsOptions, conventionCadreOptions, STATUT_OPTIONS, storageBaseUrl, fonctionnairesOptions]);
 
     useEffect(() => {
         if (!isEditing && optionsFinishedLoading) {
-            setFormData({ Code: '', Classification_prov: '',type: 'specifique', Categorie: '', Intitule: '', Reference: '', Annee_Convention: '', Objet: '', Objectifs: '', provinces: [], Maitre_Ouvrage: '', Cout_Global: '', date_reception_vise: '', duree_convention: '', maitre_ouvrage_delegue: '' , Statut: null, Operationalisation: 'Non', Groupe: '', Rang: '', programmeId: null, projetId: null, observations: '', fonctionnaires: [], numero_approbation: '', session: '', date_visa: '' , membres_comite_technique: [], membres_comite_pilotage: []}); // <-- ADD NEW FIELDS TO RESET
+            setFormData({ Code: '', code_provisoire: '', Classification_prov: '',type: 'specifique', Categorie: '', Intitule: '', Reference: '', Annee_Convention: '', Objet: '', Objectifs: '', provinces: [], Maitre_Ouvrage: '', Cout_Global: '', date_reception_vise: '', duree_convention: '', maitre_ouvrage_delegue: '' , Statut: null, Operationalisation: 'Non', Groupe: '', Rang: '', programmeId: null, projetId: null, conventionCadreId: null, observations: '', fonctionnaires: [], numero_approbation: '', session: '', date_visa: '' , membres_comite_technique: [], membres_comite_pilotage: []});
             setSelectedPartnerDetails([]); setFormErrors({}); setSubmissionStatus({ loading: false, error: null, success: false }); setLoadingData(false);
             setExistingDocuments([]); setNewFiles([]); setDocumentsToDelete([]);
             setDataToResubmit(null); setShowConfirmModal(false);
@@ -230,6 +241,7 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
         if (!formData.Annee_Convention) errors.Annee_Convention = "Année requise.";
        else if (isNaN(parseInt(formData.Annee_Convention)) || String(formData.Annee_Convention).length !== 4) errors.Annee_Convention = "Année invalide (YYYY).";
         if (!formData.type) errors.type = "Le type de convention est requis."; 
+        if (formData.type === 'specifique' && !formData.conventionCadreId) errors.convention_cadre_id = "La convention cadre est requise.";
         if (!formData.numero_approbation?.trim()) errors.numero_approbation = "Le numéro d'approbation est requis.";
         if (!formData.session) errors.session = "La session est requise.";
         if (!formData.Statut) errors.Statut = "Statut requis.";
@@ -246,7 +258,7 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
      };
-// <<< ADD THIS HELPER FUNCTION >>>
+
     const calculateEngagementYears = (startYear, durationMonths) => {
         const start = parseInt(startYear, 10);
         const duration = parseInt(durationMonths, 10);
@@ -257,21 +269,19 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
         return Array.from({ length: numYears }, (_, i) => start + i);
     };
 
-    // <<< ADD THIS NEW EVENT HANDLER >>>
     const handleYearlyAmountChange = (tempId, year, value) => {
         setSelectedPartnerDetails(prevDetails =>
             prevDetails.map(p => {
                 if (p.tempId === tempId) {
                     const updatedEngagements = p.engagements_annuels ? [...p.engagements_annuels] : [];
                     const yearIndex = updatedEngagements.findIndex(e =>  Number(e.annee) === year);
-                    const numericValue = value.replace(/[^0-9.]/g, ''); // Sanitize input
+                    const numericValue = value.replace(/[^0-9.]/g, '');
 
                     if (yearIndex > -1) {
                         updatedEngagements[yearIndex].montant_prevu = numericValue;
                     } else {
                         updatedEngagements.push({ annee: year, montant_prevu: numericValue });
                     }
-                    // Filter out any entries that were emptied
                     const finalEngagements = updatedEngagements.filter(e => e.montant_prevu && e.montant_prevu !== '');
                     return { ...p, engagements_annuels: finalEngagements };
                 }
@@ -281,13 +291,11 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
     };
     const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: undefined })); if (name === 'Intitule') { requestAnimationFrame(autosizeIntitule); } };
     const handleProgrammeChange = (selectedOption) => { setFormData(prev => ({ ...prev, programmeId: selectedOption })); if (formErrors.Id_Programme) setFormErrors(prev => ({ ...prev, Id_Programme: undefined })); };
-    // Add these new handlers to ConventionForm.jsx
 
 const handleEngagementTypeChange = (tempId, type) => {
     setSelectedPartnerDetails(prevDetails =>
         prevDetails.map(p => {
             if (p.tempId === tempId) {
-                // When switching, clear the other field's value
                 const updatedPartner = { ...p, engagement_type: type };
                 if (type === 'financier') {
                     updatedPartner.autre_engagement = '';
@@ -307,33 +315,32 @@ const handleAutreEngagementChange = (tempId, value) => {
     );
 };
 const handleTypeToggleChange = (value) => {
-    // Create a copy of the previous state to modify
     let updatedFormData = { ...formData, type: value };
-
-    // If the type changes, reset the non-relevant field
     if (value === 'cadre') {
-        updatedFormData.projetId = null; // Clear projet
+        updatedFormData.projetId = null; 
+        updatedFormData.conventionCadreId = null;
     } else if (value === 'specifique') {
-        updatedFormData.programmeId = null; // Clear programme
+        updatedFormData.programmeId = null;
     }
 
     setFormData(updatedFormData);
 
-    // Clear any potential validation errors
     if (formErrors.type) setFormErrors(prev => ({ ...prev, type: undefined }));
     if (formErrors.Id_Programme) setFormErrors(prev => ({ ...prev, Id_Programme: undefined }));
     if (formErrors.Id_Projet) setFormErrors(prev => ({ ...prev, Id_Projet: undefined }));
+    if (formErrors.convention_cadre_id) setFormErrors(prev => ({...prev, convention_cadre_id: undefined}));
 };
     const handleProvinceChange = (selectedOptions) => { setFormData(prev => ({ ...prev, provinces: selectedOptions || [] })); if (formErrors.Province) setFormErrors(prev => ({ ...prev, Province: undefined })); };
     const handleStatutChange = (selectedOption) => { setFormData(prev => ({ ...prev, Statut: selectedOption , date_visa: selectedOption?.value === 'visé' ? prev.date_visa : '' })); if (formErrors.Statut) setFormErrors(prev => ({ ...prev, Statut: undefined })); };
     const handleProjetChange = (selectedOption) => { setFormData(prev => ({ ...prev, projetId: selectedOption })); if (formErrors.Id_Projet) { setFormErrors(prev => ({ ...prev, Id_Projet: undefined })); } };
+    const handleConventionCadreChange = (selectedOption) => { setFormData(prev => ({ ...prev, conventionCadreId: selectedOption })); if (formErrors.convention_cadre_id) { setFormErrors(prev => ({ ...prev, convention_cadre_id: undefined })); } };
     const handleFonctionnaireChange = (selectedOptions) => { setFormData(prev => ({ ...prev, fonctionnaires: selectedOptions || [] })); if (formErrors.id_fonctionnaire) { setFormErrors(prev => ({ ...prev, id_fonctionnaire: undefined })); } };
     const handleFileChange = (e) => { const files = Array.from(e.target.files); if (files.length > 0) { setNewFiles(prev => { const currentIdentifiers = new Set(prev.map(fw => `${(fw.file?.name || fw.name)}_${(fw.file?.size || fw.size)}`)); const newlyAdded = files.filter(f => !currentIdentifiers.has(`${f.name}_${f.size}`)).map(f => ({ file: f, intitule: '', showIntitule: false })); return [...prev, ...newlyAdded]; }); if (formErrors.fichiers) setFormErrors(prev => ({ ...prev, fichiers: undefined })); } e.target.value = null; };
     const handleRemoveNewFile = (indexToRemove) => { setNewFiles(prev => prev.filter((_, index) => index !== indexToRemove)); };
     const handleMarkForDeletion = (docId) => { setDocumentsToDelete(prev => [...new Set([...prev, docId])]); };
     const handleUnmarkForDeletion = (docId) => { setDocumentsToDelete(prev => prev.filter(id => id !== docId)); if (formErrors.fichiers_delete) setFormErrors(prev => ({ ...prev, fichiers_delete: undefined })); };
     const handlePartnerSelectionChange = (selectedOptions) => { const newSelectedPartnersOptions = selectedOptions || []; setSelectedPartnerDetails(prevDetails => { const keptDetails = prevDetails.filter(detail => newSelectedPartnersOptions.some(opt => opt.value === detail.id)); 
-        const addedDetails = newSelectedPartnersOptions.filter(option => !prevDetails.some(detail => detail.id === option.value)).map(option => ({ tempId: generateTempId(), id: option.value, Id_CP: null, label: option.label,        engagements_annuels: [], // <<< ADD THIS LINE
+        const addedDetails = newSelectedPartnersOptions.filter(option => !prevDetails.some(detail => detail.id === option.value)).map(option => ({ tempId: generateTempId(), id: option.value, Id_CP: null, label: option.label,        engagements_annuels: [],
  montant: '',engagement_type: 'financier',autre_engagement: '', is_signatory: false, date_signature: '', details_signature: '', })); return [...keptDetails, ...addedDetails]; }); if (formErrors.partenaires) setFormErrors(prev => ({ ...prev, partenaires: undefined })); if (formErrors.signatories) setFormErrors(prev => ({ ...prev, signatories: undefined })); const newPartnerIds = newSelectedPartnersOptions.map(opt => opt.value); setFormErrors(prev => { const nextErrors = { ...prev }; Object.keys(nextErrors).forEach(key => { const matchAmount = key.match(/^montant_(\d+)$/); const matchDate = key.match(/^date_sig_(\d+)$/); const matchDetails = key.match(/^details_sig_(\d+)$/); const partnerIdStr = matchAmount?.[1] || matchDate?.[1] || matchDetails?.[1]; if (partnerIdStr && !newPartnerIds.includes(parseInt(partnerIdStr, 10))) delete nextErrors[key]; }); return nextErrors; }); };
     const handleCommitmentChange = (tempId, value) => { setSelectedPartnerDetails(prevDetails => prevDetails.map(p => p.tempId === tempId ? { ...p, montant: value } : p)); const partnerId = selectedPartnerDetails.find(p=>p.tempId === tempId)?.id; if(partnerId) { const errorKey = `montant_${partnerId}`; if (formErrors[errorKey]) setFormErrors(prev => ({ ...prev, [errorKey]: undefined })); } };
     const handleSignatoryChange = (tempId, isChecked) => { setSelectedPartnerDetails(prevDetails => prevDetails.map(p => p.tempId === tempId ? { ...p, is_signatory: isChecked, date_signature: isChecked ? p.date_signature : '', details_signature: isChecked ? p.details_signature : '' } : p)); const partnerId = selectedPartnerDetails.find(p=>p.tempId === tempId)?.id; if(partnerId){ if (isChecked && formErrors.signatories) setFormErrors(prev => ({ ...prev, signatories: undefined })); const dateErrorKey = `date_sig_${partnerId}`; const detailsErrorKey = `details_sig_${partnerId}`; if (!isChecked && formErrors[dateErrorKey]) setFormErrors(prev => ({ ...prev, [dateErrorKey]: undefined })); if (!isChecked && formErrors[detailsErrorKey]) setFormErrors(prev => ({ ...prev, [detailsErrorKey]: undefined })); } };
@@ -400,7 +407,7 @@ const handleTypeToggleChange = (value) => {
                             else if (key.startsWith('fichiers.') || key === 'fichiers') { mappedErrors.fichiers = (mappedErrors.fichiers || '') + serverErrors[key].join(' ') + ' '; }
                             else if (key.startsWith('deleted_document_ids.') || key === 'deleted_document_ids') { mappedErrors.fichiers_delete = (mappedErrors.fichiers_delete || '') + serverErrors[key].join(' ') + ' '; }
                             else if (key === 'id_fonctionnaire') mappedErrors['id_fonctionnaire'] = serverErrors[key].join(' ');
-                            else { const formKey = Object.keys(formData).find(fk => fk.toLowerCase() === key.toLowerCase()) || key; if (key === 'id_projet') mappedErrors['Id_Projet'] = serverErrors[key].join(' '); else if (key === 'id_programme') mappedErrors['Id_Programme'] = serverErrors[key].join(' '); else if (key === 'localisation') mappedErrors['Province'] = serverErrors[key].join(' '); else mappedErrors[formKey] = serverErrors[key].join(' '); }
+                            else { const formKey = Object.keys(formData).find(fk => fk.toLowerCase() === key.toLowerCase()) || key; if (key === 'id_projet') mappedErrors['Id_Projet'] = serverErrors[key].join(' '); else if (key === 'id_programme') mappedErrors['Id_Programme'] = serverErrors[key].join(' '); else if (key === 'convention_cadre_id') mappedErrors['convention_cadre_id'] = serverErrors[key].join(' '); else if (key === 'localisation') mappedErrors['Province'] = serverErrors[key].join(' '); else mappedErrors[formKey] = serverErrors[key].join(' '); }
                        });
                        setFormErrors(mappedErrors);
                        errorMsg = "Erreurs de validation (serveur).";
@@ -416,17 +423,18 @@ const handleTypeToggleChange = (value) => {
         setShowConfirmModal(false); 
         if (!validateForm()) {
             setSubmissionStatus({ loading: false, error: "Veuillez corriger les erreurs indiquées.", success: false });
-             const firstErrorKey = Object.keys(formErrors)[0]; let errorElementId = `form${firstErrorKey}`; if (firstErrorKey?.startsWith('montant_') || firstErrorKey?.startsWith('date_sig_') || firstErrorKey?.startsWith('details_sig_')) { errorElementId = `formDetail_${firstErrorKey.split('_').pop()}`; } else if (['Province', 'Id_Programme', 'Id_Projet', 'partenaires', 'Statut', 'id_fonctionnaire'].includes(firstErrorKey)) { errorElementId = `form${firstErrorKey}`; } else if (firstErrorKey === 'fichiers' || firstErrorKey === 'fichiers_delete') { errorElementId = 'file-management-card'; } const elementToScroll = document.getElementById(errorElementId); if (elementToScroll) { elementToScroll.scrollIntoView({ behavior: 'smooth', block: 'center' }); } else { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+             const firstErrorKey = Object.keys(formErrors)[0]; let errorElementId = `form${firstErrorKey}`; if (firstErrorKey?.startsWith('montant_') || firstErrorKey?.startsWith('date_sig_') || firstErrorKey?.startsWith('details_sig_')) { errorElementId = `formDetail_${firstErrorKey.split('_').pop()}`; } else if (['Province', 'Id_Programme', 'Id_Projet', 'convention_cadre_id', 'partenaires', 'Statut', 'id_fonctionnaire'].includes(firstErrorKey)) { errorElementId = `form${firstErrorKey}`; } else if (firstErrorKey === 'fichiers' || firstErrorKey === 'fichiers_delete') { errorElementId = 'file-management-card'; } const elementToScroll = document.getElementById(errorElementId); if (elementToScroll) { elementToScroll.scrollIntoView({ behavior: 'smooth', block: 'center' }); } else { window.scrollTo({ top: 0, behavior: 'smooth' }); }
             return;
         }
         const dataPayload = new FormData();
         const comiteTechnique = formData.membres_comite_technique.map(member => member.value);
-dataPayload.append('membres_comite_technique', JSON.stringify(comiteTechnique));
-const comitePilotage = formData.membres_comite_pilotage.map(member => member.value);
-dataPayload.append('membres_comite_pilotage', JSON.stringify(comitePilotage));
+        dataPayload.append('membres_comite_technique', JSON.stringify(comiteTechnique));
+        const comitePilotage = formData.membres_comite_pilotage.map(member => member.value);
+        dataPayload.append('membres_comite_pilotage', JSON.stringify(comitePilotage));
         dataPayload.append('code', formData.Code);
-        dataPayload.append('type', formData.type); // Add this line
-
+        dataPayload.append('type', formData.type);
+        dataPayload.append('code_provisoire', formData.code_provisoire ?? '');
+        dataPayload.append('convention_cadre_id', formData.conventionCadreId?.value ?? '');
         dataPayload.append('intitule', formData.Intitule);
         dataPayload.append('annee_convention', formData.Annee_Convention);
         dataPayload.append('statut', formData.Statut?.value ?? '');
@@ -434,7 +442,7 @@ dataPayload.append('membres_comite_pilotage', JSON.stringify(comitePilotage));
         dataPayload.append('categorie', formData.Categorie ?? '');
         dataPayload.append('reference', formData.Reference ?? '');
         dataPayload.append('objet', formData.Objet ?? '');
-        dataPayload.append('date_visa', formData.date_visa ?? ''); // <-- ADD THIS LINE
+        dataPayload.append('date_visa', formData.date_visa ?? '');
         dataPayload.append('date_reception_vise', formData.date_reception_vise ?? '');
         dataPayload.append('duree_convention', formData.duree_convention ?? '');
         dataPayload.append('maitre_ouvrage_delegue', formData.maitre_ouvrage_delegue ?? '');
@@ -459,8 +467,9 @@ dataPayload.append('membres_comite_pilotage', JSON.stringify(comitePilotage));
         const partnerCommitmentsPayload = selectedPartnerDetails.map(p => {
             let commitment = {
                 Id_Partenaire: p.id,
-Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(p.montant) : null,
-        autre_engagement: p.engagement_type === 'autre' && p.autre_engagement ? p.autre_engagement : null,                is_signatory: p.is_signatory,
+                Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(p.montant) : null,
+                autre_engagement: p.engagement_type === 'autre' && p.autre_engagement ? p.autre_engagement : null,
+                is_signatory: p.is_signatory,
                 date_signature: p.is_signatory && p.date_signature ? p.date_signature : null,
                 details_signature: p.is_signatory && p.details_signature ? p.details_signature : null,
                  engagements_annuels: p.engagements_annuels?.map(e => ({
@@ -476,7 +485,6 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
         });
         dataPayload.append('partner_commitments', JSON.stringify(partnerCommitmentsPayload));
         if (newFiles.length > 0) { newFiles.forEach((fw, index) => { const fileObj = fw.file || fw; dataPayload.append('fichiers[]', fileObj); if (typeof fw.intitule === 'string') { dataPayload.append(`intitules[${index}]`, fw.intitule); } }); }
-        // Include existing document titles metadata for update (mirrors Ordre Service behavior)
         if (isEditing && existingDocuments.length > 0) {
             const docsMeta = existingDocuments
                 .filter(d => typeof d.intitule === 'string' && d.intitule.trim() !== '')
@@ -490,7 +498,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
     };
 
     const isSubmitDisabled = submissionStatus.loading || loadingData || Object.values(loadingOptions).some(l => l);
-    if (loadingOptions.programmes || loadingOptions.partenaires || loadingOptions.provinces || loadingOptions.projets || loadingOptions.fonctionnaires || (isEditing && loadingData)) {
+    if (loadingOptions.programmes || loadingOptions.partenaires || loadingOptions.provinces || loadingOptions.projets || loadingOptions.fonctionnaires || loadingOptions.conventionsCadre || (isEditing && loadingData)) {
         return ( <div className="d-flex justify-content-center align-items-center p-5" style={{minHeight: '400px'}}> <Spinner animation="border" variant="primary" /> <span className='ms-3 text-muted'>Chargement...</span> </div> );
     }
 
@@ -505,7 +513,6 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                      {submissionStatus.error && <Alert variant="danger" className="mb-3 py-2" dismissible onClose={() => setSubmissionStatus(prev => ({...prev, error: null}))}><FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/> {submissionStatus.error}</Alert>}
                      {submissionStatus.success && <Alert variant="success" className="mb-3 py-2">Convention {isEditing ? 'modifiée' : 'créée'} avec succès !</Alert>}
                     <Form noValidate onSubmit={handleSubmit}>
-                      {/* === REPLACE THE OLD CARD WITH THIS NEW, IMPROVED VERSION === */}
 <Card className=" shadow-none border-0">
     <Card.Body  style={{ paddingInline: '0.75rem' }}>
         <Row className="align-items-center text-center">
@@ -576,253 +583,82 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                             </Form.Group>
                         </Row>
                                             
-                                                <Row className="mb-3 g-3">
-                                                    <Form.Group as={Col} md={4} controlId="formNumeroApprobation">
-                                                        <Form.Label className=" mb-1 fw-medium">Numéro d'approbation <span className="text-danger">*</span></Form.Label>
-                                                        <Form.Control 
-                                                            className={inputClass} 
-                                                            isInvalid={!!formErrors.numero_approbation} 
-                                                            type="text" 
-                                                            name="numero_approbation" 
-                                                            value={formData.numero_approbation} 
-                                                            onChange={handleChange} 
-                                                            size="sm"
-                                                        />
-                                                        <Form.Control.Feedback type="invalid">{formErrors.numero_approbation}</Form.Control.Feedback>
-                                                    </Form.Group>
-                                                    <Form.Group as={Col} md={4} controlId="formDureeConvention">
-        <Form.Label className=" mb-1 fw-medium">Durée de la convention (mois)</Form.Label>
-        <Form.Control 
-            className={inputClass} 
-            isInvalid={!!formErrors.duree_convention} 
-            type="number" 
-            name="duree_convention" 
-            placeholder="ex: 36"
-            value={formData.duree_convention} 
-            onChange={handleChange} 
-            size="sm"
-        />
-        <Form.Control.Feedback type="invalid">{formErrors.duree_convention}</Form.Control.Feedback>
-    </Form.Group>
-                                                    <Form.Group as={Col} md={4} controlId="formSession">
-                                                        <Form.Label className=" mb-1 fw-medium">Session (Mois) <span className="text-danger">*</span></Form.Label>
-                                                        <Form.Select
-                                                            className={inputClass}
-                                                            name="session"
-                                                            value={formData.session}
-                                                            onChange={handleChange}
-                                                            isInvalid={!!formErrors.session}
-                                                            size="sm"
-                                                        >
-                                                            <option value="">Sélectionner un mois</option>
-                                                            <option value="1">Janvier</option>
-                                                            <option value="2">Février</option>
-                                                            <option value="3">Mars</option>
-                                                            <option value="4">Avril</option>
-                                                            <option value="5">Mai</option>
-                                                            <option value="6">Juin</option>
-                                                            <option value="7">Juillet</option>
-                                                            <option value="8">Août</option>
-                                                            <option value="9">Septembre</option>
-                                                            <option value="10">Octobre</option>
-                                                            <option value="11">Novembre</option>
-                                                            <option value="12">Décembre</option>
-                                                        </Form.Select>
-                                                        <Form.Control.Feedback type="invalid">{formErrors.session}</Form.Control.Feedback>
-                                                    </Form.Group>
-                                                </Row>
-                                 
-                                                   
-                        <Card className="mb-4 shadow-sm border-light ">
-                            <Card.Header className='bg-light py-2'><h6 className='mb-0 fw-semibold text-secondary '>Partenaires & Engagements</h6></Card.Header>
-                            <Card.Body className="pb-2 pt-3">
-                                <Form.Group as={Row} className="mb-3" id="formPartenaires">
-                                    <Form.Label column sm={3} className=" pt-1 fw-medium text-sm-end">Sélection Partenaires</Form.Label>
-                                    <Col sm={9}>
-                                        <Select inputId='partenaire-select-input' name="partenaireSelector" options={allPartenairesOptions} value={allPartenairesOptions.filter(opt => selectedPartnerDetails.some(p => p.id === opt.value))} onChange={handlePartnerSelectionChange} styles={selectStyles} placeholder="- Choisir ou ajouter -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.partenaires} className={formErrors.partenaires || formErrors.signatories ? 'is-invalid' : ''} classNamePrefix="react-select"/>
-                                        {(formErrors.partenaires || formErrors.signatories) && <div className="invalid-feedback d-block ps-1 ">{formErrors.partenaires} {formErrors.signatories}</div>}
-                                    </Col>
-                                </Form.Group>
-                                {selectedPartnerDetails.length > 0 && ( <div className="mt-3 border-top pt-3">
-                                    {selectedPartnerDetails.map((partner, index) => (
-                                        <div key={partner.tempId} id={`formDetail_${partner.id}`} className={`mb-3 ${index < selectedPartnerDetails.length - 1 ? 'border-bottom pb-3' : ''}`}>
-                                            <Row className="mb-2 align-items-center px-sm-3">
-    <Col sm={12} md={4} className="mb-2 mb-md-0">
-        <Form.Group>
-            <Form.Label className=" mb-1 fw-medium text-muted">Type d'engagement</Form.Label>
-            <ToggleButtonGroup
-                type="radio"
-                name={`engagement-type-${partner.tempId}`}
-                value={partner.engagement_type}
-                onChange={(type) => handleEngagementTypeChange(partner.tempId, type)}
-                size="sm"
-                className="d-flex"
-            >
-                <ToggleButton id={`type-financier-${partner.tempId}`} value="financier" variant="outline-secondary" className="w-100">
-                    Financier
-                </ToggleButton>
-                <ToggleButton id={`type-autre-${partner.tempId}`} value="autre" variant="outline-secondary" className="w-100">
-                    Autre Nature
-                </ToggleButton>
-            </ToggleButtonGroup>
-        </Form.Group>
-    </Col>
+                        <Row className="mb-3 g-3">
+                                                         <Form.Group as={Col} md={4} controlId="formDureeConvention">
+                                <Form.Label className=" mb-1 fw-medium">Durée de la convention (mois)</Form.Label>
+                                <Form.Control 
+                                    className={inputClass} 
+                                    isInvalid={!!formErrors.duree_convention} 
+                                    type="number" 
+                                    name="duree_convention" 
+                                    placeholder="ex: 36"
+                                    value={formData.duree_convention} 
+                                    onChange={handleChange} 
+                                    size="sm"
+                                />
+                                <Form.Control.Feedback type="invalid">{formErrors.duree_convention}</Form.Control.Feedback>
+                            </Form.Group>
 
-    {/* Column for the Conditional Input (Montant or Autre Engagement) */}
-    <Col sm={12} md={5} className="mb-2 mb-md-0">
-        {partner.engagement_type === 'financier' ? (
-            <Form.Group>
-                <Form.Label className=" mb-1 fw-medium text-muted">Montant (MAD)</Form.Label>
-                <InputGroup size="sm" className="flex-nowrap">
-                    <Form.Control
-                        type="number" step="0.01" min="0"
-                        value={partner.montant}
-                        onChange={(e) => handleCommitmentChange(partner.tempId, e.target.value)}
-                        placeholder="Montant convenu"
-                        className="form-control-sm rounded-start-pill shadow-sm bg-white border-1"
-                        isInvalid={!!formErrors[`montant_${partner.id}`]}
-                    />
-                    <InputGroup.Text className="rounded-end-pill">MAD</InputGroup.Text>
-                    <Form.Control.Feedback type="invalid">{formErrors[`montant_${partner.id}`]}</Form.Control.Feedback>
-                </InputGroup>
-            </Form.Group>
-        ) : (
-            <Form.Group>
-                <Form.Label className=" mb-1 fw-medium text-muted">Description de l'engagement</Form.Label>
-                <Form.Control
-                    as="textarea" rows={1}
-                    value={partner.autre_engagement}
-                    onChange={(e) => handleAutreEngagementChange(partner.tempId, e.target.value)}
-                    placeholder="Ex: Mise à disposition du terrain..."
-                    className="form-control-sm rounded-3 shadow-sm bg-white border-1"
-                    isInvalid={!!formErrors[`autre_engagement_${partner.id}`]}
-                />
-                <Form.Control.Feedback type="invalid">{formErrors[`autre_engagement_${partner.id}`]}</Form.Control.Feedback>
-            </Form.Group>
-        )}
-    </Col>
-
-    {/* Column for Signatory Switch */}
-    <Col sm={12} md={3} className="d-flex align-items-end justify-content-center pt-1">
-        <FormCheck
-            type="switch"
-            id={`signatory-check-${partner.tempId}`}
-            label="Signataire?"
-            checked={partner.is_signatory}
-            onChange={(e) => handleSignatoryChange(partner.tempId, e.target.checked)}
-            className="form-check-lg "
-        />
-    </Col>
-</Row>
-{partner.engagement_type === 'financier' && formData.Annee_Convention && formData.duree_convention && (
-        (() => {
-            const engagementYears = calculateEngagementYears(formData.Annee_Convention, formData.duree_convention);
-            if (engagementYears.length === 0) return null;
-
-            const yearlyTotal = partner.engagements_annuels?.reduce((sum, item) => sum + parseCurrency(item.montant_prevu), 0) || 0;
-            const totalCommitment = parseCurrency(partner.montant);
-            const isTotalMismatch = yearlyTotal !== totalCommitment;
-
-            return (
-                <Row className="mt-2 mb-2 px-sm-3 justify-content-end">
-                    <Col sm={12}>
-                        <div className="p-2 border rounded-3 bg-light">
-                            <p className=" fw-medium text-muted mb-2">Répartition annuelle prévisionnelle :</p>
-                            <Row className="g-2">
-                                {engagementYears.map(year => {
-                                    const engagementForYear = partner.engagements_annuels?.find(e => Number(e.annee) === year);
-                                    return (
-                                        <Col key={year} xs={6} sm={4} md={3}>
-                                            <InputGroup size="sm">
-                                                <InputGroup.Text>{year}</InputGroup.Text>
-                                                <Form.Control
-                                                    type="number"
-                                                    step="0.01"
-                                                    placeholder="Montant"
-                                                    value={engagementForYear?.montant_prevu || ''}
-                                                    onChange={(e) => handleYearlyAmountChange(partner.tempId, year, e.target.value)}
-                                                />
-                                            </InputGroup>
-                                        </Col>
-                                    );
-                                })}
-                            </Row>
-                            {isTotalMismatch && totalCommitment > 0 && (
-                                <Alert variant="warning" className="mt-2 py-1 px-2  mb-0">
-                                    <FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/>
-                                    La somme de la répartition ({yearlyTotal.toLocaleString('fr-MA')} MAD) ne correspond pas à l'engagement total ({totalCommitment.toLocaleString('fr-MA')} MAD).
-                                </Alert>
-                            )}
-                        </div>
-                    </Col>
-                </Row>
-            );
-        })()
-    )}
-                                            {partner.is_signatory && ( <Row className="mt-2 mb-1 px-sm-3">
-                                                <Col sm={5} md={4} className="d-none d-sm-block"></Col>
-                                                <Col xs={12} sm={4} md={4} className="mb-2 mb-sm-0"> <Form.Group controlId={`formDateSig_${partner.id}`}><Form.Label className=" mb-0 fw-medium text-muted">Date Signature</Form.Label><Form.Control type="date" size="sm" value={partner.date_signature} onChange={(e) => handleSignatureDateChange(partner.tempId, e.target.value)} className="form-control-sm rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors[`date_sig_${partner.id}`]} required={partner.is_signatory}/><Form.Control.Feedback type="invalid" className="">{formErrors[`date_sig_${partner.id}`]}</Form.Control.Feedback></Form.Group> </Col>
-                                                <Col xs={12} sm={3} md={4}> <Form.Group controlId={`formDetailsSig_${partner.id}`}><Form.Label className=" mb-0 fw-medium text-muted">Détails Signature</Form.Label><Form.Control type="text" size="sm" value={partner.details_signature} onChange={(e) => handleSignatureDetailsChange(partner.tempId, e.target.value)} placeholder="Lieu, observations..." className="form-control-sm rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors[`details_sig_${partner.id}`]}/><Form.Control.Feedback type="invalid" className="">{formErrors[`details_sig_${partner.id}`]}</Form.Control.Feedback></Form.Group> </Col>
-                                            </Row> )}
-                                        </div>
+                            <Form.Group as={Col} md={4} controlId="formNumeroApprobation">
+                                <Form.Label className=" mb-1 fw-medium">Numéro d'approbation <span className="text-danger">*</span></Form.Label>
+                                <Form.Control 
+                                    className={inputClass} 
+                                    isInvalid={!!formErrors.numero_approbation} 
+                                    type="text" 
+                                    name="numero_approbation" 
+                                    value={formData.numero_approbation} 
+                                    onChange={handleChange} 
+                                    size="sm"
+                                />
+                                <Form.Control.Feedback type="invalid">{formErrors.numero_approbation}</Form.Control.Feedback>
+                            </Form.Group>
+                            <Form.Group as={Col} md={4} controlId="formSession">
+                                <Form.Label className=" mb-1 fw-medium">Session (Mois) <span className="text-danger">*</span></Form.Label>
+                                <Form.Select
+                                    className={inputClass}
+                                    name="session"
+                                    value={formData.session}
+                                    onChange={handleChange}
+                                    isInvalid={!!formErrors.session}
+                                    size="sm"
+                                >
+                                    <option value="">Sélectionner un mois</option>
+                                    {[...Array(12).keys()].map(i => (
+                                        <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('fr', { month: 'long' })}</option>
                                     ))}
-                                </div> )}
-                            </Card.Body>
-                        </Card>
-                        <Card className="mb-4 shadow-sm border-light">
-    <Card.Header className='bg-light py-2'>
-        <h6 className='mb-0 fw-semibold text-secondary'>Comités de Suivi</h6>
-    </Card.Header>
-    <Card.Body className="pb-3 pt-3">
-        <Row>
-            <Col md={12} className="mb-3">
-                <Form.Group controlId="formMembresTechnique">
-                    <Form.Label className=" mb-1 fw-medium">Membres du Comité Technique</Form.Label>
-                    <CreatableSelect
-                        isMulti
-
-                        isClearable
-                        components={{ DropdownIndicator: null }} 
-                        value={formData.membres_comite_technique}
-                        onChange={(newValue) => setFormData(prev => ({ ...prev, membres_comite_technique: newValue || [] }))}
-                        placeholder="Saisir un nom et appuyer sur Entrée..."
-                        styles={{
-                            ...selectStyles, // Inherit your base styles
-                            menu: () => ({ display: 'none' }) // Add this rule to hide the menu
-                        }}                        noOptionsMessage={() => "Saisir un nom pour l'ajouter"}
-                        formatCreateLabel={(inputValue) => `Ajouter "${inputValue}"`}
-                    />
-                </Form.Group>
-            </Col>
-            <Col md={12}>
-                <Form.Group controlId="formMembresPilotage">
-                    <Form.Label className=" mb-1 fw-medium">Membres du Comité de Pilotage</Form.Label>
-                     <CreatableSelect
-                        isMulti
-                        isClearable
-                        components={{ DropdownIndicator: null }} 
-                        value={formData.membres_comite_pilotage}
-                        onChange={(newValue) => setFormData(prev => ({ ...prev, membres_comite_pilotage: newValue || [] }))}
-                        placeholder="Saisir un nom et appuyer sur Entrée..."
-                        styles={{
-                            ...selectStyles, // Inherit your base styles
-                            menu: () => ({ display: 'none' }) // Add this rule to hide the menu
-                        }}                        noOptionsMessage={() => "Saisir un nom pour l'ajouter"}
-                        formatCreateLabel={(inputValue) => `Ajouter "${inputValue}"`}
-                    />
-                </Form.Group>
-            </Col>
-        </Row>
-    </Card.Body>
-</Card>
-                        <Row className="mb-3 g-3">
-                             <Form.Group as={Col} md={6} lg={6} controlId="formMaitre_Ouvrage"><Form.Label className=" mb-1 fw-medium">Maitre Ouvrage</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Maitre_Ouvrage} type="text" name="Maitre_Ouvrage" value={formData.Maitre_Ouvrage} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Maitre_Ouvrage}</Form.Control.Feedback></Form.Group>
-                             
-
-                            {formData.type === 'cadre' && (<Form.Group as={Col} md={6} lg={6} controlId="formId_Programme"><Form.Label className=" mb-1 fw-medium">Programme</Form.Label><Select inputId='programme-select-input' name="programmeId" menuPlacement="auto" options={programmesOptions} value={formData.programmeId} onChange={handleProgrammeChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.programmes} className={formErrors.Id_Programme ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Programme ? 'block' : 'none'}}>{formErrors.Id_Programme}</Form.Control.Feedback></Form.Group>)}
-                             {formData.type === 'specifique' && (<Form.Group as={Col} md={6} lg={6} controlId="formId_Projet"><Form.Label className=" mb-1 fw-medium">Projet</Form.Label><Select inputId='projet-select-input' name="projetId" menuPlacement="auto" options={projetsOptions} value={formData.projetId} onChange={handleProjetChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.projets} className={formErrors.Id_Projet ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Projet ? 'block' : 'none'}}>{formErrors.Id_Projet}</Form.Control.Feedback></Form.Group>)}
+                                </Form.Select>
+                                <Form.Control.Feedback type="invalid">{formErrors.session}</Form.Control.Feedback>
+                            </Form.Group>
                         </Row>
-                        <Row className="mb-3 g-3">
+               
+
+
+                                                  <Row className="mb-3 g-3">
+                             <Form.Group as={Col}  controlId="formMaitre_Ouvrage"><Form.Label className=" mb-1 fw-medium">Maitre Ouvrage</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Maitre_Ouvrage} type="text" name="Maitre_Ouvrage" value={formData.Maitre_Ouvrage} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Maitre_Ouvrage}</Form.Control.Feedback></Form.Group>
+                             
+                            {formData.type === 'cadre' && (
+                                <Form.Group as={Col} md={6} lg={6} controlId="formId_Programme">
+                                    <Form.Label className=" mb-1 fw-medium">Programme</Form.Label>
+                                    <Select inputId='programme-select-input' name="programmeId" menuPlacement="auto" options={programmesOptions} value={formData.programmeId} onChange={handleProgrammeChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.programmes} className={formErrors.Id_Programme ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/>
+                                    <Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Programme ? 'block' : 'none'}}>{formErrors.Id_Programme}</Form.Control.Feedback>
+                                </Form.Group>
+                            )}
+                            {formData.type === 'specifique' && (
+                                <>
+                                    <Form.Group as={Col} md={4} lg={4} controlId="formconvention_cadre_id">
+                                        <Form.Label className=" mb-1 fw-medium">Convention Cadre de Rattachement <span className="text-danger">*</span></Form.Label>
+                                        <Select inputId='convention-cadre-select-input' name="conventionCadreId" menuPlacement="auto" options={conventionCadreOptions} value={formData.conventionCadreId} onChange={handleConventionCadreChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.conventionsCadre} className={formErrors.convention_cadre_id ? 'is-invalid' : ''} classNamePrefix="react-select"/>
+                                        <Form.Control.Feedback type="invalid" style={{ display: formErrors.convention_cadre_id ? 'block' : 'none'}}>{formErrors.convention_cadre_id}</Form.Control.Feedback>
+                                    </Form.Group>
+                                    <Form.Group as={Col} md={4} lg={4} controlId="formId_Projet">
+                                        <Form.Label className=" mb-1 fw-medium">Projet</Form.Label>
+                                        <Select inputId='projet-select-input' name="projetId" menuPlacement="auto" options={projetsOptions} value={formData.projetId} onChange={handleProjetChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.projets} className={formErrors.Id_Projet ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/>
+                                        <Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Projet ? 'block' : 'none'}}>{formErrors.Id_Projet}</Form.Control.Feedback>
+                                    </Form.Group>
+                                </>
+                            )}
+                        </Row>       
+                                                  <Row className="mb-3 g-3">
     <Form.Group as={Col} md={6} controlId="formMaitreOuvrageDelegue">
         <Form.Label className=" mb-1 fw-medium">Maitre d'ouvrage délégué</Form.Label>
         <Form.Control 
@@ -836,9 +672,10 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
         />
         <Form.Control.Feedback type="invalid">{formErrors.maitre_ouvrage_delegue}</Form.Control.Feedback>
     </Form.Group>
-    <Form.Group as={Col} md={6} lg={6} controlId="formProvince"><Form.Label className=" mb-1 fw-medium">Localisation (Provinces)</Form.Label><Select inputId='province-select-input' name="provinces" menuPlacement="auto" options={provincesOptions} value={formData.provinces} onChange={handleProvinceChange} styles={selectStyles} placeholder="- Selectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.provinces} className={formErrors.Province ? 'is-invalid' : ''} classNamePrefix="react-select"/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Province ? 'block' : 'none'}}>{formErrors.Province}</Form.Control.Feedback></Form.Group>
+                                <Form.Group as={Col} md={6} controlId="formCout_Global"><Form.Label className=" mb-1 fw-medium">Cout Global (MAD)</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Cout_Global} type="number" step="0.01" min="0" name="Cout_Global" value={formData.Cout_Global} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Cout_Global}</Form.Control.Feedback></Form.Group>
 
-</Row>
+
+</Row>          
                         <Row className="mb-3 g-3">
                             <Form.Group as={Col} md={4} controlId="formStatut"><Form.Label className=" mb-1 fw-medium">Statut <span className="text-danger">*</span></Form.Label><Select inputId='statut-select-input' name="Statut" options={groupedStatutOptions} value={formData.Statut} onChange={handleStatutChange} styles={selectStyles} placeholder="- Sélectionner Statut -" isClearable formatGroupLabel={(group) => (<div style={{ fontWeight: 'bold', color: '#555', borderTop: '1px solid #eee', paddingTop: '5px', marginTop:'5px' }}>{group.label}</div>)} className={formErrors.Statut ? 'is-invalid' : ''} classNamePrefix="react-select"/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Statut ? 'block' : 'none'}}>{formErrors.Statut}</Form.Control.Feedback></Form.Group>
                             {formData.Statut?.value === 'visé' && (
@@ -866,6 +703,20 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                 <Form.Control.Feedback type="invalid">{formErrors.date_reception_vise}</Form.Control.Feedback>
                              </Form.Group></>
                             )}
+                                                      <Form.Group as={Col} md={4}  controlId="formCodeProvisoire">
+                                <Form.Label className=" mb-1 fw-medium">Code Provisoire</Form.Label>
+                                <Form.Control 
+                                    className={inputClass} 
+                                    isInvalid={!!formErrors.code_provisoire} 
+                                    type="text" 
+                                    name="code_provisoire" 
+                                    value={formData.code_provisoire} 
+                                    onChange={handleChange} 
+                                    size="md"
+                                    placeholder="Optionnel..."
+                                />
+                                <Form.Control.Feedback type="invalid">{formErrors.code_provisoire}</Form.Control.Feedback>
+                            </Form.Group>
                             <Form.Group as={Col} md={4} controlId="formOperationalisation"><Form.Label className=" mb-1 fw-medium">Opérationnel</Form.Label>
                                 <div> 
                                         <Form.Check
@@ -877,7 +728,7 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                             value="Oui"
                                             checked={formData.Operationalisation === 'Oui'}
                                             onChange={handleChange}
-                                            isInvalid={!!formErrors.Operationalisation} // Apply to group or individual for styling
+                                            isInvalid={!!formErrors.Operationalisation}
                                         />
                                         <Form.Check
                                             inline
@@ -896,25 +747,210 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                             </Form.Control.Feedback>
                                         )}
                                     </div>                                    </Form.Group>
-                            <Form.Group as={Col} md={4} controlId="formId_Fonctionnaire">
-                                <Form.Label className=" mb-1 fw-medium"><FontAwesomeIcon icon={faUsers} className="me-1" /> Points Focaux</Form.Label>
-                                <Select inputId='fonctionnaire-select-input' name="fonctionnaires" menuPlacement="auto" options={fonctionnairesOptions} value={formData.fonctionnaires} onChange={handleFonctionnaireChange} styles={selectStyles} placeholder="- Selectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.fonctionnaires} className={formErrors.id_fonctionnaire ? 'is-invalid' : ''} classNamePrefix="react-select"/>
-                                <Form.Control.Feedback type="invalid" style={{ display: formErrors.id_fonctionnaire ? 'block' : 'none'}}>{formErrors.id_fonctionnaire}</Form.Control.Feedback>
-                            </Form.Group>
-                        </Row>
-                        <Row className="mb-3 g-3">
-                            <Form.Group as={Col} md={6} controlId="formReference"><Form.Label className=" mb-1 fw-medium">Reference</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Reference} type="text" name="Reference" value={formData.Reference} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Reference}</Form.Control.Feedback></Form.Group>
 
-                            {/* <Form.Group as={Col} md={6} controlId="formClassification_prov"><Form.Label className=" mb-1 fw-medium">Classification Prov</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Classification_prov} type="text" name="Classification_prov" value={formData.Classification_prov} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Classification_prov}</Form.Control.Feedback></Form.Group> */}
-                            <Form.Group as={Col} md={6} controlId="formCategorie"><Form.Label className=" mb-1 fw-medium">Categorie</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Categorie} type="text" name="Categorie" value={formData.Categorie} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Categorie}</Form.Control.Feedback></Form.Group>
                         </Row>
-                         {/* <Row className="mb-3 g-3">
-                            <Form.Group as={Col} md={4} controlId="formGroupe"><Form.Label className=" mb-1 fw-medium">Groupe</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Groupe} type="number" name="Groupe" value={formData.Groupe} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Groupe}</Form.Control.Feedback></Form.Group>
-                            <Form.Group as={Col} md={4} controlId="formRang"><Form.Label className=" mb-1 fw-medium">Rang</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Rang} type="text" name="Rang" value={formData.Rang} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Rang}</Form.Control.Feedback></Form.Group>
-                        </Row> */}
-                         <Card className="mb-4 shadow-sm border-light" id="file-management-card">
-                            <Card.Header className='bg-light py-2'><h6 className='mb-0 fw-semibold text-secondary'>Gestion des Fichiers</h6></Card.Header>
-                            <Card.Body className="pb-3 pt-3">
+ 
+                         {/* START: PARTNER BLOCK (NEW STYLE) */}
+                        <Card className="mb-4 shadow-sm" style={{ borderLeft: '4px solid #198754' }}>
+                            <Card.Header className='bg-white py-2'>
+                                <h6 className='mb-0 fw-bold text-success'>
+                                    <FontAwesomeIcon icon={faHandshake} className="me-2"/>
+                                    Partenaires & Engagements
+                                </h6>
+                            </Card.Header>
+                            <Card.Body className="pb-2 pt-3" style={{backgroundColor: '#f8f9fa'}}>
+                                <Form.Group as={Row} className="mb-3" id="formPartenaires">
+                                    <Form.Label column sm={3} className=" pt-1 fw-medium text-sm-end">Sélection Partenaires</Form.Label>
+                                    <Col sm={9}>
+                                        <Select inputId='partenaire-select-input' name="partenaireSelector" options={allPartenairesOptions} value={allPartenairesOptions.filter(opt => selectedPartnerDetails.some(p => p.id === opt.value))} onChange={handlePartnerSelectionChange} styles={selectStyles} placeholder="- Choisir ou ajouter -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.partenaires} className={formErrors.partenaires || formErrors.signatories ? 'is-invalid' : ''} classNamePrefix="react-select"/>
+                                        {(formErrors.partenaires || formErrors.signatories) && <div className="invalid-feedback d-block ps-1 ">{formErrors.partenaires} {formErrors.signatories}</div>}
+                                    </Col>
+                                </Form.Group>
+                                {selectedPartnerDetails.length > 0 && ( <div className="mt-3 border-top pt-3">
+                                    {selectedPartnerDetails.map((partner, index) => (
+                                        <div key={partner.tempId} id={`formDetail_${partner.id}`} className={`mb-3 ${index < selectedPartnerDetails.length - 1 ? 'border-bottom pb-3' : ''}`}>
+                                            <Row className="mb-2 align-items-center px-sm-3">
+                                                <Col sm={12} md={4} className="mb-2 mb-md-0">
+                                                    <Form.Group>
+                                                        <Form.Label className=" mb-1 fw-medium text-muted">Type d'engagement</Form.Label>
+                                                        <ToggleButtonGroup
+                                                            type="radio"
+                                                            name={`engagement-type-${partner.tempId}`}
+                                                            value={partner.engagement_type}
+                                                            onChange={(type) => handleEngagementTypeChange(partner.tempId, type)}
+                                                            size="sm"
+                                                            className="d-flex"
+                                                        >
+                                                            <ToggleButton id={`type-financier-${partner.tempId}`} value="financier" variant="outline-success" className="w-100">
+                                                                Financier
+                                                            </ToggleButton>
+                                                            <ToggleButton id={`type-autre-${partner.tempId}`} value="autre" variant="outline-success" className="w-100">
+                                                                Autre Nature
+                                                            </ToggleButton>
+                                                        </ToggleButtonGroup>
+                                                    </Form.Group>
+                                                </Col>
+                                                <Col sm={12} md={5} className="mb-2 mb-md-0">
+                                                    {partner.engagement_type === 'financier' ? (
+                                                        <Form.Group>
+                                                            <Form.Label className=" mb-1 fw-medium text-muted">Montant (MAD)</Form.Label>
+                                                            <InputGroup size="sm" className="flex-nowrap">
+                                                                <Form.Control
+                                                                    type="number" step="0.01" min="0"
+                                                                    value={partner.montant}
+                                                                    onChange={(e) => handleCommitmentChange(partner.tempId, e.target.value)}
+                                                                    placeholder="Montant convenu"
+                                                                    className="form-control-sm rounded-start-pill shadow-sm bg-white border-1"
+                                                                    isInvalid={!!formErrors[`montant_${partner.id}`]}
+                                                                />
+                                                                <InputGroup.Text className="rounded-end-pill">MAD</InputGroup.Text>
+                                                                <Form.Control.Feedback type="invalid">{formErrors[`montant_${partner.id}`]}</Form.Control.Feedback>
+                                                            </InputGroup>
+                                                        </Form.Group>
+                                                    ) : (
+                                                        <Form.Group>
+                                                            <Form.Label className=" mb-1 fw-medium text-muted">Description de l'engagement</Form.Label>
+                                                            <Form.Control
+                                                                as="textarea" rows={1}
+                                                                value={partner.autre_engagement}
+                                                                onChange={(e) => handleAutreEngagementChange(partner.tempId, e.target.value)}
+                                                                placeholder="Ex: Mise à disposition du terrain..."
+                                                                className="form-control-sm rounded-3 shadow-sm bg-white border-1"
+                                                                isInvalid={!!formErrors[`autre_engagement_${partner.id}`]}
+                                                            />
+                                                            <Form.Control.Feedback type="invalid">{formErrors[`autre_engagement_${partner.id}`]}</Form.Control.Feedback>
+                                                        </Form.Group>
+                                                    )}
+                                                </Col>
+                                                <Col sm={12} md={3} className="d-flex align-items-end justify-content-center pt-1">
+                                                    <FormCheck
+                                                        type="switch"
+                                                        id={`signatory-check-${partner.tempId}`}
+                                                        label="Signataire?"
+                                                        checked={partner.is_signatory}
+                                                        onChange={(e) => handleSignatoryChange(partner.tempId, e.target.checked)}
+                                                        className="form-check-lg "
+                                                    />
+                                                </Col>
+                                            </Row>
+                                            {partner.engagement_type === 'financier' && formData.Annee_Convention && formData.duree_convention && (
+                                                (() => {
+                                                    const engagementYears = calculateEngagementYears(formData.Annee_Convention, formData.duree_convention);
+                                                    if (engagementYears.length === 0) return null;
+                                                    const yearlyTotal = partner.engagements_annuels?.reduce((sum, item) => sum + parseCurrency(item.montant_prevu), 0) || 0;
+                                                    const totalCommitment = parseCurrency(partner.montant);
+                                                    const isTotalMismatch = yearlyTotal !== totalCommitment;
+                                                    return (
+                                                        <Row className="mt-2 mb-2 px-sm-3 justify-content-end">
+                                                            <Col sm={12}>
+                                                                <div className="p-2 border rounded-3 bg-light">
+                                                                    <p className=" fw-medium text-muted mb-2">Répartition annuelle prévisionnelle :</p>
+                                                                    <Row className="g-2">
+                                                                        {engagementYears.map(year => {
+                                                                            const engagementForYear = partner.engagements_annuels?.find(e => Number(e.annee) === year);
+                                                                            return (
+                                                                                <Col key={year} xs={6} sm={4} md={3}>
+                                                                                    <InputGroup size="sm">
+                                                                                        <InputGroup.Text>{year}</InputGroup.Text>
+                                                                                        <Form.Control
+                                                                                            type="number"
+                                                                                            step="0.01"
+                                                                                            placeholder="Montant"
+                                                                                            value={engagementForYear?.montant_prevu || ''}
+                                                                                            onChange={(e) => handleYearlyAmountChange(partner.tempId, year, e.target.value)}
+                                                                                        />
+                                                                                    </InputGroup>
+                                                                                </Col>
+                                                                            );
+                                                                        })}
+                                                                    </Row>
+                                                                    {isTotalMismatch && totalCommitment > 0 && (
+                                                                        <Alert variant="warning" className="mt-2 py-1 px-2  mb-0">
+                                                                            <FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/>
+                                                                            La somme de la répartition ({yearlyTotal.toLocaleString('fr-MA')} MAD) ne correspond pas à l'engagement total ({totalCommitment.toLocaleString('fr-MA')} MAD).
+                                                                        </Alert>
+                                                                    )}
+                                                                </div>
+                                                            </Col>
+                                                        </Row>
+                                                    );
+                                                })()
+                                            )}
+                                            {partner.is_signatory && ( <Row className="mt-2 mb-1 px-sm-3">
+                                                <Col sm={5} md={4} className="d-none d-sm-block"></Col>
+                                                <Col xs={12} sm={4} md={4} className="mb-2 mb-sm-0"> <Form.Group controlId={`formDateSig_${partner.id}`}><Form.Label className=" mb-0 fw-medium text-muted">Date Signature</Form.Label><Form.Control type="date" size="sm" value={partner.date_signature} onChange={(e) => handleSignatureDateChange(partner.tempId, e.target.value)} className="form-control-sm rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors[`date_sig_${partner.id}`]} required={partner.is_signatory}/><Form.Control.Feedback type="invalid" className="">{formErrors[`date_sig_${partner.id}`]}</Form.Control.Feedback></Form.Group> </Col>
+                                                <Col xs={12} sm={3} md={4}> <Form.Group controlId={`formDetailsSig_${partner.id}`}><Form.Label className=" mb-0 fw-medium text-muted">Détails Signature</Form.Label><Form.Control type="text" size="sm" value={partner.details_signature} onChange={(e) => handleSignatureDetailsChange(partner.tempId, e.target.value)} placeholder="Lieu, observations..." className="form-control-sm rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors[`details_sig_${partner.id}`]}/><Form.Control.Feedback type="invalid" className="">{formErrors[`details_sig_${partner.id}`]}</Form.Control.Feedback></Form.Group> </Col>
+                                            </Row> )}
+                                        </div>
+                                    ))}
+                                </div> )}
+                            </Card.Body>
+                        </Card>
+                        {/* END: PARTNER BLOCK */}
+
+
+                                {/* START: COMMITTEE BLOCK (NEW STYLE) */}
+                        <Card className="mb-4 shadow-sm" style={{ borderLeft: '4px solid #0dcaf0' }}>
+                            <Card.Header className='bg-white py-2'>
+                                <h6 className='mb-0 fw-bold text-info'>
+                                    <FontAwesomeIcon icon={faUserShield} className="me-2"/>
+                                    Comités de Suivi
+                                </h6>
+                            </Card.Header>
+                            <Card.Body className="pb-3 pt-3" style={{backgroundColor: '#f8f9fa'}}>
+                                <Row>
+                                    <Col md={12} className="mb-3">
+                                        <Form.Group controlId="formMembresTechnique">
+                                            <Form.Label className=" mb-1 fw-medium">Membres du Comité Technique</Form.Label>
+                                            <CreatableSelect
+                                                isMulti
+                                                isClearable
+                                                components={{ DropdownIndicator: null }} 
+                                                value={formData.membres_comite_technique}
+                                                onChange={(newValue) => setFormData(prev => ({ ...prev, membres_comite_technique: newValue || [] }))}
+                                                placeholder="Saisir un nom et appuyer sur Entrée..."
+                                                styles={{
+                                                    ...selectStyles, 
+                                                    menu: () => ({ display: 'none' }) 
+                                                }}                        
+                                                noOptionsMessage={() => "Saisir un nom pour l'ajouter"}
+                                                formatCreateLabel={(inputValue) => `Ajouter "${inputValue}"`}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col md={12}>
+                                        <Form.Group controlId="formMembresPilotage">
+                                            <Form.Label className=" mb-1 fw-medium">Membres du Comité de Pilotage</Form.Label>
+                                            <CreatableSelect
+                                                isMulti
+                                                isClearable
+                                                components={{ DropdownIndicator: null }} 
+                                                value={formData.membres_comite_pilotage}
+                                                onChange={(newValue) => setFormData(prev => ({ ...prev, membres_comite_pilotage: newValue || [] }))}
+                                                placeholder="Saisir un nom et appuyer sur Entrée..."
+                                                styles={{
+                                                    ...selectStyles,
+                                                    menu: () => ({ display: 'none' })
+                                                }}
+                                                noOptionsMessage={() => "Saisir un nom pour l'ajouter"}
+                                                formatCreateLabel={(inputValue) => `Ajouter "${inputValue}"`}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+                            </Card.Body>
+                        </Card>
+                        {/* END: COMMITTEE BLOCK */}
+
+                         {/* START: FILES BLOCK (NEW STYLE) */}
+                        <Card className="mb-4 shadow-sm" id="file-management-card" style={{ borderLeft: '4px solid #fd7e14' }}>
+                            <Card.Header className='bg-white py-2'>
+                                <h6 className='mb-0 fw-bold text-warning'>
+                                    <FontAwesomeIcon icon={faFolderOpen} className="me-2"/>
+                                    Gestion des Fichiers
+                                </h6>
+                            </Card.Header>
+                            <Card.Body className="pb-3 pt-3" style={{backgroundColor: '#f8f9fa'}}>
                                 {isEditing && existingDocuments.length > 0 && (
                                     <>
                                         <h6 className=" text-muted mb-2">Fichiers Actuels :</h6>
@@ -1004,12 +1040,24 @@ Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(
                                 </Form.Group>
                             </Card.Body>
                         </Card>
+                        {/* END: FILES BLOCK */}
+
                         <Row className="mb-3 g-3">
-                            <Form.Group as={Col} md={6} controlId="formObjet"><Form.Label className=" mb-1 fw-medium">Objet</Form.Label><Form.Control className={textareaClass} isInvalid={!!formErrors.Objet} as="textarea" rows={1} name="Objet" value={formData.Objet} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Objet}</Form.Control.Feedback></Form.Group>
-                            <Form.Group as={Col} md={6} controlId="formObjectifs"><Form.Label className=" mb-1 fw-medium">Objectifs</Form.Label><Form.Control className={textareaClass} isInvalid={!!formErrors.Objectifs} as="textarea" rows={1} name="Objectifs" value={formData.Objectifs} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Objectifs}</Form.Control.Feedback></Form.Group>
-                        </Row>
-                        <Row className="mb-4 g-3">
-                            <Form.Group as={Col} md={12} controlId="formCout_Global"><Form.Label className=" mb-1 fw-medium">Cout Global (MAD)</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Cout_Global} type="number" step="0.01" min="0" name="Cout_Global" value={formData.Cout_Global} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Cout_Global}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col}  controlId="formId_Fonctionnaire">
+                                <Form.Label className=" mb-1 fw-medium"><FontAwesomeIcon icon={faUsers} className="me-1" /> Points Focaux</Form.Label>
+                                <Select inputId='fonctionnaire-select-input' name="fonctionnaires" menuPlacement="auto" options={fonctionnairesOptions} value={formData.fonctionnaires} onChange={handleFonctionnaireChange} styles={selectStyles} placeholder="- Selectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.fonctionnaires} className={formErrors.id_fonctionnaire ? 'is-invalid' : ''} classNamePrefix="react-select"/>
+                                <Form.Control.Feedback type="invalid" style={{ display: formErrors.id_fonctionnaire ? 'block' : 'none'}}>{formErrors.id_fonctionnaire}</Form.Control.Feedback>
+                            </Form.Group>
+                              <Form.Group as={Col}  controlId="formProvince"><Form.Label className=" mb-1 fw-medium">Localisation (Provinces)</Form.Label><Select inputId='province-select-input' name="provinces" menuPlacement="auto" options={provincesOptions} value={formData.provinces} onChange={handleProvinceChange} styles={selectStyles} placeholder="- Selectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.provinces} className={formErrors.Province ? 'is-invalid' : ''} classNamePrefix="react-select"/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Province ? 'block' : 'none'}}>{formErrors.Province}</Form.Control.Feedback></Form.Group>
+                      </Row>
+                        <Row className="mb-3 g-3">
+
+                            <Form.Group as={Col}  controlId="formReference"><Form.Label className=" mb-1 fw-medium">Reference</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Reference} type="text" name="Reference" value={formData.Reference} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Reference}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col}  controlId="formCategorie"><Form.Label className=" mb-1 fw-medium">Categorie</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Categorie} type="text" name="Categorie" value={formData.Categorie} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Categorie}</Form.Control.Feedback></Form.Group>
+                      </Row>
+                          <Row className="mb-3 g-3">
+                            <Form.Group as={Col}  controlId="formObjet"><Form.Label className=" mb-1 fw-medium">Objet</Form.Label><Form.Control className={textareaClass} isInvalid={!!formErrors.Objet} as="textarea" rows={1} name="Objet" value={formData.Objet} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Objet}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col}  controlId="formObjectifs"><Form.Label className=" mb-1 fw-medium">Objectifs</Form.Label><Form.Control className={textareaClass} isInvalid={!!formErrors.Objectifs} as="textarea" rows={1} name="Objectifs" value={formData.Objectifs} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Objectifs}</Form.Control.Feedback></Form.Group>
                         </Row>
                         <Row className="mb-3 g-3">
                             <Form.Group as={Col} controlId="formObservations"><Form.Label className=" mb-1 fw-medium">Observations</Form.Label><Form.Control className={textareaClass} style={{borderRadius: '1rem'}} isInvalid={!!formErrors.observations} as="textarea" rows={3} name="observations" value={formData.observations} onChange={handleChange} size="sm" placeholder="Ajouter des observations ou remarques..."/><Form.Control.Feedback type="invalid">{formErrors.observations}</Form.Control.Feedback></Form.Group>

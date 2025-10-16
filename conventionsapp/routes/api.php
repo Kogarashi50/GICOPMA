@@ -26,6 +26,7 @@ use App\Http\Controllers\BonDeCommandeController;
 use App\Http\Controllers\ContratDroitCommunController;
 use App\Http\Controllers\AvenantController;
 use App\Http\Controllers\VersementCPController;
+use App\Http\Controllers\ObservationController;
 use App\Http\Controllers\FonctionnaireController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
@@ -55,9 +56,12 @@ Route::put('/fichiers-joints/{fichier_joint}', [FichierJointController::class, '
 // --- Public Helper Routes (Consider if they need protection later) ---
 Route::get('/conventions/{convention_id}/commitment-details', [ConvPartController::class, 'getCommitmentsForConvention']);
 Route::get('/convparts/lookup', [ConvPartController::class, 'lookupDetails'])->name('convparts.lookup');
+ Route::get('/conventions/options/cadre', [ConventionController::class, 'getCadreOptions']);
+
 Route::prefix('options')->group(function () {
  Route::get('/projets-et-sous-projets', [OptionsController::class, 'getProjetsAndSousProjets']);
     
+
     // Ajoutez ici d'autres routes d'options si nécessaire, par exemple :
     Route::get('/appel-offres', [\App\Http\Controllers\AppelOffreController::class, 'getOptions']);
     Route::get('/fonctionnaires', [\App\Http\Controllers\FonctionnaireController::class, 'getOptions']); // Assurez-vous que ce contrôleur/méthode existe
@@ -65,10 +69,19 @@ Route::prefix('options')->group(function () {
 });
 Route::get('/projets/unique/{field}', [ProjetController::class, 'getUniqueFieldValues']);
 
+    // Standard Observation Routes
+ 
 // --- Protected Routes (Require Sanctum Authentication & Permissions) ---
 Route::middleware('auth:sanctum')->group(function () {
+   Route::get('observations', [ObservationController::class, 'index'])->middleware('permission:view observations');
+    Route::post('observations', [ObservationController::class, 'store'])->middleware('permission:create observations');
 
-    // --- Appel Offres Routes ---
+   Route::get('observations/{observation}', [ObservationController::class, 'show'])->middleware('permission:view observations');
+    Route::put('observations/{observation}', [ObservationController::class, 'update'])->middleware('permission:update observations');
+
+    Route::delete('observations/{observation}', [ObservationController::class, 'destroy'])->middleware('permission:delete observations');    // --- User & Role Management ---
+    
+   // --- Appel Offres Routes ---
     Route::get('/appel-offres', [AppelOffreController::class, 'index'])->middleware('permission:view appeloffres');
     Route::post('/appel-offres', [AppelOffreController::class, 'store'])->middleware('permission:create appeloffres');
     Route::get('/appel-offres/{appel_offre}', [AppelOffreController::class, 'show'])->middleware('permission:view appeloffres'); // Consider singular permission
@@ -89,9 +102,7 @@ Route::middleware('auth:sanctum')->group(function () {
         }
         return response()->json(['message' => 'Unauthenticated.'], 401);
      })->name('api.user.details');
-
-    // --- User & Role Management ---
-    Route::get('/users/options', [UserController::class, 'getOptions'])->name('api.users.options')->middleware('permission:manage users');
+Route::get('/users/options', [UserController::class, 'getOptions'])->name('api.users.options')->middleware('permission:manage users');
     Route::apiResource('users', UserController::class)->middleware('permission:manage users');
     Route::get('/roles', [RoleController::class, 'index'])->middleware('permission:manage roles');
     Route::apiResource('roles', RoleController::class)->middleware('permission:manage roles');

@@ -39,7 +39,8 @@ class ConventionController extends Controller
                     'programme',
                     'projet',
                     'documents',
-                    'convParts.partenaire'
+                    'convParts.partenaire',
+                    'conventionCadre:id,code,intitule' // ADDED: Eager load the parent convention
                 ])
                 ->latest()
                 ->get();
@@ -93,6 +94,43 @@ class ConventionController extends Controller
             return response()->json(['message' => 'Erreur chargement options conventions.'], 500);
         }
     }
+
+    // START: ADD THIS NEW METHOD
+    /**
+     * Get "Cadre" conventions formatted for dropdowns.
+     * GET /api/conventions/options/cadre
+     */
+    public function getCadreOptions(Request $request): JsonResponse
+    {
+        Log::info("Fetching 'Cadre' Convention options for dropdown...");
+        try {
+            $query = Convention::select(['id', 'code', 'intitule'])
+                       ->where('type', 'cadre') // Filter for only cadre conventions
+                       ->orderBy('code', 'asc');
+
+            if ($request->has('exclude')) {
+                $query->where('id', '!=', $request->input('exclude'));
+            }
+
+            $conventions = $query->get();
+
+            $options = $conventions->map(function ($conv) {
+                $label = $conv->code;
+                if (!empty($conv->intitule)) {
+                    $label .= ' - ' . Str::limit($conv->intitule, 60, '...');
+                }
+                return ['value' => $conv->id, 'label' => $label];
+            });
+
+            Log::info("Returning " . $options->count() . " 'Cadre' Convention options.");
+            return response()->json($options, 200);
+        } catch (\Exception $e) {
+            Log::error('Error fetching "Cadre" Convention options: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return response()->json(['message' => 'Erreur chargement options conventions cadres.'], 500);
+        }
+    }
+    // END: ADD THIS NEW METHOD
+
 
     /**
      * Get unique partenaires associated with a specific convention, formatted for dropdowns.
@@ -149,6 +187,7 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
             $validatedData = $request->validate([
                 'numero_approbation' => 'required|string|max:100',
                 'session' => 'required|integer|between:1,12',
+                'code_provisoire' => 'nullable|string|max:255', // ADDED
                 'classification_prov' => 'nullable|string',          // Required (*)
                 'categorie' => 'nullable|string',                    // Required (*)
                 'intitule' => 'required|string',                     // Required (*)
@@ -170,6 +209,22 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
                 'operationalisation' => ['nullable', Rule::in(['Oui', 'Non'])],
                 'Id_Programme' => 'nullable|integer|exists:programme,Id', // Required (*)
                 'id_projet' => 'nullable|integer|exists:projet,ID_Projet', // *** CHANGED TO REQUIRED *** (*)
+                'convention_cadre_id' => [ // ADDED
+                    'nullable',
+                    'integer',
+                    'exists:convention,id',
+                     // Ensure this rule is only applied when the type is 'specifique'
+                    Rule::requiredIf(fn () => $request->input('type') === 'specifique'),
+                    // Custom rule to check if the parent is of type 'cadre'
+                    function ($attribute, $value, $fail) {
+                        if ($value) {
+                            $parent = Convention::find($value);
+                            if ($parent && $parent->type !== 'cadre') {
+                                $fail('La convention de rattachement doit être de type "Cadre".');
+                            }
+                        }
+                    },
+                ],
                 'groupe' => 'nullable|integer',                      // Required (*)
                 'rang' => 'nullable|string',                         // Not Required
                 'observations' => 'nullable|string|max:20000',       // Not Required
@@ -197,7 +252,8 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
                 'code.unique' => 'Ce code de convention existe déjà.',
                 'annee_convention.digits' => 'L\'année doit être AAAA.',
                 'Id_Programme.exists' => 'Le programme est invalide.',
-                'id_projet.exists' => 'Le projet est invalide.', // Message exists, rule changed to required
+                'id_projet.exists' => 'Le projet est invalide.',
+                'convention_cadre_id.required' => 'La convention cadre est requise pour une convention spécifique.', // ADDED
                 'fichiers.*.file' => 'Chaque fichier doit être valide.',
                 'fichiers.*.mimes' => 'Type de fichier invalide. Acceptés: PDF, DOC, DOCX, JPG, PNG, XLS, XLSX.',
                 'fichiers.*.max' => 'Chaque fichier ne doit pas dépasser :max Ko (5Mo).',
@@ -356,6 +412,10 @@ if (!empty($partnerCommitmentsInput)) {
         try {
             $convention->load([
                 'documents', 'programme', 'projet', 'avenants',
+                'conventionCadre:id,code,intitule', // ADDED for specifique
+                // ADDED for cadre: Load specifics with their projects
+                'conventionsSpecifiques:id,code,intitule,statut,id_projet,convention_cadre_id',
+                'conventionsSpecifiques.projet:ID_Projet,Nom_Projet',
                'convParts' => function ($query) {
     // We add `autre_engagement` to the select list
     $query->with('partenaire:Id,Description,Description_Arr,Code')
@@ -505,6 +565,7 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
 
             'numero_approbation' => 'required|string|max:100',
             'session' => 'required|integer|between:1,12',
+            'code_provisoire' => 'nullable|string|max:255', // ADDED
             'classification_prov' => 'nullable|string',          // Required (*)
             'categorie' => 'nullable|string',                    // Required (*)
             'intitule' => 'required|string',                     // Required (*)
@@ -523,6 +584,21 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
              'operationalisation' => ['nullable', Rule::in(['Oui', 'Non'])],
             'Id_Programme' => 'nullable|integer|exists:programme,Id', // Required (*)
             'id_projet' => 'nullable|integer|exists:projet,ID_Projet', // *** CHANGED TO REQUIRED *** (*)
+            'convention_cadre_id' => [ // ADDED
+                'nullable',
+                'integer',
+                'exists:convention,id',
+                Rule::notIn([$convention->id]), // Cannot be its own parent
+                Rule::requiredIf(fn () => $request->input('type') === 'specifique'),
+                function ($attribute, $value, $fail) {
+                    if ($value) {
+                        $parent = Convention::find($value);
+                        if ($parent && $parent->type !== 'cadre') {
+                            $fail('La convention de rattachement doit être de type "Cadre".');
+                        }
+                    }
+                },
+            ],
             'groupe' => 'nullable|integer',                      // Required (*)
             'rang' => 'nullable|string',                         // Not Required
             'observations' => 'nullable|string|max:20000',       // Not Required
@@ -540,7 +616,7 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
 
             'confirm_delete_commitments' => 'sometimes|boolean',
         ];
-        $validationMessages = [ /* ... Keep messages ... */ ];
+        $validationMessages = [ /* ... Keep messages ... */ 'convention_cadre_id.required' => 'La convention cadre est requise pour une convention spécifique.']; // ADDED
 
         // --- Perform Validation ---
         $validator = Validator::make($request->all(), $validationRules, $validationMessages);

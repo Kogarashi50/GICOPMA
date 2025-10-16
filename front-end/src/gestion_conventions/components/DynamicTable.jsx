@@ -24,6 +24,7 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Alert from 'react-bootstrap/Alert';
 import getPageNumbers from './Ellipsis'; // Assuming you have this ellipsis helper
+import ObservationForm from '../observation_views/ObservationForm.jsx';
 
 // --- Helper Functions ---
 const formatDate = (dateString) => {
@@ -100,6 +101,8 @@ const DynamicTable = ({
     const [viewingItemId, setViewingItemId] = useState(null);
     const [editingItemId, setEditingItemId] = useState(null);
     const [showCreateForm, setShowCreateForm] = useState(false);
+        const [showObservationModal, setShowObservationModal] = useState(false); // <-- Add this state
+
     // --- End State ---
 
     // Use passed formatters or internal defaults
@@ -318,8 +321,13 @@ const DynamicTable = ({
 
     }, [table, itemNamePlural]); // Dependencies: table instance, itemNamePlural for filename
     // --- End Export Handler ---
-
-
+    const handleCloseObservationForm = () => setShowObservationModal(false);
+    const handleObservationCreated = () => {
+        setShowObservationModal(false); // Close the modal
+        fetchData(true); // Refresh the main table data
+        setActionSuccess(`Observation créée avec succès.`);
+        setTimeout(() => setActionSuccess(null), 4000);
+    };
     // --- Filter activity checks ---
     const hasActiveColumnFilters = table?.getState().columnFilters.length > 0; // Use table state safely
     const hasActiveFilters = globalFilter || hasActiveColumnFilters;
@@ -330,8 +338,11 @@ const DynamicTable = ({
             {showCreateForm && CreateComponent ? ( <CreateComponent onClose={handleCloseForm} onItemCreated={handleItemCreated} baseApiUrl={baseApiUrl} /> ) : (
                 <div className="d-flex flex-column dynamic-table-container p-2 h-100">
                     {/* Header */}
+
                     <div className="d-flex justify-content-between align-items-center mb-2 flex-shrink-0">
+                            
                        <h1 className="fs-4 fw-bold text-dark mb-0">{itemNamePlural.toUpperCase()}</h1>
+
                        {CreateComponent && ( <button onClick={handleCreate} className="btn createBtn btn-sm d-flex align-items-center shadow-sm"><FontAwesomeIcon icon={faPlus} className="me-2" /><span>Créer {itemName}</span></button> )}
                     </div>
                     {/* Feedback Area */}
@@ -475,6 +486,20 @@ const DynamicTable = ({
                         {editingItemId && ( <EditComponent itemId={editingItemId} onClose={handleCloseEdit} onItemUpdated={handleItemUpdated} baseApiUrl={baseApiUrl} /> )}
                     </Modal.Body>
                 </Modal> )}
+                
+                <Modal show={showObservationModal} onHide={handleCloseObservationForm} dialogClassName="modal-xl" centered backdrop="static" keyboard={false} scrollable>
+                <Modal.Header closeButton>
+                    <Modal.Title>Insérer une Observation</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <ObservationForm
+                        onSuccess={handleObservationCreated}
+                        onCancel={handleCloseObservationForm}
+                        baseApiUrl={baseApiUrl}
+                    />
+                </Modal.Body>
+            </Modal>
+                
         </>
     );
 };

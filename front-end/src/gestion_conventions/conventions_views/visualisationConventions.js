@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect, useCallback, useMemo } from "react"
 import axios from "axios"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -27,6 +25,7 @@ import {
   faClipboardList,
   faInfoCircle,
   faGift,
+  faSitemap, // ADDED ICON
 } from "@fortawesome/free-solid-svg-icons"
 import Button from "react-bootstrap/Button"
 import Card from "react-bootstrap/Card"
@@ -39,6 +38,7 @@ import Spinner from "react-bootstrap/Spinner"
 import Badge from "react-bootstrap/Badge"
 import Stack from "react-bootstrap/Stack"
 import ProgressBar from "react-bootstrap/ProgressBar"
+import ListGroup from "react-bootstrap/ListGroup"; // ADDED
 import "./visualisation.css" // Ensure this path is correct
 
 // --- Helper Functions ---
@@ -92,26 +92,14 @@ const ConventionVisualisation = ({ itemId, onClose, baseApiUrl = "http://localho
   const [error, setError] = useState(null)
   const [provincesList, setProvincesList] = useState([])
   const [fonctionnairesList, setFonctionnairesList] = useState([])
-  const [openPartnerId, setOpenPartnerId] = useState(null); // <<< ADD THIS STATE
+  const [openPartnerId, setOpenPartnerId] = useState(null); 
  const handleTogglePartner = (partnerId) => {
-    // If the clicked partner is already open, close it by setting state to null.
-    // Otherwise, set the state to the ID of the clicked partner to open it.
     setOpenPartnerId(currentOpenId => (currentOpenId === partnerId ? null : partnerId));
   };
   const getMonthName = (monthNumber) => {
     const monthMap = {
-      1: "Janvier",
-      2: "Février",
-      3: "Mars",
-      4: "Avril",
-      5: "Mai",
-      6: "Juin",
-      7: "Juillet",
-      8: "Août",
-      9: "Septembre",
-      10: "Octobre",
-      11: "Novembre",
-      12: "Décembre",
+      1: "Janvier", 2: "Février", 3: "Mars", 4: "Avril", 5: "Mai", 6: "Juin",
+      7: "Juillet", 8: "Août", 9: "Septembre", 10: "Octobre", 11: "Novembre", 12: "Décembre",
     }
     const num = Number.parseInt(monthNumber, 10)
     return monthMap[num] || displayData(monthNumber)
@@ -222,20 +210,15 @@ const renderYearlyBreakdown = (engagements) => {
             );
         }
 
-        // Sort by year to ensure correct order
         const sortedEngagements = [...engagements].sort((a, b) => a.annee - b.annee);
  return (
            <div className="mt-2 yearly-breakdown-container pt-3">
-            {/* Header Row */}
             <div className="d-flex justify-content-between border border-warning border-1 px-3 py-2 mb-2 rounded-5 bg-white">
                 <h6 className="text-secondary small fw-bold mb-0">Année</h6>
                 <h6 className="text-secondary small fw-bold mb-0">Montant Prévisionnel</h6>
             </div>
-
-            {/* Data Rows */}
             <div className=" rounded-4 border border-warning bg-white ">
                     <hr className="py-0 my-0 mx-4 px-2  text-warning"/>
-
                 {sortedEngagements.map(({ annee, montant_prevu }, index) => (
                     <><div
                         key={annee}
@@ -246,14 +229,12 @@ const renderYearlyBreakdown = (engagements) => {
 
                     </div>
                     <hr className="py-0 my-0 mx-4 px-2  text-warning"/>
-
                     </>
                 ))}
             </div>
         </div>
         );
     };
-  // --- Memoized Helpers for Rendering ---
   const getProvinceNames = useCallback(
     (localisationString) => {
       if (
@@ -320,7 +301,6 @@ const renderYearlyBreakdown = (engagements) => {
     if (!conventionData)
       return { coutGlobal: 0, totalMontantVerse: 0, resteAFinancer: 0, progression: 0, isComplete: false }
     const coutGlobal = Number.parseFloat(conventionData.Cout_Global) || 0
-    // Filter out non-financial commitments for the summary calculation
     const totalMontantVerse = (conventionData.partner_commitments || [])
       .filter((p) => !p.autre_engagement)
       .reduce((sum, p) => sum + (Number.parseFloat(p.Montant_Verse) || 0), 0)
@@ -331,7 +311,6 @@ const renderYearlyBreakdown = (engagements) => {
     return { coutGlobal, totalMontantVerse, resteAFinancer, progression, isComplete }
   }, [conventionData])
 
-  // --- Render Logic ---
   if (loading) {
     return (
       <div className="text-center p-5 d-flex justify-content-center align-items-center" style={{ minHeight: "300px" }}>
@@ -374,7 +353,6 @@ const renderYearlyBreakdown = (engagements) => {
       className="p-3 p-md-4 convention-visualisation-container bg-light"
       style={{ borderRadius: "15px", maxHeight: "90vh", overflowY: "auto", fontSize: "15px" }}
     >
-      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-2">
         <h3 className="mb-0 fw-bold text-dark">Détails Convention: {displayData(conventionData.Code)}</h3>
         <Button
@@ -405,6 +383,13 @@ const renderYearlyBreakdown = (engagements) => {
                 <dd className="col-sm-8 fw-bold text-dark" style={{ color: "#212529" }}>
                   {displayData(conventionData.Code)}
                 </dd>
+                {/* ADDED: Display code_provisoire if it exists */}
+                {conventionData.code_provisoire && (
+                    <>
+                        <dt className="col-sm-4 text-muted fw-semibold">Code Provisoire:</dt>
+                        <dd className="col-sm-8 text-dark">{displayData(conventionData.code_provisoire)}</dd>
+                    </>
+                )}
                 <dt className="col-sm-4 text-muted fw-semibold">Intitulé:</dt>
                 <dd className="col-sm-8 text-dark">{displayData(conventionData.Intitule)}</dd>
                 <dt className="col-sm-4 text-muted fw-semibold">Référence:</dt>
@@ -516,20 +501,83 @@ const renderYearlyBreakdown = (engagements) => {
                 </div>
               )}
 
+              {/* MODIFIED: Updated this block to show both parent convention and project */}
               {conventionData.type === "specifique" && (
-                <div
-                  className="text-center p-3 rounded-3"
-                  style={{ backgroundColor: "#fff8e1", border: "1px solid #ffc107" }}
-                >
-                  <FontAwesomeIcon icon={faProjectDiagram} className="text-warning fa-2x mb-2" />
-                  <h6 className="fw-bold text-dark mb-1">Projet Associé</h6>
-                  <p className="mb-0 fw-medium text-dark">{displayData(conventionData.projet?.Nom_Projet)}</p>
-                </div>
+                <Row>
+                    <Col md={6} className="mb-3 mb-md-0">
+                        <div className="h-100 text-center p-3 rounded-3" style={{ backgroundColor: "#fff8e1", border: "1px solid #ffc107" }}>
+                            <FontAwesomeIcon icon={faSitemap} className="text-warning fa-2x mb-2" />
+                            <h6 className="fw-bold text-dark mb-1">Rattachée à la Convention Cadre</h6>
+                            <p className="mb-0 fw-medium text-dark">{displayData(conventionData.convention_cadre?.code)}</p>
+                            <small className="text-muted">{displayData(conventionData.convention_cadre?.intitule, '')}</small>
+                        </div>
+                    </Col>
+                    <Col md={6}>
+                        <div className="h-100 text-center p-3 rounded-3" style={{ backgroundColor: "#fff8e1", border: "1px solid #ffc107" }}>
+                            <FontAwesomeIcon icon={faProjectDiagram} className="text-warning fa-2x mb-2" />
+                            <h6 className="fw-bold text-dark mb-1">Projet Associé</h6>
+                            <p className="mb-0 fw-medium text-dark">{displayData(conventionData.projet?.Nom_Projet)}</p>
+                        </div>
+                    </Col>
+                </Row>
               )}
             </Card.Body>
           </Card>
         </Col>
       </Row>
+
+      {/* START: ADDED NEW SECTION FOR CHILD CONVENTIONS */}
+      {conventionData.type === 'cadre' && (
+        <Row className="g-4 mb-4">
+            <Col>
+                <Card className="border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
+                    <Card.Header className="bg-gradient" style={{ background: "linear-gradient(135deg, #fff3cd 0%, #ffffff 100%)" }}>
+                        <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
+                            <FontAwesomeIcon icon={faSitemap} className="me-2 text-warning" />
+                            CONVENTIONS SPÉCIFIQUES RATTACHÉES
+                        </Card.Title>
+                    </Card.Header>
+                    <Card.Body className="p-0" style={{ backgroundColor: "#fefefe" }}>
+                        {conventionData.conventions_specifiques && conventionData.conventions_specifiques.length > 0 ? (
+                            <ListGroup variant="flush">
+                                {conventionData.conventions_specifiques.map(specifique => (
+                                    <ListGroup.Item key={specifique.id} className="px-3 py-2">
+                                        <div className="d-flex justify-content-between align-items-center">
+                                            <div className="flex-grow-1 me-3">
+                                                <h6 className="mb-0 fw-bold text-dark">{specifique.code}</h6>
+                                                <p className="mb-1 text-muted small">{specifique.intitule}</p>
+                                                {specifique.projet && (
+                                                    <Badge bg="light" text="dark" className="border">
+                                                        <FontAwesomeIcon icon={faProjectDiagram} className="me-1"/>
+                                                        {specifique.projet.Nom_Projet}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <div className="flex-shrink-0">
+                                                <Badge
+                                                    bg={getStatusColor(specifique.Statut)}
+                                                    text={["warning", "light"].includes(getStatusColor(specifique.Statut)) ? "dark" : "white"}
+                                                    className="px-2 py-1"
+                                                >
+                                                    {displayData(specifique.Statut)}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    </ListGroup.Item>
+                                ))}
+                            </ListGroup>
+                        ) : (
+                            <div className="text-center py-4">
+                                <FontAwesomeIcon icon={faInfoCircle} className="text-muted fa-2x mb-2" />
+                                <p className="text-muted mb-0 fst-italic">Aucune convention spécifique n'est rattachée.</p>
+                            </div>
+                        )}
+                    </Card.Body>
+                </Card>
+            </Col>
+        </Row>
+      )}
+      {/* END: ADDED NEW SECTION */}
 
       <Row className="g-4 mb-4">
         <Col lg={6}>
@@ -821,7 +869,6 @@ const renderYearlyBreakdown = (engagements) => {
                             </Col>
                           </Row>
 
-                          {/* Conditional logic for financial vs. non-financial commitments */}
                           {p.autre_engagement ? (
                             <div className="p-3  rounded-3  shadow-sm" style={{backgroundColor:"#f8f8f8ff"}}>
                               <div className="d-flex align-items-center mb-2">
@@ -915,7 +962,6 @@ const renderYearlyBreakdown = (engagements) => {
               )}
             </Card.Body>
 
-            {/* Enhanced Financial Summary */}
             <div className="border-top" style={{ borderColor: "#ffc107 !important" }}>
               <Card.Body className="pt-4" >
                 <h6 className="mb-4 fw-bold text-dark text-center d-flex align-items-center justify-content-center">
@@ -988,4 +1034,4 @@ ConventionVisualisation.defaultProps = {
   baseApiUrl: "http://localhost:8000/api",
 }
 
-export default ConventionVisualisation
+export default ConventionVisualisation;

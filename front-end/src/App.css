@@ -7,6 +7,47 @@ body {
   overflow: hidden;
   font-family: 'Poppins', sans-serif;
 }
+/* Add to Header.css */
+.main-content-header {
+    padding: 15px 15px;
+    display: flex;
+    justify-content: space-between; /* This will push left and right sections apart */
+    align-items: center;
+      border-top-left-radius: 25px;
+
+
+    }
+    .btn-observation-hover .btn-observation-text {
+  width: 0;
+  opacity: 0;
+  margin-left: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: width 0.35s ease-in-out, opacity 0.3s ease-in-out, margin-left 0.35s ease-in-out;
+}
+
+/*
+ * When you hover over the PARENT BUTTON (.btn-observation-hover),
+ * we target the text span inside it.
+*/
+.btn-observation-hover:hover .btn-observation-text {
+  /* Give the text a specific width to animate to. Adjust if needed. */
+  width: 150px;
+  /* Make it visible */
+  opacity: 1;
+  /* Add back the space between the icon and the text */
+  margin-left: 0.5rem; /* This is the equivalent of Bootstrap's me-2 */
+}
+
+
+
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* Space between user icon and logout icon */
+}
+
 
 
 
@@ -98,15 +139,6 @@ body {
 
 /* --- Main Content Area --- */
 
-.main-content-header {
-  padding: 15px 15px;
-  display: flex;
-  justify-content: flex-end; /* Push icons to the right */
-  align-items: center;
-
-  /* Rounded top-left corner */
-  border-top-left-radius: 25px;
-}
 
 .header-actions {
   display: flex;
