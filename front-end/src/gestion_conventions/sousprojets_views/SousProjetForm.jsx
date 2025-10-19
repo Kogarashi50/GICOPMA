@@ -57,7 +57,7 @@ const SousProjetForm = ({
         Etat_Avan_Finan: '', Estim_Initi: '', Secteur: '', Localite: '', Centre: '',
         Site: '', Surface: '', Lineaire: '', Status: '', Douars_Desservis: '',
         Financement: '', Nature_Intervention: '', Benificiaire: '',
-        projetMaitre: null, province: null, commune: null,
+        projetMaitre: null, province: [], commune: [],
         fonctionnaires: [],
     }), []);
 
@@ -171,6 +171,10 @@ const SousProjetForm = ({
 
                 const findOptionByCode = (options, codeToFind) => options?.find(opt => String(opt.code) === String(codeToFind)) || null;
                 const findOptionById = (options, valueToFind) => options?.find(opt => String(opt.value) === String(valueToFind)) || null;
+                const findMultiOptionsById = (options, valuesArray) => {
+                    if (!valuesArray || !Array.isArray(valuesArray) || !options?.length) return [];
+                    return options.filter(opt => valuesArray.includes(String(opt.value)));
+                };
                 const selectedFonctionnaires = findMultiOptions(fonctionnaireOptions, data.id_fonctionnaire);
 
                 if (isMounted) {
@@ -193,8 +197,8 @@ const SousProjetForm = ({
                         Nature_Intervention: data.Nature_Intervention ?? '',
                         Benificiaire: data.Benificiaire ?? '',
                         projetMaitre: findOptionByCode(projetOptions, data.ID_Projet_Maitre),
-                        province: findOptionById(provinceOptions, data.Id_Province),
-                        commune: findOptionById(communeOptions, data.Id_Commune),
+                        province: findMultiOptionsById(provinceOptions, data.Id_Province),
+                        commune: findMultiOptionsById(communeOptions, data.Id_Commune),
                         fonctionnaires: selectedFonctionnaires,
                     });
                 }
@@ -238,9 +242,9 @@ const SousProjetForm = ({
     const validateForm = () => {
         const errors = {};
         if (!formData.Code_Sous_Projet?.trim() && !isEditing) errors.Code_Sous_Projet = "Code Sous-Projet requis.";
-        if (!formData.Nom_Projet?.trim()) errors.Nom_Projet = "Nom Sous-Projet requis.";
+        if (!formData.Nom_Projet?.trim()) errors.Nom_Projet = "Intitulé Sous-Projet requis.";
         if (!formData.projetMaitre) errors.ID_Projet_Maitre = "Projet Maître requis.";
-        if (!formData.province) errors.Id_Province = "Province requise.";
+        if (!formData.province || formData.province.length === 0) errors.Id_Province = "Au moins une province requise.";
 
         const checkNumeric = (field, name) => {
             const value = formData[field];
@@ -266,17 +270,17 @@ const SousProjetForm = ({
     const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); if (formErrors[name]) { setFormErrors(prev => ({ ...prev, [name]: undefined })); } };
     
     const handleProjetMaitreChange = (selectedOption) => {
-        setFormData(prev => ({ ...prev, projetMaitre: selectedOption, province: null, commune: null }));
+        setFormData(prev => ({ ...prev, projetMaitre: selectedOption, province: [], commune: [] }));
         if (formErrors.ID_Projet_Maitre) setFormErrors(prev => ({ ...prev, ID_Projet_Maitre: undefined }));
     };
 
-    const handleProvinceChange = (selectedOption) => {
-        setFormData(prev => ({ ...prev, province: selectedOption }));
+    const handleProvinceChange = (selectedOptions) => {
+        setFormData(prev => ({ ...prev, province: selectedOptions || [] }));
         if (formErrors.Id_Province) setFormErrors(prev => ({ ...prev, Id_Province: undefined }));
     };
 
-    const handleCommuneChange = (selectedOption) => {
-        setFormData(prev => ({ ...prev, commune: selectedOption }));
+    const handleCommuneChange = (selectedOptions) => {
+        setFormData(prev => ({ ...prev, commune: selectedOptions || [] }));
         if (formErrors.Id_Commune) setFormErrors(prev => ({ ...prev, Id_Commune: undefined }));
     };
     
@@ -299,8 +303,20 @@ const SousProjetForm = ({
         });
         
         if (formData.projetMaitre?.code) dataToSubmit.append('ID_Projet_Maitre', formData.projetMaitre.code);
-        if (formData.province?.value) dataToSubmit.append('Id_Province', formData.province.value);
-        if (formData.commune?.value) dataToSubmit.append('Id_Commune', formData.commune.value);
+        
+        // Handle multiple provinces
+        if (formData.province && Array.isArray(formData.province) && formData.province.length > 0) {
+            formData.province.forEach((province, index) => {
+                dataToSubmit.append(`Id_Province[${index}]`, province.value);
+            });
+        }
+        
+        // Handle multiple communes
+        if (formData.commune && Array.isArray(formData.commune) && formData.commune.length > 0) {
+            formData.commune.forEach((commune, index) => {
+                dataToSubmit.append(`Id_Commune[${index}]`, commune.value);
+            });
+        }
         dataToSubmit.append('id_fonctionnaire', formData.fonctionnaires.map(f => f.value).join(';') || '');
 
         if (isEditing) dataToSubmit.append('_method', 'PUT');
@@ -342,12 +358,12 @@ const SousProjetForm = ({
                 <Form noValidate onSubmit={handleSubmit}>
                     <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={6} controlId="formCodeSousProjet"><Form.Label className="small mb-1 fw-medium">Code {!isEditing && <span className="text-danger">*</span>}</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Code_Sous_Projet} required={!isEditing} type="text" name="Code_Sous_Projet" value={formData.Code_Sous_Projet} onChange={handleChange} size="sm" disabled={isEditing} title={isEditing ? "Non modifiable" : ""}/><Form.Control.Feedback type="invalid">{formErrors.Code_Sous_Projet}</Form.Control.Feedback></Form.Group>
-                        <Form.Group as={Col} md={6} controlId="formNomProjet"><Form.Label className="small mb-1 fw-medium">Nom <span className="text-danger">*</span></Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Nom_Projet} required type="text" name="Nom_Projet" value={formData.Nom_Projet} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Nom_Projet}</Form.Control.Feedback></Form.Group>
+                        <Form.Group as={Col} md={6} controlId="formNomProjet"><Form.Label className="small mb-1 fw-medium">Intitulé <span className="text-danger">*</span></Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Nom_Projet} required type="text" name="Nom_Projet" value={formData.Nom_Projet} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Nom_Projet}</Form.Control.Feedback></Form.Group>
                     </Row>
                     <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={6} controlId="formProjetMaitre"><Form.Label className="small mb-1 fw-medium">Projet Maître <span className="text-danger">*</span></Form.Label><Select name="projetMaitre" options={projetOptions} value={formData.projetMaitre} onChange={handleProjetMaitreChange} styles={selectStyles} placeholder="- Sélectionner -" isClearable isLoading={loadingOptions.projets} isDisabled={loadingOptions.projets} className={formErrors.ID_Projet_Maitre ? 'is-invalid' : ''} menuPlacement="auto" menuPortalTarget={document.body}/>{formErrors.ID_Projet_Maitre && <div className="invalid-feedback d-block">{formErrors.ID_Projet_Maitre}</div>}</Form.Group>
                         <Form.Group as={Col} md={6} controlId="formProvince">
-                            <Form.Label className="small mb-1 fw-medium">Province <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium">Province(s) <span className="text-danger">*</span></Form.Label>
                             <Select
                                 name="province"
                                 options={provinceGroupedOptions}
@@ -355,7 +371,9 @@ const SousProjetForm = ({
                                 onChange={handleProvinceChange}
                                 styles={selectStyles}
                                 placeholder={!formData.projetMaitre ? "Sélectionnez d'abord un projet" : "- Sélectionner -"}
+                                isMulti
                                 isClearable
+                                closeMenuOnSelect={false}
                                 isLoading={loadingOptions.provinces || loadingParentDetails}
                                 isDisabled={!formData.projetMaitre || loadingOptions.provinces}
                                 className={formErrors.Id_Province ? 'is-invalid' : ''}
@@ -367,7 +385,7 @@ const SousProjetForm = ({
                     </Row>
                     <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={6} controlId="formCommune">
-                            <Form.Label className="small mb-1 fw-medium">Commune</Form.Label>
+                            <Form.Label className="small mb-1 fw-medium">Commune(s)</Form.Label>
                             <Select
                                 name="commune"
                                 options={communeGroupedOptions}
@@ -375,7 +393,9 @@ const SousProjetForm = ({
                                 onChange={handleCommuneChange}
                                 styles={selectStyles}
                                 placeholder={!formData.projetMaitre ? "Sélectionnez d'abord un projet" : "- Sélectionner -"}
+                                isMulti
                                 isClearable
+                                closeMenuOnSelect={false}
                                 isLoading={loadingOptions.communes || loadingParentDetails}
                                 isDisabled={!formData.projetMaitre || loadingOptions.communes}
                                 className={formErrors.Id_Commune ? 'is-invalid' : ''}

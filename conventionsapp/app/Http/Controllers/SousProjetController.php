@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Arr; // <-- IMPORTED Arr HELPER
 
 class SousProjetController extends Controller
 {
@@ -22,7 +23,9 @@ class SousProjetController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $sousprojets = SousProjet::with(['projet', 'province', 'commune'])
+            // NOTE: Eager loading 'province' and 'commune' might be incorrect if they don't exist as direct relationships.
+            // Assuming 'SousProjet' model has relationships defined for these. If not, this part might need adjustment.
+            $sousprojets = SousProjet::with(['projet'/*, 'provinces', 'communes'*/]) // It's better to name relationships in plural form for arrays
                 ->orderBy('created_at', 'desc')
                 ->get();
             return response()->json(['sousprojets' => $sousprojets], 200);
@@ -39,7 +42,7 @@ class SousProjetController extends Controller
     {
         try {
             $sousprojet = SousProjet::where('Code_Sous_Projet', $id)
-                                    ->with(['projet', 'province', 'commune'])
+                                    ->with(['projet'/*, 'provinces', 'communes'*/])
                                     ->firstOrFail();
             return response()->json(['sousprojet' => $sousprojet], 200);
         } catch (ModelNotFoundException $e) {
@@ -52,12 +55,24 @@ class SousProjetController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // --- FIX [1]: FLATTEN NESTED ARRAYS BEFORE VALIDATION ---
+        // This transforms incoming data like [['2', '3']] into a flat ['2', '3'] array.
+        if ($request->has('Id_Province') && is_array($request->input('Id_Province'))) {
+            $request->merge(['Id_Province' => Arr::flatten($request->input('Id_Province'))]);
+        }
+        if ($request->has('Id_Commune') && is_array($request->input('Id_Commune'))) {
+            $request->merge(['Id_Commune' => Arr::flatten($request->input('Id_Commune'))]);
+        }
+        // --- END FIX [1] ---
+
         $validatedData = $request->validate([
             'Code_Sous_Projet' => 'required|string|max:255|unique:sous_projet,Code_Sous_Projet',
             'Nom_Projet' => 'required|string|max:65535',
             'ID_Projet_Maitre' => ['required', Rule::exists('projet', 'Code_Projet')],
-            'Id_Province' => ['required', Rule::exists('province', 'Id')],
-            'Id_Commune' => ['nullable', Rule::exists('commune', 'Id')],
+            'Id_Province' => 'required|array',
+            'Id_Province.*' => ['required', Rule::exists('province', 'Id')], // Validation now works correctly
+            'Id_Commune' => 'nullable|array',
+            'Id_Commune.*' => ['nullable', Rule::exists('commune', 'Id')], // Validation now works correctly
             'Observations' => 'nullable|string',
             'Etat_Avan_Physi' => 'nullable|numeric|min:0|max:100',
             'Etat_Avan_Finan' => 'nullable|numeric|min:0|max:100',
@@ -78,22 +93,24 @@ class SousProjetController extends Controller
 
         DB::beginTransaction();
         try {
+            // The create method works correctly with arrays because of the 'array' cast in the SousProjet model.
             $sousProjet = SousProjet::create($validatedData);
 
+            // Sync the new locations to the parent project
             $parentProjet = Projet::where('Code_Projet', $validatedData['ID_Projet_Maitre'])->first();
             if ($parentProjet) {
                 if (!empty($validatedData['Id_Province'])) {
-                    $parentProjet->provinces()->syncWithoutDetaching([$validatedData['Id_Province']]);
+                    $parentProjet->provinces()->syncWithoutDetaching($validatedData['Id_Province']);
                 }
                 if (!empty($validatedData['Id_Commune'])) {
-                    $parentProjet->communes()->syncWithoutDetaching([$validatedData['Id_Commune']]);
+                    $parentProjet->communes()->syncWithoutDetaching($validatedData['Id_Commune']);
                 }
             }
 
             DB::commit();
             return response()->json([
                 'success' => 'Sous-projet créé avec succès',
-                'sousprojet' => $sousProjet->load(['projet', 'province', 'commune'])
+                'sousprojet' => $sousProjet->load('projet')
             ], 201);
 
         } catch (\Exception $e) {
@@ -105,25 +122,36 @@ class SousProjetController extends Controller
 
 
     /**
-     * Update the specified resource in storage with revised and simplified parent location syncing.
+     * Update the specified resource in storage and manage parent location syncing.
      */
     public function update(Request $request, string $id): JsonResponse
     {
-        Log::info('Attempting to update sousprojet with Code: ' . $id);
+        // --- FIX [1]: FLATTEN NESTED ARRAYS BEFORE VALIDATION ---
+        if ($request->has('Id_Province') && is_array($request->input('Id_Province'))) {
+            $request->merge(['Id_Province' => Arr::flatten($request->input('Id_Province'))]);
+        }
+        if ($request->has('Id_Commune') && is_array($request->input('Id_Commune'))) {
+            $request->merge(['Id_Commune' => Arr::flatten($request->input('Id_Commune'))]);
+        }
+        // --- END FIX [1] ---
 
         DB::beginTransaction();
         try {
             $sousprojet = SousProjet::where('Code_Sous_Projet', $id)->firstOrFail();
 
+            // Store old location data for cleanup later
             $oldParentCode = $sousprojet->ID_Projet_Maitre;
-            $oldProvinceId = $sousprojet->Id_Province;
-            $oldCommuneId = $sousprojet->Id_Commune;
+            $oldProvinceIds = $sousprojet->Id_Province ?? [];
+            $oldCommuneIds = $sousprojet->Id_Commune ?? [];
 
             $validatedData = $request->validate([
-                'Nom_Projet' => 'required|string|max:65535',
-                'ID_Projet_Maitre' => ['required', Rule::exists('projet', 'Code_Projet')],
-                'Id_Province' => ['required', Rule::exists('province', 'Id')],
-                'Id_Commune' => ['nullable', Rule::exists('commune', 'Id')],
+                'Nom_Projet' => 'sometimes|required|string|max:65535',
+                'ID_Projet_Maitre' => ['sometimes','required', Rule::exists('projet', 'Code_Projet')],
+                'Id_Province' => 'sometimes|required|array',
+                'Id_Province.*' => ['required', Rule::exists('province', 'Id')],
+                'Id_Commune' => 'nullable|array',
+                'Id_Commune.*' => ['nullable', Rule::exists('commune', 'Id')],
+                // ... all other fields should also probably have 'sometimes' if not always present
                 'Observations' => 'nullable|string',
                 'Etat_Avan_Physi' => 'nullable|numeric|min:0|max:100',
                 'Etat_Avan_Finan' => 'nullable|numeric|min:0|max:100',
@@ -142,56 +170,36 @@ class SousProjetController extends Controller
                 'id_fonctionnaire' => 'nullable|string',
             ]);
 
-            $newParentCode = $validatedData['ID_Projet_Maitre'];
-            $newProvinceId = $validatedData['Id_Province'] ?? null;
-            $newCommuneId = $validatedData['Id_Commune'] ?? null;
-
-            // Step 1: Perform the update on the sub-project itself. This happens first.
             $sousprojet->update($validatedData);
+            // Refresh the model to get the most up-to-date data, including casts
+            $sousprojet->refresh();
 
-            // Step 2: Ensure the new locations are attached to the new parent project.
+            $newParentCode = $sousprojet->ID_Projet_Maitre;
+            $newProvinceIds = $sousprojet->Id_Province ?? [];
+            $newCommuneIds = $sousprojet->Id_Commune ?? [];
+
+            // Step 1: Add new locations to the new parent.
             $newParent = Projet::where('Code_Projet', $newParentCode)->first();
             if ($newParent) {
-                if ($newProvinceId) $newParent->provinces()->syncWithoutDetaching([$newProvinceId]);
-                if ($newCommuneId) $newParent->communes()->syncWithoutDetaching([$newCommuneId]);
+                if (!empty($newProvinceIds)) $newParent->provinces()->syncWithoutDetaching($newProvinceIds);
+                if (!empty($newCommuneIds)) $newParent->communes()->syncWithoutDetaching($newCommuneIds);
             }
 
-            // --- REVISED AND INLINED CLEANUP LOGIC ---
-            // Step 3: Clean up old locations from the old parent project if they are no longer needed.
-            $parentToClean = Projet::where('Code_Projet', $oldParentCode)->first();
-            if ($parentToClean) {
-                // If the parent project itself was changed, we check both old locations on the old parent.
-                if ($oldParentCode !== $newParentCode) {
-                    // Check if the old province is still in use by any other sub-project on the old parent.
-                    if ($oldProvinceId && !SousProjet::where('ID_Projet_Maitre', $oldParentCode)->where('Id_Province', $oldProvinceId)->exists()) {
-                        $parentToClean->provinces()->detach($oldProvinceId);
-                    }
-                    // Check if the old commune is still in use by any other sub-project on the old parent.
-                    if ($oldCommuneId && !SousProjet::where('ID_Projet_Maitre', $oldParentCode)->where('Id_Commune', $oldCommuneId)->exists()) {
-                        $parentToClean->communes()->detach($oldCommuneId);
-                    }
-                } else {
-                    // The parent is the same, so we only check the specific locations that were changed.
-                    if ($oldProvinceId != $newProvinceId && $oldProvinceId) {
-                        // The province changed. Check if the OLD province is still needed by any sub-project.
-                        if (!SousProjet::where('ID_Projet_Maitre', $oldParentCode)->where('Id_Province', $oldProvinceId)->exists()) {
-                            $parentToClean->provinces()->detach($oldProvinceId);
-                        }
-                    }
-                    if ($oldCommuneId != $newCommuneId && $oldCommuneId) {
-                        // The commune changed. Check if the OLD commune is still needed by any sub-project.
-                        if (!SousProjet::where('ID_Projet_Maitre', $oldParentCode)->where('Id_Commune', $oldCommuneId)->exists()) {
-                            $parentToClean->communes()->detach($oldCommuneId);
-                        }
-                    }
-                }
+            // Step 2: Clean up old locations from the old parent.
+            $provincesToRemove = array_diff($oldProvinceIds, $newProvinceIds);
+            $communesToRemove = array_diff($oldCommuneIds, $newCommuneIds);
+            
+            // If the parent project was changed, we must check all old locations for cleanup
+            if ($oldParentCode !== $newParentCode) {
+                 $this->cleanupParentLocations($oldParentCode, $oldProvinceIds, $oldCommuneIds, $sousprojet->id);
+            } else { // Otherwise, just clean up the locations that were removed
+                 $this->cleanupParentLocations($oldParentCode, $provincesToRemove, $communesToRemove, $sousprojet->id);
             }
-            // --- END REVISED LOGIC ---
 
             DB::commit();
             return response()->json([
                 'success' => 'Sous-projet mis à jour avec succès',
-                'sousprojet' => $sousprojet->fresh()->load(['projet', 'province', 'commune'])
+                'sousprojet' => $sousprojet->load('projet')
             ], 200);
 
         } catch (ModelNotFoundException $e) {
@@ -217,13 +225,16 @@ class SousProjetController extends Controller
             $sousprojet = SousProjet::where('Code_Sous_Projet', $id)->firstOrFail();
 
             $parentCode = $sousprojet->ID_Projet_Maitre;
-            $provinceId = $sousprojet->Id_Province;
-            $communeId = $sousprojet->Id_Commune;
+            // --- FIX [2]: These are now arrays ---
+            $provinceIds = $sousprojet->Id_Province;
+            $communeIds = $sousprojet->Id_Commune;
+            $deletedSousProjetId = $sousprojet->id;
 
             $sousprojet->delete();
 
-            // After deleting the sub-project, run cleanup on its former parent locations.
-            $this->cleanupParentLocations($parentCode, $provinceId, $communeId);
+            // After deleting, run cleanup on its former parent.
+            // Pass the ID of the deleted subproject to exclude it from the "still in use" check.
+            $this->cleanupParentLocations($parentCode, $provinceIds, $communeIds, $deletedSousProjetId);
 
             DB::commit();
             return response()->json(['success' => 'Sous-projet supprimé avec succès'], 200);
@@ -239,12 +250,14 @@ class SousProjetController extends Controller
     }
 
     /**
-     * SIMPLIFIED Helper function to detach locations from a parent project if they are no longer
-     * used by any of its sub-projects. This is now only used by the destroy() method.
+     * --- FIX [3]: REVISED HELPER FUNCTION ---
+     * Helper to detach locations from a parent project if they are no longer used by any of its sub-projects.
+     * It now correctly handles arrays of IDs.
+     * @param int|null $excludeSousProjetId - A sub-project ID to exclude from the check (used during update/delete).
      */
-    private function cleanupParentLocations(?string $parentCode, ?int $provinceId, ?int $communeId): void
+    private function cleanupParentLocations(?string $parentCode, ?array $provinceIds, ?array $communeIds, ?int $excludeSousProjetId = null): void
     {
-        if (!$parentCode) {
+        if (!$parentCode || (!$provinceIds && !$communeIds)) {
             return;
         }
         $parent = Projet::where('Code_Projet', $parentCode)->first();
@@ -252,17 +265,37 @@ class SousProjetController extends Controller
             return;
         }
 
-        // If a province was associated, check if any sub-project still uses it for this parent.
-        if ($provinceId) {
-            if (!SousProjet::where('ID_Projet_Maitre', $parentCode)->where('Id_Province', $provinceId)->exists()) {
-                $parent->provinces()->detach($provinceId);
+        // Clean up provinces
+        if (!empty($provinceIds)) {
+            foreach ($provinceIds as $provinceId) {
+                $query = SousProjet::where('ID_Projet_Maitre', $parentCode)
+                                   ->whereJsonContains('Id_Province', $provinceId);
+                
+                if ($excludeSousProjetId) {
+                    $query->where('id', '!=', $excludeSousProjetId);
+                }
+
+                // If no other sub-project uses this province, detach it from the parent.
+                if (!$query->exists()) {
+                    $parent->provinces()->detach($provinceId);
+                }
             }
         }
 
-        // If a commune was associated, check if any sub-project still uses it for this parent.
-        if ($communeId) {
-            if (!SousProjet::where('ID_Projet_Maitre', $parentCode)->where('Id_Commune', $communeId)->exists()) {
-                $parent->communes()->detach($communeId);
+        // Clean up communes
+        if (!empty($communeIds)) {
+            foreach ($communeIds as $communeId) {
+                $query = SousProjet::where('ID_Projet_Maitre', $parentCode)
+                                   ->whereJsonContains('Id_Commune', $communeId);
+
+                if ($excludeSousProjetId) {
+                    $query->where('id', '!=', $excludeSousProjetId);
+                }
+                
+                // If no other sub-project uses this commune, detach it.
+                if (!$query->exists()) {
+                    $parent->communes()->detach($communeId);
+                }
             }
         }
     }

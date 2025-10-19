@@ -80,7 +80,7 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
         numero_avenant: '', 
         date_signature: '', 
         objet: '', 
-        type_modification: null, 
+        type_modification: [], 
         montant_modifie: '',
         annee_avenant: new Date().getFullYear(),
         session: '',
@@ -180,6 +180,10 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                     const selectedValues = String(valuesStr).split(';').map(v => v.trim().toLowerCase());
                     return options.filter(opt => selectedValues.includes(String(opt.value).toLowerCase()));
                 };
+                const findMultiOptionsFromArray = (options, valuesArray) => {
+                    if (!valuesArray || !Array.isArray(valuesArray) || !options?.length) return [];
+                    return options.filter(opt => valuesArray.includes(opt.value));
+                };
 
                 setFormData({
                     convention_id: data.convention_id || '',
@@ -191,7 +195,7 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                     numero_approbation: data.numero_approbation || '',
                     statut: findOption(STATUT_OPTIONS, data.statut),
                     date_visa: data.date_visa || '',
-                    type_modification: findOption(TYPE_MODIFICATION_OPTIONS, data.type_modification),
+                    type_modification: findMultiOptionsFromArray(TYPE_MODIFICATION_OPTIONS, data.type_modification),
                     montant_modifie: data.montant_modifie != null ? String(data.montant_modifie) : '',
                     nouvelle_date_fin: data.nouvelle_date_fin || '',
                     remarques: data.remarques || '',
@@ -207,7 +211,7 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                     intitule: f.Intitule || f.intitule || ''
                 })));
 
-                if (Array.isArray(data.partner_commitments) && data.type_modification === 'partenaire') {
+                if (Array.isArray(data.partner_commitments) && Array.isArray(data.type_modification) && data.type_modification.includes('partenaire')) {
                     const initialPartnerDetails = data.partner_commitments.map(commit => {
                         const partnerOption = partenaireOptions.find(opt => opt.value === commit.Id_Partenaire);
                         return {
@@ -253,16 +257,16 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
             errors.date_signature = "Date signature requise pour le statut 'Signé'.";
         }
         
-        if (!formData.type_modification) errors.type_modification = "Type modification requis."; 
-        const typeValue = formData.type_modification?.value; 
-        if (typeValue === 'montant') { 
+        if (!formData.type_modification || formData.type_modification.length === 0) errors.type_modification = "Type modification requis."; 
+        const typeValues = formData.type_modification?.map(t => t.value) || []; 
+        if (typeValues.includes('montant')) { 
             const montant = parseCurrency(formData.montant_modifie); 
             if (montant === null || isNaN(montant) || montant < 0) errors.montant_modifie = "Montant modifié valide est requis.";
         } 
-        if (typeValue === 'durée') { 
+        if (typeValues.includes('durée')) { 
             if (!formData.nouvelle_date_fin) errors.nouvelle_date_fin = "Nouvelle date fin requise.";
         } 
-        if (typeValue === 'partenaire') { 
+        if (typeValues.includes('partenaire')) { 
             if (!avenantPartnerDetails || avenantPartnerDetails.length === 0) {
                 errors.partenaires = "Au moins un partenaire requis.";
             } else { 
@@ -320,17 +324,27 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
         }
             if (formErrors.convention_id) setFormErrors(prev => ({ ...prev, convention_id: undefined })); 
         } else if (name === 'type_modification') { 
-            const typeValue = selectedOption; 
-            setFormData(prev => ({ ...prev, type_modification: typeValue })); 
-            const selectedTypeValue = selectedOption?.value; 
-            setFormData(prevData => ({ ...prevData, montant_modifie: selectedTypeValue === 'montant' ? prevData.montant_modifie : '', nouvelle_date_fin: selectedTypeValue === 'durée' ? prevData.nouvelle_date_fin : '', })); 
-            if (selectedTypeValue !== 'partenaire') { setAvenantPartnerDetails([]); } 
+            const selectedOptions = selectedOption || []; 
+            setFormData(prev => ({ ...prev, type_modification: selectedOptions })); 
+            const selectedTypeValues = selectedOptions.map(opt => opt.value); 
+            
+            // Clear fields if the corresponding type is not selected
+            setFormData(prevData => ({ 
+                ...prevData, 
+                montant_modifie: selectedTypeValues.includes('montant') ? prevData.montant_modifie : '', 
+                nouvelle_date_fin: selectedTypeValues.includes('durée') ? prevData.nouvelle_date_fin : '', 
+            })); 
+            
+            if (!selectedTypeValues.includes('partenaire')) { 
+                setAvenantPartnerDetails([]); 
+            } 
+            
             setFormErrors(prev => { 
                 const nextErrors = { ...prev }; 
                 delete nextErrors.type_modification; 
-                if (selectedTypeValue !== 'montant') delete nextErrors.montant_modifie; 
-                if (selectedTypeValue !== 'durée') delete nextErrors.nouvelle_date_fin; 
-                if (selectedTypeValue !== 'partenaire') { 
+                if (!selectedTypeValues.includes('montant')) delete nextErrors.montant_modifie; 
+                if (!selectedTypeValues.includes('durée')) delete nextErrors.nouvelle_date_fin; 
+                if (!selectedTypeValues.includes('partenaire')) { 
                     delete nextErrors.partenaires; 
                     Object.keys(nextErrors).forEach(key => { 
                         if (key.startsWith('montant_') || key.startsWith('date_sig_') || key.startsWith('autre_engagement_')) delete nextErrors[key]; 
@@ -443,8 +457,15 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
         const dataToSubmit = new FormData(); 
 
         Object.entries(formData).forEach(([key, value]) => {
-            if (key === 'statut' || key === 'type_modification') {
+            if (key === 'statut') {
                 dataToSubmit.append(key, value?.value || '');
+            } else if (key === 'type_modification') {
+                // Handle array of modification types
+                if (Array.isArray(value)) {
+                    value.forEach((type, index) => {
+                        dataToSubmit.append(`type_modification[${index}]`, type.value);
+                    });
+                }
             } else if (key === 'fonctionnaires') {
                 dataToSubmit.append('id_fonctionnaire', value.map(f => f.value).join(';'));
             } else {
@@ -452,7 +473,8 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
             }
         });
 
-        if (formData.type_modification?.value === 'montant') {
+        const selectedTypeValues = formData.type_modification?.map(t => t.value) || [];
+        if (selectedTypeValues.includes('montant')) {
             dataToSubmit.set('montant_modifie', parseCurrency(formData.montant_modifie) ?? '');
         }
 
@@ -472,7 +494,7 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
             }
         }
         
-        if (formData.type_modification?.value === 'partenaire') {
+        if (selectedTypeValues.includes('partenaire')) {
             const partnerData = avenantPartnerDetails.map(p => ({
                 id: p.id,
                 montant: p.engagement_type === 'financier' && p.montant ? parseCurrency(String(p.montant)) : null,
@@ -573,7 +595,7 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                          )}
                      </Row>
                      <Row className="g-3 mb-3">
-                        <Form.Group as={Col}  controlId="formType_modification"><Form.Label className="small mb-1 fw-medium">Type Modification <span className="text-danger">*</span></Form.Label><Select inputId='type-modif-select-input' name="type_modification" options={typeModificationOptions} value={formData.type_modification} onChange={handleSelectChange} styles={selectStyles} placeholder="- Sélectionner Type -" isClearable className={formErrors.type_modification ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body} menuPlacement="auto"/><Form.Control.Feedback type="invalid" style={{display: formErrors.type_modification ? 'block' : 'none'}}>{formErrors.type_modification}</Form.Control.Feedback></Form.Group>
+                        <Form.Group as={Col}  controlId="formType_modification"><Form.Label className="small mb-1 fw-medium">Type Modification <span className="text-danger">*</span></Form.Label><Select inputId='type-modif-select-input' name="type_modification" options={typeModificationOptions} value={formData.type_modification} onChange={handleSelectChange} styles={selectStyles} placeholder="- Sélectionner Type(s) -" isMulti isClearable closeMenuOnSelect={false} className={formErrors.type_modification ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body} menuPlacement="auto"/><Form.Control.Feedback type="invalid" style={{display: formErrors.type_modification ? 'block' : 'none'}}>{formErrors.type_modification}</Form.Control.Feedback></Form.Group>
                         {formData.statut?.value === 'visé' && (
                             <Form.Group as={Col} md={4} controlId="formDateVisa">
                                 <Form.Label className="small mb-1 fw-medium">Date de visa <span className="text-danger">*</span></Form.Label>
@@ -583,8 +605,8 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                         )}
                     </Row>
                      
-                    <Row className="g-3 mb-3">{formData.type_modification?.value === 'montant' && ( <Form.Group as={Col} md={6} controlId="formMontant_modifie"><Form.Label className="small mb-1 fw-medium">Nouveau Montant <span className="text-danger">*</span></Form.Label><InputGroup size="sm"><Form.Control className="p-2 rounded-start-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.montant_modifie} type="number" step="0.01" min="0" name="montant_modifie" value={formData.montant_modifie} onChange={handleChange} placeholder="0.00"/><InputGroup.Text className="rounded-end-pill">MAD</InputGroup.Text><Form.Control.Feedback type="invalid">{formErrors.montant_modifie}</Form.Control.Feedback></InputGroup></Form.Group> )} {formData.type_modification?.value === 'durée' && ( <Form.Group as={Col} md={6} controlId="formNouvelle_date_fin"><Form.Label className="small mb-1 fw-medium">Nouvelle Date Fin <span className="text-danger">*</span></Form.Label><Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.nouvelle_date_fin} type="date" name="nouvelle_date_fin" value={formData.nouvelle_date_fin} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.nouvelle_date_fin}</Form.Control.Feedback></Form.Group> )} </Row>
-                    {formData.type_modification?.value === 'partenaire' && ( <Card className="mb-3 shadow-sm border-light"><Card.Header className='bg-light py-2'><h6 className='mb-0 fw-semibold text-secondary'>Détails Modification Partenaires</h6></Card.Header><Card.Body className="pb-2 pt-3"><Form.Group as={Row} className="mb-3" controlId="formPartenaireSelectConditional"><Form.Label column sm={3} className="small pt-1 fw-medium text-sm-end"> Sélection Partenaires <span className="text-danger">*</span></Form.Label><Col sm={9}><Select inputId='avenant-partenaire-select-conditional' name="partenaireSelector" options={partenaireOptions} value={partenaireOptions.filter(opt => avenantPartnerDetails.some(p => p.id === opt.value))} onChange={handleAvenantPartnerSelectionChange} styles={selectStyles} placeholder="- Choisir partenaires concernés -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.partenaires} className={formErrors.partenaires ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body} menuPlacement="auto"/><Form.Control.Feedback type="invalid" style={{display: formErrors.partenaires ? 'block' : 'none'}}>{formErrors.partenaires}</Form.Control.Feedback></Col></Form.Group>{avenantPartnerDetails.length > 0 && ( <div className="mt-3 border-top pt-3">{avenantPartnerDetails.map((partner, index) => (
+                    <Row className="g-3 mb-3">{(formData.type_modification?.map(t => t.value) || []).includes('montant') && ( <Form.Group as={Col} md={6} controlId="formMontant_modifie"><Form.Label className="small mb-1 fw-medium">Nouveau Montant <span className="text-danger">*</span></Form.Label><InputGroup size="sm"><Form.Control className="p-2 rounded-start-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.montant_modifie} type="number" step="0.01" min="0" name="montant_modifie" value={formData.montant_modifie} onChange={handleChange} placeholder="0.00"/><InputGroup.Text className="rounded-end-pill">MAD</InputGroup.Text><Form.Control.Feedback type="invalid">{formErrors.montant_modifie}</Form.Control.Feedback></InputGroup></Form.Group> )} {(formData.type_modification?.map(t => t.value) || []).includes('durée') && ( <Form.Group as={Col} md={6} controlId="formNouvelle_date_fin"><Form.Label className="small mb-1 fw-medium">Nouvelle Date Fin <span className="text-danger">*</span></Form.Label><Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.nouvelle_date_fin} type="date" name="nouvelle_date_fin" value={formData.nouvelle_date_fin} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.nouvelle_date_fin}</Form.Control.Feedback></Form.Group> )} </Row>
+                    {(formData.type_modification?.map(t => t.value) || []).includes('partenaire') && ( <Card className="mb-3 shadow-sm border-light"><Card.Header className='bg-light py-2'><h6 className='mb-0 fw-semibold text-secondary'>Détails Modification Partenaires</h6></Card.Header><Card.Body className="pb-2 pt-3"><Form.Group as={Row} className="mb-3" controlId="formPartenaireSelectConditional"><Form.Label column sm={3} className="small pt-1 fw-medium text-sm-end"> Sélection Partenaires <span className="text-danger">*</span></Form.Label><Col sm={9}><Select inputId='avenant-partenaire-select-conditional' name="partenaireSelector" options={partenaireOptions} value={partenaireOptions.filter(opt => avenantPartnerDetails.some(p => p.id === opt.value))} onChange={handleAvenantPartnerSelectionChange} styles={selectStyles} placeholder="- Choisir partenaires concernés -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.partenaires} className={formErrors.partenaires ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body} menuPlacement="auto"/><Form.Control.Feedback type="invalid" style={{display: formErrors.partenaires ? 'block' : 'none'}}>{formErrors.partenaires}</Form.Control.Feedback></Col></Form.Group>{avenantPartnerDetails.length > 0 && ( <div className="mt-3 border-top pt-3">{avenantPartnerDetails.map((partner, index) => (
                         <div key={partner.id} id={`formAvenantDetail_${partner.id}`} className={`mb-3 ${index < avenantPartnerDetails.length - 1 ? 'border-bottom pb-3' : ''}`}>
                             <Row className="mb-2 align-items-center px-sm-3">
                                 <Col sm={12} md={4} className="small pt-1 fw-bold text-break">

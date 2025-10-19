@@ -28011,3 +28011,625 @@ Trace: #0 C:\Users\Prueba\Desktop\gicopma - Copy\conventionsapp\vendor\laravel\f
 [2025-10-16 18:51:03] local.INFO: API: Returning 201 Partenaire options.  
 [2025-10-16 18:51:04] local.INFO: Fetching Convention options for dropdown...  
 [2025-10-16 18:51:04] local.INFO: Returning 20 Convention options.  
+[2025-10-19 18:36:01] local.INFO: Fetching recent convention summaries for dashboard...  
+[2025-10-19 18:36:01] local.DEBUG: Status order defined: ["signé","en cours de signature","non signé","visé","en cours de visa","non visé","approuvé","en cours d'approbation","non approuvé"] 
+[2025-10-19 18:36:01] local.INFO: Recent convention summaries fetched and processed successfully. {"data":{"Illuminate\\Support\\Collection":[{"id":400,"intitule":"Convention Cadre pour le Développement de l'Infrastructure Hydraulique","statut":"signé","advancementPercentage":32.0,"status_priority":0},{"id":378,"intitule":"Convention de partenariat pour une subvention supplémentaire au renouvellement du parc de Taxis","statut":"signé","advancementPercentage":9.0,"status_priority":0},{"id":357,"intitule":"Convention de partenariat avec la compagnie nationale Royal Air Maroc pour le renforcement de la liaison aérienne entre Casablanca et Oujda 2016-2017","statut":"signé","advancementPercentage":100,"status_priority":0},{"id":429,"intitule":"intitule9","statut":"en cours de signature","advancementPercentage":0.0,"status_priority":1},{"id":425,"intitule":"intitule298","statut":"visé","advancementPercentage":0,"status_priority":3},{"id":418,"intitule":"int3","statut":"visé","advancementPercentage":0.0,"status_priority":3}]}} 
+[2025-10-19 18:36:04] local.INFO: Fetching recent convention summaries for dashboard...  
+[2025-10-19 18:36:04] local.DEBUG: Status order defined: ["signé","en cours de signature","non signé","visé","en cours de visa","non visé","approuvé","en cours d'approbation","non approuvé"] 
+[2025-10-19 18:36:04] local.INFO: Recent convention summaries fetched and processed successfully. {"data":{"Illuminate\\Support\\Collection":[{"id":400,"intitule":"Convention Cadre pour le Développement de l'Infrastructure Hydraulique","statut":"signé","advancementPercentage":32.0,"status_priority":0},{"id":378,"intitule":"Convention de partenariat pour une subvention supplémentaire au renouvellement du parc de Taxis","statut":"signé","advancementPercentage":9.0,"status_priority":0},{"id":357,"intitule":"Convention de partenariat avec la compagnie nationale Royal Air Maroc pour le renforcement de la liaison aérienne entre Casablanca et Oujda 2016-2017","statut":"signé","advancementPercentage":100,"status_priority":0},{"id":429,"intitule":"intitule9","statut":"en cours de signature","advancementPercentage":0.0,"status_priority":1},{"id":425,"intitule":"intitule298","statut":"visé","advancementPercentage":0,"status_priority":3},{"id":418,"intitule":"int3","statut":"visé","advancementPercentage":0.0,"status_priority":3}]}} 
+[2025-10-19 18:36:57] local.INFO: Fetching recent convention summaries for dashboard...  
+[2025-10-19 18:36:57] local.DEBUG: Status order defined: ["signé","en cours de signature","non signé","visé","en cours de visa","non visé","approuvé","en cours d'approbation","non approuvé"] 
+[2025-10-19 18:36:57] local.INFO: Recent convention summaries fetched and processed successfully. {"data":{"Illuminate\\Support\\Collection":[{"id":400,"intitule":"Convention Cadre pour le Développement de l'Infrastructure Hydraulique","statut":"signé","advancementPercentage":32.0,"status_priority":0},{"id":378,"intitule":"Convention de partenariat pour une subvention supplémentaire au renouvellement du parc de Taxis","statut":"signé","advancementPercentage":9.0,"status_priority":0},{"id":357,"intitule":"Convention de partenariat avec la compagnie nationale Royal Air Maroc pour le renforcement de la liaison aérienne entre Casablanca et Oujda 2016-2017","statut":"signé","advancementPercentage":100,"status_priority":0},{"id":429,"intitule":"intitule9","statut":"en cours de signature","advancementPercentage":0.0,"status_priority":1},{"id":425,"intitule":"intitule298","statut":"visé","advancementPercentage":0,"status_priority":3},{"id":418,"intitule":"int3","statut":"visé","advancementPercentage":0.0,"status_priority":3}]}} 
+[2025-10-19 18:37:03] local.INFO: Fetching recent convention summaries for dashboard...  
+[2025-10-19 18:37:03] local.DEBUG: Status order defined: ["signé","en cours de signature","non signé","visé","en cours de visa","non visé","approuvé","en cours d'approbation","non approuvé"] 
+[2025-10-19 18:37:03] local.INFO: Recent convention summaries fetched and processed successfully. {"data":{"Illuminate\\Support\\Collection":[{"id":400,"intitule":"Convention Cadre pour le Développement de l'Infrastructure Hydraulique","statut":"signé","advancementPercentage":32.0,"status_priority":0},{"id":378,"intitule":"Convention de partenariat pour une subvention supplémentaire au renouvellement du parc de Taxis","statut":"signé","advancementPercentage":9.0,"status_priority":0},{"id":357,"intitule":"Convention de partenariat avec la compagnie nationale Royal Air Maroc pour le renforcement de la liaison aérienne entre Casablanca et Oujda 2016-2017","statut":"signé","advancementPercentage":100,"status_priority":0},{"id":429,"intitule":"intitule9","statut":"en cours de signature","advancementPercentage":0.0,"status_priority":1},{"id":425,"intitule":"intitule298","statut":"visé","advancementPercentage":0,"status_priority":3},{"id":418,"intitule":"int3","statut":"visé","advancementPercentage":0.0,"status_priority":3}]}} 
+[2025-10-19 18:37:05] local.INFO: Récupération de toutes les conventions...  
+[2025-10-19 18:37:05] local.INFO: Récupération réussie de 20 conventions.  
+[2025-10-19 18:37:05] local.INFO: Récupération de la liste des partenaires...  
+[2025-10-19 18:37:05] local.INFO: Récupération réussie de 201 partenaires.  
+[2025-10-19 18:37:07] local.INFO: Récupération de toutes les conventions...  
+[2025-10-19 18:37:07] local.INFO: Récupération réussie de 20 conventions.  
+[2025-10-19 18:37:08] local.INFO: API: Récupération des versements (tous)  
+[2025-10-19 18:37:08] local.INFO: API: Récupéré 5 versement(s) (tous).  
+[2025-10-19 18:37:09] local.INFO: Récupération de la liste des partenaires...  
+[2025-10-19 18:37:09] local.INFO: Récupération réussie de 201 partenaires.  
+[2025-10-19 18:37:11] local.INFO: Récupération de toutes les conventions...  
+[2025-10-19 18:37:12] local.INFO: Récupération réussie de 20 conventions.  
+[2025-10-19 18:37:12] local.INFO: Récupération de toutes les conventions...  
+[2025-10-19 18:37:12] local.INFO: Récupération réussie de 20 conventions.  
+[2025-10-19 18:37:13] local.INFO: API: Récupération des versements (tous)  
+[2025-10-19 18:37:13] local.INFO: API: Récupéré 5 versement(s) (tous).  
+[2025-10-19 18:37:14] local.INFO: Fetching Convention options for dropdown...  
+[2025-10-19 18:37:14] local.INFO: Returning 20 Convention options.  
+[2025-10-19 18:37:15] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-10-19 18:37:15] local.INFO: API: Returning 201 Partenaire options.  
+[2025-10-19 18:37:16] local.INFO: Récupération de toutes les conventions...  
+[2025-10-19 18:37:16] local.INFO: Récupération réussie de 20 conventions.  
+[2025-10-19 18:37:18] local.INFO: Récupération de toutes les conventions...  
+[2025-10-19 18:37:18] local.INFO: Récupération réussie de 20 conventions.  
+[2025-10-19 18:37:18] local.INFO: Fetching Convention options for dropdown...  
+[2025-10-19 18:37:18] local.INFO: Returning 20 Convention options.  
+[2025-10-19 18:37:18] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-10-19 18:37:18] local.INFO: API: Returning 201 Partenaire options.  
+[2025-10-19 18:37:47] local.INFO: API: Requête pour détails Convention ID: 417  
+[2025-10-19 18:37:47] local.DEBUG: [DEBUG ID: 417] Could not find ConvPart or loaded Partner for ID 23 BEFORE toArray.  
+[2025-10-19 18:37:47] local.DEBUG: [MAP DEBUG Partner 4] Using Description: 'Agence de Développement de l’Oriental'  
+[2025-10-19 18:37:47] local.INFO: API: Succès récupération détails Convention ID: 417  
+[2025-10-19 18:38:23] local.ERROR: Failed to store avenant: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'type_modification' at row 1 (Connection: mysql, SQL: insert into `avenants` (`convention_id`, `numero_avenant`, `date_signature`, `objet`, `montant_modifie`, `nouvelle_date_fin`, `id_fonctionnaire`, `annee_avenant`, `session`, `numero_approbation`, `statut`, `date_visa`, `remarques`, `type_modification`, `code`, `date_creation`) values (417, 27890, ?, ?, ?, 2025-10-19, ?, 2025, 10, 343411, visé, 2025-10-19, ?, ["dur\u00e9e","partenaire"], 343411/10/2025, 2025-10-19 18:38:23)) {"trace":"#0 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(779): Illuminate\\Database\\Connection->runQueryCallback('insert into `av...', Array, Object(Closure))
+#1 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\MySqlConnection.php(42): Illuminate\\Database\\Connection->run('insert into `av...', Array, Object(Closure))
+#2 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Processors\\MySqlProcessor.php(35): Illuminate\\Database\\MySqlConnection->insert('insert into `av...', Array, 'id')
+#3 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3766): Illuminate\\Database\\Query\\Processors\\MySqlProcessor->processInsertGetId(Object(Illuminate\\Database\\Query\\Builder), 'insert into `av...', Array, 'id')
+#4 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(2120): Illuminate\\Database\\Query\\Builder->insertGetId(Array, 'id')
+#5 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1359): Illuminate\\Database\\Eloquent\\Builder->__call('insertGetId', Array)
+#6 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1324): Illuminate\\Database\\Eloquent\\Model->insertAndSetId(Object(Illuminate\\Database\\Eloquent\\Builder), Array)
+#7 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1163): Illuminate\\Database\\Eloquent\\Model->performInsert(Object(Illuminate\\Database\\Eloquent\\Builder))
+#8 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1128): Illuminate\\Database\\Eloquent\\Model->save()
+#9 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\helpers.php(399): Illuminate\\Database\\Eloquent\\Builder->Illuminate\\Database\\Eloquent\\{closure}(Object(App\\Models\\Avenant))
+#10 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1127): tap(Object(App\\Models\\Avenant), Object(Closure))
+#11 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Traits\\ForwardsCalls.php(23): Illuminate\\Database\\Eloquent\\Builder->create(Array)
+#12 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2372): Illuminate\\Database\\Eloquent\\Model->forwardCallTo(Object(Illuminate\\Database\\Eloquent\\Builder), 'create', Array)
+#13 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2384): Illuminate\\Database\\Eloquent\\Model->__call('create', Array)
+#14 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\app\\Http\\Controllers\\AvenantController.php(99): Illuminate\\Database\\Eloquent\\Model::__callStatic('create', Array)
+#15 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(47): App\\Http\\Controllers\\AvenantController->store(Object(Illuminate\\Http\\Request))
+#16 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(266): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\AvenantController), 'store')
+#17 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(212): Illuminate\\Routing\\Route->runController()
+#18 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(808): Illuminate\\Routing\\Route->run()
+#19 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#20 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'delete avenants')
+#22 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'update avenants')
+#24 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'create avenants')
+#26 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#27 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'view avenants')
+#28 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(51): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#29 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#30 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(64): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'sanctum')
+#32 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#34 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(786): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#35 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(750): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#36 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(739): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#37 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(201): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#38 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#39 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#43 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#44 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#46 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#47 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#48 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#49 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#50 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#51 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#52 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#53 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#54 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#55 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#56 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(176): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#57 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(145): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#58 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1220): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#59 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\public\\index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#60 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\Prueba...')
+#61 {main}"} 
+[2025-10-19 18:38:36] local.ERROR: Failed to store avenant: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'type_modification' at row 1 (Connection: mysql, SQL: insert into `avenants` (`convention_id`, `numero_avenant`, `date_signature`, `objet`, `montant_modifie`, `nouvelle_date_fin`, `id_fonctionnaire`, `annee_avenant`, `session`, `numero_approbation`, `statut`, `date_visa`, `remarques`, `type_modification`, `code`, `date_creation`) values (417, 27890, ?, ?, ?, 2025-10-19, ?, 2025, 10, 343411, visé, 2025-10-19, ?, ["dur\u00e9e","partenaire"], 343411/10/2025, 2025-10-19 18:38:36)) {"trace":"#0 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(779): Illuminate\\Database\\Connection->runQueryCallback('insert into `av...', Array, Object(Closure))
+#1 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\MySqlConnection.php(42): Illuminate\\Database\\Connection->run('insert into `av...', Array, Object(Closure))
+#2 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Processors\\MySqlProcessor.php(35): Illuminate\\Database\\MySqlConnection->insert('insert into `av...', Array, 'id')
+#3 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3766): Illuminate\\Database\\Query\\Processors\\MySqlProcessor->processInsertGetId(Object(Illuminate\\Database\\Query\\Builder), 'insert into `av...', Array, 'id')
+#4 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(2120): Illuminate\\Database\\Query\\Builder->insertGetId(Array, 'id')
+#5 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1359): Illuminate\\Database\\Eloquent\\Builder->__call('insertGetId', Array)
+#6 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1324): Illuminate\\Database\\Eloquent\\Model->insertAndSetId(Object(Illuminate\\Database\\Eloquent\\Builder), Array)
+#7 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1163): Illuminate\\Database\\Eloquent\\Model->performInsert(Object(Illuminate\\Database\\Eloquent\\Builder))
+#8 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1128): Illuminate\\Database\\Eloquent\\Model->save()
+#9 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\helpers.php(399): Illuminate\\Database\\Eloquent\\Builder->Illuminate\\Database\\Eloquent\\{closure}(Object(App\\Models\\Avenant))
+#10 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1127): tap(Object(App\\Models\\Avenant), Object(Closure))
+#11 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Traits\\ForwardsCalls.php(23): Illuminate\\Database\\Eloquent\\Builder->create(Array)
+#12 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2372): Illuminate\\Database\\Eloquent\\Model->forwardCallTo(Object(Illuminate\\Database\\Eloquent\\Builder), 'create', Array)
+#13 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2384): Illuminate\\Database\\Eloquent\\Model->__call('create', Array)
+#14 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\app\\Http\\Controllers\\AvenantController.php(99): Illuminate\\Database\\Eloquent\\Model::__callStatic('create', Array)
+#15 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(47): App\\Http\\Controllers\\AvenantController->store(Object(Illuminate\\Http\\Request))
+#16 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(266): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\AvenantController), 'store')
+#17 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(212): Illuminate\\Routing\\Route->runController()
+#18 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(808): Illuminate\\Routing\\Route->run()
+#19 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#20 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'delete avenants')
+#22 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'update avenants')
+#24 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'create avenants')
+#26 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#27 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'view avenants')
+#28 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(51): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#29 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#30 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(64): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'sanctum')
+#32 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#34 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(786): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#35 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(750): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#36 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(739): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#37 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(201): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#38 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#39 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#43 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#44 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#46 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#47 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#48 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#49 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#50 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#51 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#52 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#53 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#54 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#55 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#56 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(176): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#57 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(145): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#58 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1220): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#59 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\public\\index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#60 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\Prueba...')
+#61 {main}"} 
+[2025-10-19 19:02:35] local.INFO: Fetching Convention options for dropdown...  
+[2025-10-19 19:02:35] local.INFO: Returning 20 Convention options.  
+[2025-10-19 19:02:36] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-10-19 19:02:36] local.INFO: API: Returning 201 Partenaire options.  
+[2025-10-19 19:02:37] local.INFO: Fetching Convention options for dropdown...  
+[2025-10-19 19:02:37] local.INFO: Returning 20 Convention options.  
+[2025-10-19 19:02:37] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-10-19 19:02:37] local.INFO: API: Returning 201 Partenaire options.  
+[2025-10-19 19:03:59] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:04:00] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:04:00] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:04:02] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:04:02] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:04:03] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:04:03] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:04:03] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:04:04] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:04:04] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:08:49] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:08:51] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:08:51] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:08:53] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:08:54] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:10:57] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:10:58] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:10:58] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:10:59] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:10:59] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:11:02] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:11:03] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:11:03] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:11:04] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:11:04] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:11:06] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:11:07] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:11:07] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:11:07] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:11:07] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:11:08] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:11:09] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:11:09] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:11:10] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:11:10] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:14:13] local.ERROR: Failed to store sousprojet: SQLSTATE[22007]: Invalid datetime format: 1366 Incorrect integer value: '["3","2"]' for column `gest_final`.`sous_projet`.`Id_Province` at row 1 (Connection: mysql, SQL: insert into `sous_projet` (`Code_Sous_Projet`, `Nom_Projet`, `ID_Projet_Maitre`, `Observations`, `Etat_Avan_Physi`, `Etat_Avan_Finan`, `Estim_Initi`, `Secteur`, `Localite`, `Centre`, `Site`, `Surface`, `Lineaire`, `Status`, `Douars_Desservis`, `Financement`, `Nature_Intervention`, `Benificiaire`, `id_fonctionnaire`, `Id_Province`, `Id_Commune`, `updated_at`, `created_at`) values (444535, hello, 8, ?, 23, 12, 200000000, ?, ?, ?, ?, ?, ?, statut, ?, ?, ?, ?, 121;8, ["3","2"], ["118","3"], 2025-10-19 19:14:13, 2025-10-19 19:14:13)) {"trace":"#0 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(779): Illuminate\\Database\\Connection->runQueryCallback('insert into `so...', Array, Object(Closure))
+#1 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\MySqlConnection.php(42): Illuminate\\Database\\Connection->run('insert into `so...', Array, Object(Closure))
+#2 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3717): Illuminate\\Database\\MySqlConnection->insert('insert into `so...', Array)
+#3 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(2120): Illuminate\\Database\\Query\\Builder->insert(Array)
+#4 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1335): Illuminate\\Database\\Eloquent\\Builder->__call('insert', Array)
+#5 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1163): Illuminate\\Database\\Eloquent\\Model->performInsert(Object(Illuminate\\Database\\Eloquent\\Builder))
+#6 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1128): Illuminate\\Database\\Eloquent\\Model->save()
+#7 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\helpers.php(399): Illuminate\\Database\\Eloquent\\Builder->Illuminate\\Database\\Eloquent\\{closure}(Object(App\\Models\\SousProjet))
+#8 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1127): tap(Object(App\\Models\\SousProjet), Object(Closure))
+#9 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Traits\\ForwardsCalls.php(23): Illuminate\\Database\\Eloquent\\Builder->create(Array)
+#10 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2372): Illuminate\\Database\\Eloquent\\Model->forwardCallTo(Object(Illuminate\\Database\\Eloquent\\Builder), 'create', Array)
+#11 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2384): Illuminate\\Database\\Eloquent\\Model->__call('create', Array)
+#12 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\app\\Http\\Controllers\\SousProjetController.php(83): Illuminate\\Database\\Eloquent\\Model::__callStatic('create', Array)
+#13 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(47): App\\Http\\Controllers\\SousProjetController->store(Object(Illuminate\\Http\\Request))
+#14 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(266): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\SousProjetController), 'store')
+#15 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(212): Illuminate\\Routing\\Route->runController()
+#16 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(808): Illuminate\\Routing\\Route->run()
+#17 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#18 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#19 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'delete sousproj...')
+#20 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'update sousproj...')
+#22 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'create sousproj...')
+#24 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'view sousprojet...')
+#26 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(51): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#27 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#28 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(64): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#29 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'sanctum')
+#30 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#32 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(786): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#33 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(750): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#34 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(739): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#35 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(201): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#36 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#37 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#40 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#41 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#46 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#47 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#48 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#49 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#50 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#51 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#52 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#53 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#54 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(176): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#55 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(145): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#56 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1220): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#57 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\public\\index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#58 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\Prueba...')
+#59 {main}"} 
+[2025-10-19 19:14:24] local.ERROR: Failed to store sousprojet: SQLSTATE[22007]: Invalid datetime format: 1366 Incorrect integer value: '["3","2"]' for column `gest_final`.`sous_projet`.`Id_Province` at row 1 (Connection: mysql, SQL: insert into `sous_projet` (`Code_Sous_Projet`, `Nom_Projet`, `ID_Projet_Maitre`, `Observations`, `Etat_Avan_Physi`, `Etat_Avan_Finan`, `Estim_Initi`, `Secteur`, `Localite`, `Centre`, `Site`, `Surface`, `Lineaire`, `Status`, `Douars_Desservis`, `Financement`, `Nature_Intervention`, `Benificiaire`, `id_fonctionnaire`, `Id_Province`, `Id_Commune`, `updated_at`, `created_at`) values (444535, hello, 8, ?, 23, 12, 200000000, ?, ?, ?, ?, ?, ?, statut, ?, ?, ?, ?, 121;8, ["3","2"], ["118","3"], 2025-10-19 19:14:24, 2025-10-19 19:14:24)) {"trace":"#0 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(779): Illuminate\\Database\\Connection->runQueryCallback('insert into `so...', Array, Object(Closure))
+#1 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\MySqlConnection.php(42): Illuminate\\Database\\Connection->run('insert into `so...', Array, Object(Closure))
+#2 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3717): Illuminate\\Database\\MySqlConnection->insert('insert into `so...', Array)
+#3 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(2120): Illuminate\\Database\\Query\\Builder->insert(Array)
+#4 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1335): Illuminate\\Database\\Eloquent\\Builder->__call('insert', Array)
+#5 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1163): Illuminate\\Database\\Eloquent\\Model->performInsert(Object(Illuminate\\Database\\Eloquent\\Builder))
+#6 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1128): Illuminate\\Database\\Eloquent\\Model->save()
+#7 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\helpers.php(399): Illuminate\\Database\\Eloquent\\Builder->Illuminate\\Database\\Eloquent\\{closure}(Object(App\\Models\\SousProjet))
+#8 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1127): tap(Object(App\\Models\\SousProjet), Object(Closure))
+#9 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Traits\\ForwardsCalls.php(23): Illuminate\\Database\\Eloquent\\Builder->create(Array)
+#10 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2372): Illuminate\\Database\\Eloquent\\Model->forwardCallTo(Object(Illuminate\\Database\\Eloquent\\Builder), 'create', Array)
+#11 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2384): Illuminate\\Database\\Eloquent\\Model->__call('create', Array)
+#12 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\app\\Http\\Controllers\\SousProjetController.php(83): Illuminate\\Database\\Eloquent\\Model::__callStatic('create', Array)
+#13 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(47): App\\Http\\Controllers\\SousProjetController->store(Object(Illuminate\\Http\\Request))
+#14 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(266): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\SousProjetController), 'store')
+#15 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(212): Illuminate\\Routing\\Route->runController()
+#16 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(808): Illuminate\\Routing\\Route->run()
+#17 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#18 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#19 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'delete sousproj...')
+#20 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'update sousproj...')
+#22 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'create sousproj...')
+#24 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'view sousprojet...')
+#26 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(51): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#27 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#28 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(64): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#29 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'sanctum')
+#30 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#32 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(786): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#33 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(750): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#34 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(739): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#35 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(201): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#36 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#37 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#40 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#41 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#46 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#47 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#48 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#49 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#50 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#51 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#52 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#53 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#54 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(176): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#55 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(145): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#56 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1220): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#57 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\public\\index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#58 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\Prueba...')
+#59 {main}"} 
+[2025-10-19 19:19:00] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:19:01] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:19:01] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:19:01] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:19:01] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:19:28] local.ERROR: Failed to store sousprojet: SQLSTATE[22007]: Invalid datetime format: 1366 Incorrect integer value: '["1","2"]' for column `gest_final`.`sous_projet`.`Id_Province` at row 1 (Connection: mysql, SQL: insert into `sous_projet` (`Code_Sous_Projet`, `Nom_Projet`, `ID_Projet_Maitre`, `Observations`, `Etat_Avan_Physi`, `Etat_Avan_Finan`, `Estim_Initi`, `Secteur`, `Localite`, `Centre`, `Site`, `Surface`, `Lineaire`, `Status`, `Douars_Desservis`, `Financement`, `Nature_Intervention`, `Benificiaire`, `id_fonctionnaire`, `Id_Province`, `Id_Commune`, `updated_at`, `created_at`) values (898, hello, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ["1","2"], ["76","33"], 2025-10-19 19:19:28, 2025-10-19 19:19:28)) {"trace":"#0 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(779): Illuminate\\Database\\Connection->runQueryCallback('insert into `so...', Array, Object(Closure))
+#1 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\MySqlConnection.php(42): Illuminate\\Database\\Connection->run('insert into `so...', Array, Object(Closure))
+#2 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3717): Illuminate\\Database\\MySqlConnection->insert('insert into `so...', Array)
+#3 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(2120): Illuminate\\Database\\Query\\Builder->insert(Array)
+#4 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1335): Illuminate\\Database\\Eloquent\\Builder->__call('insert', Array)
+#5 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1163): Illuminate\\Database\\Eloquent\\Model->performInsert(Object(Illuminate\\Database\\Eloquent\\Builder))
+#6 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1128): Illuminate\\Database\\Eloquent\\Model->save()
+#7 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\helpers.php(399): Illuminate\\Database\\Eloquent\\Builder->Illuminate\\Database\\Eloquent\\{closure}(Object(App\\Models\\SousProjet))
+#8 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1127): tap(Object(App\\Models\\SousProjet), Object(Closure))
+#9 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Traits\\ForwardsCalls.php(23): Illuminate\\Database\\Eloquent\\Builder->create(Array)
+#10 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2372): Illuminate\\Database\\Eloquent\\Model->forwardCallTo(Object(Illuminate\\Database\\Eloquent\\Builder), 'create', Array)
+#11 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2384): Illuminate\\Database\\Eloquent\\Model->__call('create', Array)
+#12 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\app\\Http\\Controllers\\SousProjetController.php(83): Illuminate\\Database\\Eloquent\\Model::__callStatic('create', Array)
+#13 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(47): App\\Http\\Controllers\\SousProjetController->store(Object(Illuminate\\Http\\Request))
+#14 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(266): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\SousProjetController), 'store')
+#15 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(212): Illuminate\\Routing\\Route->runController()
+#16 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(808): Illuminate\\Routing\\Route->run()
+#17 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#18 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#19 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'delete sousproj...')
+#20 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'update sousproj...')
+#22 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'create sousproj...')
+#24 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'view sousprojet...')
+#26 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(51): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#27 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#28 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(64): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#29 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'sanctum')
+#30 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#32 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(786): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#33 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(750): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#34 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(739): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#35 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(201): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#36 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#37 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#40 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#41 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#46 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#47 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#48 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#49 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#50 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#51 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#52 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#53 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#54 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(176): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#55 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(145): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#56 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1220): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#57 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\public\\index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#58 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\Prueba...')
+#59 {main}"} 
+[2025-10-19 19:21:18] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:21:19] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:21:19] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:21:20] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:21:20] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:21:40] local.ERROR: Failed to store sousprojet: SQLSTATE[22007]: Invalid datetime format: 1366 Incorrect integer value: '["2","3"]' for column `gest_final`.`sous_projet`.`Id_Province` at row 1 (Connection: mysql, SQL: insert into `sous_projet` (`Code_Sous_Projet`, `Nom_Projet`, `ID_Projet_Maitre`, `Observations`, `Etat_Avan_Physi`, `Etat_Avan_Finan`, `Estim_Initi`, `Secteur`, `Localite`, `Centre`, `Site`, `Surface`, `Lineaire`, `Status`, `Douars_Desservis`, `Financement`, `Nature_Intervention`, `Benificiaire`, `id_fonctionnaire`, `Id_Province`, `Id_Commune`, `updated_at`, `created_at`) values (39892, intitule, 7, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ["2","3"], ["118","124"], 2025-10-19 19:21:40, 2025-10-19 19:21:40)) {"trace":"#0 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(779): Illuminate\\Database\\Connection->runQueryCallback('insert into `so...', Array, Object(Closure))
+#1 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\MySqlConnection.php(42): Illuminate\\Database\\Connection->run('insert into `so...', Array, Object(Closure))
+#2 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3717): Illuminate\\Database\\MySqlConnection->insert('insert into `so...', Array)
+#3 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(2120): Illuminate\\Database\\Query\\Builder->insert(Array)
+#4 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1335): Illuminate\\Database\\Eloquent\\Builder->__call('insert', Array)
+#5 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(1163): Illuminate\\Database\\Eloquent\\Model->performInsert(Object(Illuminate\\Database\\Eloquent\\Builder))
+#6 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1128): Illuminate\\Database\\Eloquent\\Model->save()
+#7 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\helpers.php(399): Illuminate\\Database\\Eloquent\\Builder->Illuminate\\Database\\Eloquent\\{closure}(Object(App\\Models\\SousProjet))
+#8 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1127): tap(Object(App\\Models\\SousProjet), Object(Closure))
+#9 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Traits\\ForwardsCalls.php(23): Illuminate\\Database\\Eloquent\\Builder->create(Array)
+#10 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2372): Illuminate\\Database\\Eloquent\\Model->forwardCallTo(Object(Illuminate\\Database\\Eloquent\\Builder), 'create', Array)
+#11 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2384): Illuminate\\Database\\Eloquent\\Model->__call('create', Array)
+#12 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\app\\Http\\Controllers\\SousProjetController.php(83): Illuminate\\Database\\Eloquent\\Model::__callStatic('create', Array)
+#13 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(47): App\\Http\\Controllers\\SousProjetController->store(Object(Illuminate\\Http\\Request))
+#14 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(266): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\SousProjetController), 'store')
+#15 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(212): Illuminate\\Routing\\Route->runController()
+#16 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(808): Illuminate\\Routing\\Route->run()
+#17 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#18 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#19 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'delete sousproj...')
+#20 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'update sousproj...')
+#22 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'create sousproj...')
+#24 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'view sousprojet...')
+#26 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(51): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#27 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#28 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(64): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#29 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'sanctum')
+#30 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#32 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(786): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#33 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(750): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#34 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(739): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#35 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(201): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#36 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#37 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#40 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#41 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#46 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#47 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#48 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#49 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#50 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#51 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#52 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#53 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#54 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(176): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#55 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(145): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#56 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1220): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#57 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\public\\index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#58 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\Prueba...')
+#59 {main}"} 
+[2025-10-19 19:23:06] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:23:07] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:23:07] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:23:07] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:23:07] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:27:03] local.ERROR: Failed to store sousprojet: Nested arrays may not be passed to whereIn method. {"trace":"#0 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Traits\\ForwardsCalls.php(23): Illuminate\\Database\\Query\\Builder->whereIn('province.Id', Array)
+#1 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(2123): Illuminate\\Database\\Eloquent\\Builder->forwardCallTo(Object(Illuminate\\Database\\Query\\Builder), 'whereIn', Array)
+#2 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Relations\\Relation.php(410): Illuminate\\Database\\Eloquent\\Builder->__call('whereIn', Array)
+#3 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Relations\\BelongsTo.php(115): Illuminate\\Database\\Eloquent\\Relations\\Relation->whereInEager('whereIn', 'province.Id', Array)
+#4 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(850): Illuminate\\Database\\Eloquent\\Relations\\BelongsTo->addEagerConstraints(Array)
+#5 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(828): Illuminate\\Database\\Eloquent\\Builder->eagerLoadRelation(Array, 'province', Object(Closure))
+#6 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(724): Illuminate\\Database\\Eloquent\\Builder->eagerLoadRelations(Array)
+#7 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\app\\Http\\Controllers\\SousProjetController.php(98): Illuminate\\Database\\Eloquent\\Model->load(Array)
+#8 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(47): App\\Http\\Controllers\\SousProjetController->store(Object(Illuminate\\Http\\Request))
+#9 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(266): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\SousProjetController), 'store')
+#10 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(212): Illuminate\\Routing\\Route->runController()
+#11 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(808): Illuminate\\Routing\\Route->run()
+#12 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#13 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#14 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'delete sousproj...')
+#15 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#16 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'update sousproj...')
+#17 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#18 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'create sousproj...')
+#19 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\spatie\\laravel-permission\\src\\Middleware\\PermissionMiddleware.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#20 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Spatie\\Permission\\Middleware\\PermissionMiddleware->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'view sousprojet...')
+#21 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(51): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#22 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#23 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(64): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#24 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'sanctum')
+#25 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#26 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#27 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(786): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#28 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(750): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#29 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(739): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#30 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(201): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#31 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(170): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#32 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#36 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#39 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#40 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#41 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#43 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#44 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#45 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#46 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#47 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(209): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#48 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(127): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#49 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(176): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#50 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(145): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#51 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1220): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#52 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\public\\index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#53 C:\\Users\\Prueba\\Desktop\\gicopma - Copy\\conventionsapp\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('C:\\\\Users\\\\Prueba...')
+#54 {main}"} 
+[2025-10-19 19:39:48] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:39:48] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:39:49] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:39:49] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:40:25] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:40:25] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:40:26] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:40:26] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:40:28] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:40:28] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:40:29] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:40:29] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:42:09] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:42:09] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:42:10] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:42:10] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:42:13] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:42:13] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:42:14] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:42:14] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:43:11] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:43:11] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:43:12] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:43:12] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:43:14] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:43:14] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:43:15] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:43:15] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:43:58] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:43:58] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:43:59] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:43:59] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:44:03] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:44:03] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:44:03] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:44:03] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:45:08] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:45:08] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:45:09] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:45:09] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:45:11] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:45:11] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:45:12] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:45:12] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:46:39] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:46:39] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:46:39] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:46:39] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:46:41] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:46:41] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:46:42] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:46:42] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:47:15] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:47:16] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:47:16] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:47:18] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:47:18] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:47:20] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:47:20] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:47:20] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:47:22] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:47:22] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:47:23] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:47:24] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:47:24] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:47:24] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:47:24] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:47:26] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:47:27] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:47:27] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:47:27] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:47:27] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:50:22] local.INFO: API: Fetching Projet options for dropdown.  
+[2025-10-19 19:50:23] local.INFO: API: Fetching Province options for dropdown.  
+[2025-10-19 19:50:23] local.INFO: API: Returning 8 Province options.  
+[2025-10-19 19:50:24] local.INFO: API: Fetching Commune options for dropdown.  
+[2025-10-19 19:50:24] local.INFO: API: Returning 124 Commune options.  
+[2025-10-19 19:50:58] local.INFO: Récupération de toutes les conventions...  
+[2025-10-19 19:50:58] local.INFO: Récupération réussie de 20 conventions.  
+[2025-10-19 19:50:59] local.INFO: Récupération de la liste des partenaires...  
+[2025-10-19 19:50:59] local.INFO: Récupération réussie de 201 partenaires.  
+[2025-10-19 19:51:02] local.INFO: Récupération de toutes les conventions...  
+[2025-10-19 19:51:02] local.INFO: Récupération réussie de 20 conventions.  
+[2025-10-19 19:51:02] local.INFO: Récupération de la liste des partenaires...  
+[2025-10-19 19:51:02] local.INFO: Récupération réussie de 201 partenaires.  
+[2025-10-19 19:51:04] local.INFO: Récupération de toutes les conventions...  
+[2025-10-19 19:51:04] local.INFO: Récupération réussie de 20 conventions.  
+[2025-10-19 19:51:06] local.INFO: Récupération de toutes les conventions...  
+[2025-10-19 19:51:06] local.INFO: Récupération réussie de 20 conventions.  
+[2025-10-19 19:51:07] local.INFO: Fetching Convention options for dropdown...  
+[2025-10-19 19:51:07] local.INFO: Returning 20 Convention options.  
+[2025-10-19 19:51:08] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-10-19 19:51:08] local.INFO: API: Returning 201 Partenaire options.  
+[2025-10-19 19:51:09] local.INFO: Récupération de toutes les conventions...  
+[2025-10-19 19:51:09] local.INFO: Récupération réussie de 20 conventions.  
+[2025-10-19 19:51:10] local.INFO: Récupération de toutes les conventions...  
+[2025-10-19 19:51:10] local.INFO: Récupération réussie de 20 conventions.  
+[2025-10-19 19:51:10] local.INFO: Fetching Convention options for dropdown...  
+[2025-10-19 19:51:10] local.INFO: Returning 20 Convention options.  
+[2025-10-19 19:51:11] local.INFO: API: Fetching Partenaire options for dropdown.  
+[2025-10-19 19:51:11] local.INFO: API: Returning 201 Partenaire options.  

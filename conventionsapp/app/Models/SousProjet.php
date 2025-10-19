@@ -61,6 +61,11 @@ class SousProjet extends Model
         'id_fonctionnaire',
     ];
 
+    protected $casts = [
+        'Id_Province' => 'array', // Cast to array for multiple provinces
+        'Id_Commune' => 'array',  // Cast to array for multiple communes
+    ];
+
     // Relationships (projet, province, commune) look correct
 
     public function projet()
@@ -68,17 +73,32 @@ class SousProjet extends Model
         return $this->belongsTo(Projet::class, 'ID_Projet_Maitre', 'Code_Projet');
     }
 
+    public function provinces()
+    {
+        return $this->belongsToMany(Province::class, 'sous_projet_province', 'sous_projet_code', 'province_id')
+                    ->withPivot('created_at', 'updated_at');
+    }
+
+    public function communes()
+    {
+        return $this->belongsToMany(Commune::class, 'sous_projet_commune', 'sous_projet_code', 'commune_id')
+                    ->withPivot('created_at', 'updated_at');
+    }
+
+    // Keep legacy relationships for backward compatibility
     public function province()
     {
         return $this->belongsTo(Province::class, 'Id_Province', 'Id');
     }
-    public function marchesPublics(): MorphMany
-    {
-        return $this->morphMany(MarchePublic::class, 'projectable');
-    }
+    
     public function commune()
     {
         return $this->belongsTo(Commune::class, 'Id_Commune', 'Id');
+    }
+
+    public function marchesPublics(): MorphMany
+    {
+        return $this->morphMany(MarchePublic::class, 'projectable');
     }
 
     // Activity Log configuration looks correct

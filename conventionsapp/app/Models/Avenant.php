@@ -46,7 +46,7 @@ class Avenant extends Model
         'nouvelle_date_fin' => 'date:Y-m-d',
         'montant_modifie' => 'decimal:2',
         'date_visa' => 'date:Y-m-d', // ADDED
-
+        'type_modification' => 'array', // ADDED - Cast to array for multiple values
     ];
 
     public function convention(): BelongsTo

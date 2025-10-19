@@ -152,12 +152,37 @@ const AvenantsPage = () => {
              meta: { enableGlobalFilter: true }
          },
          {
-             accessorKey: 'type_modification', header: 'Type Modif.', size: 120, filterFn: 'equalsString', // Use exact match filter
+             accessorKey: 'type_modification', header: 'Type Modif.', size: 120, filterFn: (row, columnId, filterValue) => {
+                 const types = row.getValue(columnId);
+                 if (!filterValue) return true;
+                 const typeArray = Array.isArray(types) ? types : [types];
+                 return typeArray.includes(filterValue);
+             },
              cell: info => {
-                 const type = info.getValue();
-                 const color = getTypeModificationColor(type);
-                 const label = typeModificationOptions.find(opt => opt.value === type)?.label || type; // Get readable label
-                 return type ? <Badge bg={color} text={color === 'light' || color === 'warning' ? 'dark' : 'white'} className="d-flex justify-content-center text-truncate">{label}</Badge> : '-';
+                 const types = info.getValue();
+                 if (!types || (Array.isArray(types) && types.length === 0)) return '-';
+                 
+                 // Handle both single values (legacy) and arrays (new)
+                 const typeArray = Array.isArray(types) ? types : [types];
+                 
+                 return (
+                     <div className="d-flex flex-wrap gap-1">
+                         {typeArray.map((type, index) => {
+                             const color = getTypeModificationColor(type);
+                             const label = typeModificationOptions.find(opt => opt.value === type)?.label || type;
+                             return (
+                                 <Badge 
+                                     key={index}
+                                     bg={color} 
+                                     text={color === 'light' || color === 'warning' ? 'dark' : 'white'} 
+                                     className="text-truncate"
+                                 >
+                                     {label}
+                                 </Badge>
+                             );
+                         })}
+                     </div>
+                 );
              },
              meta: { enableGlobalFilter: true } // Can be searched by value ('montant', 'durée', etc.)
          },
@@ -180,12 +205,20 @@ const AvenantsPage = () => {
         },
          {
              accessorKey: 'montant_modifie', header: 'Montant Modifié', size: 100,
-             cell: info => info.row.original.type_modification === 'montant' ? formatCurrency(info.getValue()) : '-', // Conditionally display
+             cell: info => {
+                 const types = info.row.original.type_modification;
+                 const typeArray = Array.isArray(types) ? types : [types];
+                 return typeArray.includes('montant') ? formatCurrency(info.getValue()) : '-';
+             },
              meta: { enableGlobalFilter: false } // Usually don't globally search specific amounts
          },
          {
              accessorKey: 'nouvelle_date_fin', header: 'Nouv. Date Fin', size: 100,
-             cell: info => info.row.original.type_modification === 'durée' ? formatDate(info.getValue()) : '-', // Conditionally display
+             cell: info => {
+                 const types = info.row.original.type_modification;
+                 const typeArray = Array.isArray(types) ? types : [types];
+                 return typeArray.includes('durée') ? formatDate(info.getValue()) : '-';
+             },
              meta: { enableGlobalFilter: false }
          },
 
@@ -239,6 +272,7 @@ const AvenantsPage = () => {
                             onChange={(selectedOption) => {
                                 setFilterTypeModification(selectedOption);
                                 // Filter by the exact value ('montant', 'durée', etc.)
+                                // For arrays, we'll check if the selected type is included in the array
                                 typeModifColumn.setFilterValue(selectedOption ? selectedOption.value : undefined);
                             }}
                             placeholder="Filtrer par Type Modification..."

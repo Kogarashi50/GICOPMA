@@ -69,17 +69,66 @@ const typeModificationOptions = [
     { value: 'autre', label: 'Autre Modification' },
 ];
 const getTypeModificationInfo = (typeValue) => {
-    const option = typeModificationOptions.find(opt => opt.value === typeValue);
-    const label = option ? option.label : typeValue;
+    // Handle both single values (legacy) and arrays (new)
+    const typeArray = Array.isArray(typeValue) ? typeValue : [typeValue];
+    
+    if (typeArray.length === 0) {
+        return { label: 'Non défini', color: 'light', textColor: 'dark' };
+    }
+    
+    // For multiple types, return the first one for backward compatibility
+    // but we'll display all types in the UI
+    const firstType = typeArray[0];
+    const option = typeModificationOptions.find(opt => opt.value === firstType);
+    const label = option ? option.label : firstType;
     let color = 'light';
-    switch (typeValue) {
+    switch (firstType) {
         case 'montant': color = 'success'; break;
         case 'durée': color = 'info'; break;
         case 'partenaire': color = 'warning'; break;
         case 'autre': color = 'secondary'; break;
+        case 'technique_administratif': color = 'primary'; break;
     }
     const textColor = ['warning', 'light'].includes(color) ? 'dark' : 'white';
     return { label: displayData(label), color, textColor };
+};
+
+const renderMultipleTypeModifications = (typeValue) => {
+    // Handle both single values (legacy) and arrays (new)
+    const typeArray = Array.isArray(typeValue) ? typeValue : [typeValue];
+    
+    if (!typeArray || typeArray.length === 0) {
+        return <Badge bg="light" text="dark" pill>Non défini</Badge>;
+    }
+    
+    return (
+        <div className="d-flex flex-wrap gap-1">
+            {typeArray.map((type, index) => {
+                const option = typeModificationOptions.find(opt => opt.value === type);
+                const label = option ? option.label : type;
+                let color = 'light';
+                switch (type) {
+                    case 'montant': color = 'success'; break;
+                    case 'durée': color = 'info'; break;
+                    case 'partenaire': color = 'warning'; break;
+                    case 'autre': color = 'secondary'; break;
+                    case 'technique_administratif': color = 'primary'; break;
+                }
+                const textColor = ['warning', 'light'].includes(color) ? 'dark' : 'white';
+                
+                return (
+                    <Badge 
+                        key={index}
+                        bg={color} 
+                        text={textColor} 
+                        pill
+                    >
+                        {label}
+                    </Badge>
+                );
+            })}
+        </div>
+    );
 };
 const getFileIcon = (filename) => {
     if (!filename) return faFileAlt;
@@ -284,6 +333,17 @@ const AvenantVisualisation = ({
     }
 
     const typeModifInfo = getTypeModificationInfo(avenantData.type_modification);
+    
+    // Debug logging to help troubleshoot
+    console.log('[AvenantVisualisation] Debug Info:', {
+        type_modification: avenantData.type_modification,
+        type_modification_type: typeof avenantData.type_modification,
+        isArray: Array.isArray(avenantData.type_modification),
+        includes_duree: Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('durée') : avenantData.type_modification === 'durée',
+        nouvelle_date_fin: avenantData.nouvelle_date_fin,
+        montant_modifie: avenantData.montant_modifie,
+        full_data: avenantData
+    });
 
     // --- Main Content Render ---
     return (
@@ -301,9 +361,11 @@ const AvenantVisualisation = ({
                 </Button>
             </div>
 
+            
+
             {/* Main Info Row (Using V1 conditional column sizing) */}
             <Row className="g-3 mb-4">
-                <Col md={avenantData.type_modification === 'partenaire' ? 12 : 6} lg={avenantData.type_modification === 'partenaire' ? 12 : 7}>
+                <Col md={Array.isArray(avenantData.type_modification) ? ((avenantData.type_modification.includes('partenaire') && (avenantData.type_modification.includes('montant') || avenantData.type_modification.includes('durée'))) ? 6 : (avenantData.type_modification.includes('partenaire') ? 12 : 6)) : (avenantData.type_modification === 'partenaire' ? 12 : 6)} lg={Array.isArray(avenantData.type_modification) ? ((avenantData.type_modification.includes('partenaire') && (avenantData.type_modification.includes('montant') || avenantData.type_modification.includes('durée'))) ? 7 : (avenantData.type_modification.includes('partenaire') ? 12 : 7)) : (avenantData.type_modification === 'partenaire' ? 12 : 7)}>
                     <Card className="h-100 border-light shadow-sm">
                         <Card.Header className="bg-light py-2 border-bottom-0">
                             <Card.Title as="h6" className="mb-0 fw-semibold text-secondary small text-uppercase">
@@ -323,7 +385,7 @@ const AvenantVisualisation = ({
                                 {renderDetail("Convention Parent", avenantData.convention ? `${avenantData.convention?.Code} - ${avenantData.convention?.Intitule}` : '-', faFileSignature)}
                                 {renderDetail("N° Avenant", avenantData.numero_avenant, faListAlt)}
                                 {renderDetail("Date Signature", avenantData.date_signature, faCalendarAlt, { formatFunc: formatDate })}
-                                {renderDetail("Type Modification", <Badge bg={typeModifInfo.color} text={typeModifInfo.textColor} pill>{typeModifInfo.label}</Badge>, faEdit)}
+                                {renderDetail("Type Modification", renderMultipleTypeModifications(avenantData.type_modification), faEdit)}
                                 {/* --- ADDED: Fonctionnaire Display (from V1) --- */}
                                 {renderDetail("Points Focaux", getFonctionnaireNames(avenantData.id_fonctionnaire), faUserTie)}
                             </ListGroup>
@@ -331,8 +393,8 @@ const AvenantVisualisation = ({
                     </Card>
                 </Col>
 
-                {/* Conditional "Specific Modifications" Column (Using V1 logic) */}
-                {avenantData.type_modification !== 'partenaire' && (
+                {/* Conditional "Specific Modifications" Column - Show if there are montant or durée modifications */}
+                {((Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('montant') || avenantData.type_modification.includes('durée') : avenantData.type_modification === 'montant' || avenantData.type_modification === 'durée')) && (
                     <Col md={6} lg={5}>
                         <Card className="h-100 border-light shadow-sm">
                              <Card.Header className="bg-light py-2 border-bottom-0">
@@ -342,9 +404,9 @@ const AvenantVisualisation = ({
                              </Card.Header>
                             <Card.Body className="pt-2">
                                 <ListGroup variant="flush">
-                                    {renderDetail("Montant Modifié", avenantData.montant_modifie, faMoneyBillWave, { formatFunc: formatCurrency, conditionalCheck: (v) => avenantData.type_modification === 'montant', highlight: true })}
-                                    {renderDetail("Nouvelle Date Fin", avenantData.nouvelle_date_fin, faClock, { formatFunc: formatDate, conditionalCheck: (v) => avenantData.type_modification === 'durée', highlight: true })}
-                                    {avenantData.type_modification !== 'montant' && avenantData.type_modification !== 'durée' && (
+                                    {renderDetail("Montant Modifié", avenantData.montant_modifie, faMoneyBillWave, { formatFunc: formatCurrency, conditionalCheck: () => Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('montant') : avenantData.type_modification === 'montant', highlight: true })}
+                                    {renderDetail("Nouvelle Date Fin", avenantData.nouvelle_date_fin, faClock, { formatFunc: formatDate, conditionalCheck: () => Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('durée') : avenantData.type_modification === 'durée', highlight: true })}
+                                    {!((Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('montant') : avenantData.type_modification === 'montant') || (Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('durée') : avenantData.type_modification === 'durée')) && (
                                         <ListGroup.Item className="px-0 py-2 border-0">
                                             <span className="text-muted fst-italic small">Aucune modification spécifique de montant ou durée pour ce type.</span>
                                         </ListGroup.Item>
@@ -369,7 +431,7 @@ const AvenantVisualisation = ({
                         <h5 className="text-uppercase text-secondary fs-6 fw-semibold mb-3 ">
                             <FontAwesomeIcon icon={faUsers} className='me-2 text-secondary'/>
                             {/* V1 Title Logic */}
-                            {avenantData.type_modification === 'partenaire'
+                            {(Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('partenaire') : avenantData.type_modification === 'partenaire')
                                 ? `Partenaires Concernés par la Modification (${avenantData.partnerCommitments.length})`
                                 : `Détails Partenaires Associés (${avenantData.partnerCommitments.length})`
                             }

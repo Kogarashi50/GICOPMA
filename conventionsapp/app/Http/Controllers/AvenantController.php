@@ -59,11 +59,12 @@ class AvenantController extends Controller
             
             'objet' => 'nullable|string',
             
-            // MISSION 1: Added 'technique_administratif' to the list of allowed types
-            'type_modification' => ['required', Rule::in(['montant', 'durée', 'partenaire', 'technique_administratif', 'autre'])],
+            // MISSION 1: Added 'technique_administratif' to the list of allowed types - now supports multiple values
+            'type_modification' => 'required|array',
+            'type_modification.*' => ['required', Rule::in(['montant', 'durée', 'partenaire', 'technique_administratif', 'autre'])],
             
-            'montant_modifie' => 'nullable|required_if:type_modification,montant|numeric|min:0',
-            'nouvelle_date_fin' => 'nullable|required_if:type_modification,durée|date|after_or_equal:date_signature',
+            'montant_modifie' => 'nullable|numeric|min:0',
+            'nouvelle_date_fin' => 'nullable|date|after_or_equal:date_signature',
             'id_fonctionnaire' => 'nullable|string',
             'code' => 'nullable|string|max:50',
             'annee_avenant' => 'required|integer|digits:4',
@@ -76,7 +77,7 @@ class AvenantController extends Controller
             'fichiers.*' => 'file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:10240',
             'intitules' => 'nullable|array',
             'intitules.*' => 'nullable|string|max:255',
-            'avenant_partner_commitments' => 'nullable|required_if:type_modification,partenaire|json',
+            'avenant_partner_commitments' => 'nullable|json',
         ]);
 
         if ($validator->fails()) {
@@ -112,7 +113,7 @@ class AvenantController extends Controller
                 }
             }
 
-            if ($validatedData['type_modification'] === 'partenaire' && !empty($validatedData['avenant_partner_commitments'])) {
+            if (in_array('partenaire', $validatedData['type_modification']) && !empty($validatedData['avenant_partner_commitments'])) {
                 $partnerCommitments = json_decode($validatedData['avenant_partner_commitments'], true);
                 foreach ($partnerCommitments as $commitmentData) {
                     $convPart = $avenant->partnerCommitments()->create([
@@ -179,11 +180,12 @@ class AvenantController extends Controller
 
             'objet' => 'nullable|string',
 
-            // MISSION 1: Added 'technique_administratif' to the list of allowed types
-            'type_modification' => ['required', Rule::in(['montant', 'durée', 'partenaire', 'technique_administratif', 'autre'])],
+            // MISSION 1: Added 'technique_administratif' to the list of allowed types - now supports multiple values
+            'type_modification' => 'required|array',
+            'type_modification.*' => ['required', Rule::in(['montant', 'durée', 'partenaire', 'technique_administratif', 'autre'])],
             
-            'montant_modifie' => 'nullable|required_if:type_modification,montant|numeric|min:0',
-            'nouvelle_date_fin' => 'nullable|required_if:type_modification,durée|date|after_or_equal:date_signature',
+            'montant_modifie' => 'nullable|numeric|min:0',
+            'nouvelle_date_fin' => 'nullable|date|after_or_equal:date_signature',
             'id_fonctionnaire' => 'nullable|string',
             'code' => 'nullable|string|max:50',
             'annee_avenant' => 'required|integer|digits:4',
@@ -199,7 +201,7 @@ class AvenantController extends Controller
             'existing_documents_meta' => 'nullable|json',
             'fichiers_to_delete' => 'nullable|array',
             'fichiers_to_delete.*' => 'integer|exists:document,id',
-            'avenant_partner_commitments' => 'nullable|required_if:type_modification,partenaire|json',
+            'avenant_partner_commitments' => 'nullable|json',
         ]);
 
         if ($validator->fails()) {
@@ -248,7 +250,7 @@ class AvenantController extends Controller
 
             $avenant->partnerCommitments()->delete();
             
-            if ($validatedData['type_modification'] === 'partenaire' && !empty($validatedData['avenant_partner_commitments'])) {
+            if (in_array('partenaire', $validatedData['type_modification']) && !empty($validatedData['avenant_partner_commitments'])) {
                 $partnerCommitments = json_decode($validatedData['avenant_partner_commitments'], true);
                 foreach ($partnerCommitments as $commitmentData) {
                     $convPart = $avenant->partnerCommitments()->create([
