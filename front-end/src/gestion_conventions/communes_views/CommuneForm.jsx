@@ -232,7 +232,20 @@ const CommuneForm = ({
 };
 
 // PropTypes
-CommuneForm.propTypes = { /* ... Same as PartenaireForm ... */ };
-CommuneForm.defaultProps = { /* ... Same as PartenaireForm ... */ };
+CommuneForm.propTypes = {
+    itemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    onClose: PropTypes.func.isRequired,
+    onItemCreated: PropTypes.func,
+    onItemUpdated: PropTypes.func,
+    baseApiUrl: PropTypes.string,
+};
+
+CommuneForm.defaultProps = {
+    itemId: null,
+    onItemCreated: () => {},
+    onItemUpdated: () => {},
+    baseApiUrl: 'http://localhost:8000', // Ensure default is set
+};
+
 
 export default CommuneForm;

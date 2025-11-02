@@ -13,6 +13,7 @@ import ObservationForm from './gestion_conventions/observation_views/Observation
 // --- Layout Components ---
 import Sidebar from './gestion_conventions/components/sideBar';
 import Header from './gestion_conventions/components/headers';
+import SecteursPage from './gestion_conventions/secteurs_views/SecteursPage'; // <-- ADD THIS IMPORT
 
 // --- Page Components ---
 import Login from './gestion_conventions/Login';
@@ -41,7 +42,11 @@ import PartnerSummaryPage from './gestion_conventions/partenaire_sum_views/Partn
 import OrdreServicePage from './gestion_conventions/ordreservice_views/OrdreServicePage';
 import ActivityLogPage from './gestion_conventions/gestion_historique_views/ActivityLogPage';
 import ObservationsPage from './gestion_conventions/observation_views/ObservationPage';
-
+import AlertTypesPage from './gestion_conventions/alert_views/AlertTypesPage';
+import UserAlertSettingsPage from './gestion_conventions/alert_views/UserAlertSettingsPage';
+import AllAlertsPage from './gestion_conventions/alert_views/AllAlertsPage'; // <-- ADD THIS
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 // --- Constants & Axios Configuration ---
 const BASE_API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
@@ -202,6 +207,15 @@ function AppContent() {
 
     return (
         <>
+        <ToastContainer
+                position="bottom-right"
+                autoClose={false} // This is the key change: toasts will NOT auto-close
+                closeOnClick={false} // Prevents closing the toast when clicking on its body
+                newestOnTop={true}
+                hideProgressBar={true} // Progress bar is irrelevant without auto-close
+                draggable
+                theme="colored"
+            />
             <div style={{ display: 'flex' }} className={location.pathname.toLowerCase() === '/login' ? 'app-login-background' : ''}>
                 {showLayout && <Sidebar currentUser={currentUser} />}
                 <main className="main-content d-flex flex-column flex-grow-1">
@@ -226,6 +240,7 @@ function AppContent() {
                             <Route path='/programme' element={isAuthenticated ? <ProgrammesPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
                             <Route path='/axes-strategiques' element={isAuthenticated ? <DomainesPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
                             <Route path='/projet' element={isAuthenticated ? <ProjetsPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
+                            <Route path='/secteurs' element={isAuthenticated ? <SecteursPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
                             <Route path='/sousprojet' element={isAuthenticated ? <SousProjetsPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
                             <Route path='/commune' element={isAuthenticated ? <CommunesPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
                             <Route path='/province' element={isAuthenticated ? <ProvincesPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
@@ -236,6 +251,9 @@ function AppContent() {
                             <Route path='/engagements' element={isAuthenticated ? <EngagementsPage currentUser={currentUser}/> : <Navigate to="/login" replace />} />
                             <Route path='/users' element={isAuthenticated ? <UsersPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
                             <Route path='/roles' element={isAuthenticated ? <RolesPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
+                            <Route path='/alert-types' element={isAuthenticated ? <AlertTypesPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
+                            <Route path='/my-alert-settings' element={isAuthenticated ? <UserAlertSettingsPage /> : <Navigate to="/login" replace />} />
+                            <Route path='/all-notifications' element={isAuthenticated ? <AllAlertsPage /> : <Navigate to="/login" replace />} />
                             <Route path='/appel-offres' element={isAuthenticated ? <AppelOffrePage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
                             <Route path='/versementpp' element={isAuthenticated ? <VersementsPPPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />
                             <Route path='/finance/partner-summary' element={isAuthenticated ? <PartnerSummaryPage currentUser={currentUser} /> : <Navigate to="/login" replace />} />

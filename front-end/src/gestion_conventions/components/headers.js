@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 // --- Child Component Imports ---
 import UserDropdown from './UserDropdown';
 import ChangePasswordModal from './ChangePasswordModel';
+import NotificationBell from './NotificationBell'; // --- MODIFICATION START: Import the bell ---
 
 // --- Styling and Icons ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -66,6 +67,7 @@ export default function Header({ onLogout, currentUser, onAddObservationClick })
                 </div>
 
                 <div className="header-actions">
+                    <NotificationBell />
                     <div className="user-profile-section">
                         <span ref={triggerRef} onClick={toggleDropdown} className="icon-placeholder user-icon-container" title="Options de profil" role="button" tabIndex={0}>
                             <FontAwesomeIcon icon={faUserCircle} className="header-icon" />

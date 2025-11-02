@@ -34,10 +34,16 @@ use App\Http\Controllers\EngagementFinancierController;
 use App\Http\Controllers\VersementController;
 use App\Http\Controllers\OrdreServiceController;
 use App\Http\Controllers\OptionsController;
-
+use App\Http\Controllers\MaitreOuvrageController;
+use App\Http\Controllers\MaitreOuvrageDelegueController;
+use App\Http\Controllers\EngagementTypeController;
+use App\Http\Controllers\SecteurController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AppelOffreController;
 use App\Http\Controllers\Api\ActivityLogController;
+use App\Http\Controllers\AlertTypeController;
+use App\Http\Controllers\UserAlertSettingsController; // <-- ADD THIS
+use App\Http\Controllers\AlertController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,7 +63,8 @@ Route::put('/fichiers-joints/{fichier_joint}', [FichierJointController::class, '
 Route::get('/conventions/{convention_id}/commitment-details', [ConvPartController::class, 'getCommitmentsForConvention']);
 Route::get('/convparts/lookup', [ConvPartController::class, 'lookupDetails'])->name('convparts.lookup');
  Route::get('/conventions/options/cadre', [ConventionController::class, 'getCadreOptions']);
-
+ Route::get('/conventions/{convention}/partenaire-options', [ConventionController::class, 'getPartenaireOptions'])
+         ->middleware('permission:view conventions');
 Route::prefix('options')->group(function () {
  Route::get('/projets-et-sous-projets', [OptionsController::class, 'getProjetsAndSousProjets']);
     
@@ -108,7 +115,14 @@ Route::get('/users/options', [UserController::class, 'getOptions'])->name('api.u
     Route::apiResource('roles', RoleController::class)->middleware('permission:manage roles');
     Route::get('/permissions', [PermissionController::class, 'index'])->middleware('permission:manage roles');
     Route::put('/user/password', [UserController::class, 'updatePassword'])->name('api.user.password.update');
+    Route::apiResource('/alert-types', AlertTypeController::class);
+     Route::get('/user-alert-settings', [UserAlertSettingsController::class, 'index']);
+    Route::put('/user-alert-settings', [UserAlertSettingsController::class, 'update']);
+    Route::get('/alerts', [AlertController::class, 'index']);
+    Route::get('/alerts/unread-count', [AlertController::class, 'getUnreadCount']);
 
+    Route::post('/alerts/{alert}/mark-as-read', [AlertController::class, 'markAsRead']);
+    Route::post('/alerts/mark-all-as-read', [AlertController::class, 'markAllAsRead']);
     //---- logs history---/
     Route::middleware('permission:view history')->group(function(){
         Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('api.activity_log.index');
@@ -132,14 +146,36 @@ Route::get('/users/options', [UserController::class, 'getOptions'])->name('api.u
 Route::get('/projets/{projet_code}/locations', [ProjetController::class, 'getLocations'])
      ->name('projets.locations');
 
-    // --- Conventions ---
-    Route::get('/conventions', [ConventionController::class, 'index'])->middleware('permission:view conventions');
-    Route::post('/conventions', [ConventionController::class, 'store'])->middleware('permission:create conventions');
-    Route::get('/conventions/{convention}', [ConventionController::class, 'show'])->middleware('permission:view conventions');
-    Route::put('/conventions/{convention}', [ConventionController::class, 'update'])->middleware('permission:update conventions');
-    Route::delete('/conventions/{convention}', [ConventionController::class, 'destroy'])->middleware('permission:delete conventions');
-    Route::get('/conventions/{convention}/partenaire-options', [ConventionController::class, 'getPartenaireOptions'])
-        ->middleware('permission:view conventions|update conventions|create conventions|create versements_cp|update versements_cp');
+    // --- Maîtres d'Ouvrage ---
+    Route::get('/maitre-ouvrage', [MaitreOuvrageController::class, 'index'])->middleware('permission:view conventions');
+    Route::post('/maitre-ouvrage', [MaitreOuvrageController::class, 'store'])->middleware('permission:create conventions');
+    Route::get('/maitre-ouvrage/{maitre_ouvrage}', [MaitreOuvrageController::class, 'show'])->middleware('permission:view conventions');
+    Route::put('/maitre-ouvrage/{maitre_ouvrage}', [MaitreOuvrageController::class, 'update'])->middleware('permission:update conventions');
+    Route::delete('/maitre-ouvrage/{maitre_ouvrage}', [MaitreOuvrageController::class, 'destroy'])->middleware('permission:delete conventions');
+
+    // --- Maîtres d'Ouvrage Délégués ---
+    Route::get('/maitre-ouvrage-delegue', [MaitreOuvrageDelegueController::class, 'index'])->middleware('permission:view conventions');
+    Route::post('/maitre-ouvrage-delegue', [MaitreOuvrageDelegueController::class, 'store'])->middleware('permission:create conventions');
+    Route::get('/maitre-ouvrage-delegue/{maitre_ouvrage_delegue}', [MaitreOuvrageDelegueController::class, 'show'])->middleware('permission:view conventions');
+    Route::put('/maitre-ouvrage-delegue/{maitre_ouvrage_delegue}', [MaitreOuvrageDelegueController::class, 'update'])->middleware('permission:update conventions');
+    Route::delete('/maitre-ouvrage-delegue/{maitre_ouvrage_delegue}', [MaitreOuvrageDelegueController::class, 'destroy'])->middleware('permission:delete conventions');
+
+    // --- Maîtres d'Ouvrage Options Routes (using different path to avoid conflicts) ---
+    Route::get('/options/maitre-ouvrage', [MaitreOuvrageController::class, 'getOptions'])->middleware('permission:create conventions|update conventions|view conventions');
+    Route::get('/options/maitre-ouvrage-delegue', [MaitreOuvrageDelegueController::class, 'getOptions'])->middleware('permission:create conventions|update conventions|view conventions');
+    
+    // --- Engagement Types ---
+    Route::apiResource('engagement-types', EngagementTypeController::class)->middleware([
+        'index'   => 'permission:view conventions',
+        'store'   => 'permission:create conventions',
+        'show'    => 'permission:view conventions',
+        'update'  => 'permission:update conventions',
+        'destroy' => 'permission:delete conventions',
+    ]);
+    
+    // Test routes to verify controllers work
+    Route::get('/test-maitre-ouvrage', [MaitreOuvrageController::class, 'getOptions']);
+    Route::get('/test-maitre-ouvrage-delegue', [MaitreOuvrageDelegueController::class, 'getOptions']);
 
     // --- Partenaires ---
     Route::apiResource('partenaires', PartenaireController::class)
@@ -264,6 +300,13 @@ Route::put('/fichiers-joints-os/{fichierJoint}', [FichierJointOsController::clas
         'update'  => 'permission:update provinces',
         'destroy' => 'permission:delete provinces',
     ]);
+    Route::apiResource('secteurs', SecteurController::class)->middleware([
+    'index'   => 'permission:view secteurs',
+    'store'   => 'permission:create secteurs',
+    'show'    => 'permission:view secteurs',
+    'update'  => 'permission:update secteurs',
+    'destroy' => 'permission:delete secteurs',
+]);
 
     // --- SousProjets ---
     Route::apiResource('sousprojets', SousProjetController::class)->middleware([
@@ -276,6 +319,13 @@ Route::put('/fichiers-joints-os/{fichierJoint}', [FichierJointOsController::clas
 
     // --- ConvPart ---
     Route::apiResource('convparts', ConvPartController::class)->middleware(['permission:view conventions|create conventions|update conventions']);
+    Route::apiResource('conventions', ConventionController::class)->middleware([
+        'index'   => 'permission:view conventions',
+        'store'   => 'permission:create conventions',
+        'show'    => 'permission:view conventions',
+        'update'  => 'permission:update conventions',
+        'destroy' => 'permission:delete conventions',
+    ]);
 
     // --- Engagements Financiers (for Projets) ---
     Route::apiResource('engagements-financiers', EngagementFinancierController::class)
@@ -322,6 +372,8 @@ Route::put('/fichiers-joints-os/{fichierJoint}', [FichierJointOsController::clas
         Route::get('/conventions', [ConventionController::class, 'getOptions'])
              ->name('conventions')
              ->middleware('permission:create projets|update projets|create avenants|update avenants|create marches|update marches|create ordres_service|update ordres_service|view conventions|update conventions|create conventions|create versements_cp|update versements_cp');
+Route::get('/secteurs', [SecteurController::class, 'getOptions'])
+             ->middleware('permission:create conventions|update conventions|create projets|update projets');
 
         Route::get('/programmes', [ProgrammeController::class, 'getOptions'])
              ->name('programmes')
@@ -363,6 +415,11 @@ Route::put('/fichiers-joints-os/{fichierJoint}', [FichierJointOsController::clas
         Route::get('/marches-publics', [MarchePublicController::class, 'getOptions'])
             ->name('marches-publics') // Route name: options.marches-publics
             ->middleware('permission:create bon_commande|update bon_commande|view bon_commande');
+        Route::get('/maitres-ouvrage-delegues',[MaitreOuvrageDelegueController::class,'getOptions'])
+        ->middleware('permission:create conventions|update conventions|create projets|update projets');;
+        Route::get('/engagement-types', [EngagementTypeController::class, 'getOptions'])
+            ->name('engagement-types')
+            ->middleware('permission:create conventions|update conventions|view conventions');
     }); // End options prefix group
 
 }); // End auth:sanctum middleware group

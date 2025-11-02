@@ -133,9 +133,11 @@ class MarchePublicController extends Controller
             'date_notification' => 'nullable|date_format:Y-m-d|after_or_equal:date_limite_offres',
             'date_debut_execution' => 'nullable|date_format:Y-m-d|after_or_equal:date_notification',
             'duree_marche' => 'nullable|integer|min:0',
+            'date_visa_tresorerie' => 'nullable|date_format:Y-m-d',
+            'date_approbation_president' => 'nullable|date_format:Y-m-d',
             'projectable' => ['nullable', 'string', 'regex:/^(projet|sous-projet)_[a-zA-Z0-9-]+$/'],
             'statut' => ['nullable', Rule::in(['En préparation', 'En cours', 'Terminé', 'Résilié'])],
-            'id_convention' => ['nullable', 'integer', Rule::exists('conventions', 'id')], // Good practice to add exists rule
+            'id_convention' => ['nullable', 'integer', Rule::exists('convention', 'id')], // Good practice to add exists rule
             'ref_appelOffre' => ['nullable', 'integer', Rule::exists('appel_offre', 'id')],
             'avancement_physique' => 'nullable|numeric',
             'avancement_financier' => 'nullable|numeric',
@@ -328,6 +330,8 @@ class MarchePublicController extends Controller
             'procedure_passation' => 'nullable|string|max:100', // Make required if needed
             'mode_passation' => 'nullable|string', // Make required if needed
             'budget_previsionnel' => 'nullable|numeric|min:0',
+            'date_visa_tresorerie' => 'nullable|date_format:Y-m-d',
+            'date_approbation_president' => 'nullable|date_format:Y-m-d',
             'projectable' => ['nullable', 'string', 'regex:/^(projet|sous-projet)_[a-zA-Z0-9-]+$/'],
             'montant_attribue' => 'nullable|numeric|min:0',
             'source_financement' => 'nullable|string|max:255',

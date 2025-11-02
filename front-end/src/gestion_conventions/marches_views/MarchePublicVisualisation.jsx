@@ -107,6 +107,7 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                     setLotsData(fetchedMarcheData.lots || []);
                     const generalFiles = fetchedMarcheData.fichiers_joints_generaux || [];
                     const allLotFiles = (fetchedMarcheData.lots || []).flatMap(lot => lot.fichiers_joints || []);
+                    console.log("Données du marché reçues par le composant:", fetchedMarcheData);
                     setFilesData([...generalFiles, ...allLotFiles]);
                 } else {
                     throw new Error("Données principales du marché non trouvées ou invalides.");
@@ -271,6 +272,8 @@ const MarchePublicVisualisation = ({ itemId, onClose, baseApiUrl }) => {
                             {renderDetail2("Date Début Exécution", marcheData.date_debut_execution, formatDate)}
                             {renderDetail2("Durée (jours)", marcheData.duree_marche)}
                             {renderDetail2("Date Engagement Trésorerie", marcheData.date_engagement_tresorerie, formatDate)}
+                            {renderDetail2("Date Visa Trésorerie", marcheData.date_visa_tresorerie, formatDate)}
+                            {renderDetail2("Date Approbation Président", marcheData.date_approbation_president, formatDate)}
                          </div>
                      </Col>
                 </Row>

@@ -34,6 +34,8 @@
     "react-scripts": "5.0.1",
     "react-select": "^5.10.1",
     "react-toastify": "^11.0.5",
+    "timeago-react": "^3.0.7",
+    "timeago.js": "^4.0.2",
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"
   },

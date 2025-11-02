@@ -51,6 +51,7 @@ class Kernel extends HttpKernel
             // FOR TOKEN AUTH: Ensure NO session, cookie, CSRF, or EnsureFrontendRequestsAreStateful middleware here
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api', // Use correct alias 'api' for throttling
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\CacheApiResponse::class,
         ],
     ];
 

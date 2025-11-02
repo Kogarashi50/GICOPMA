@@ -83,6 +83,7 @@ const DynamicTable = ({
     onEdit, onDelete,
     // Pass down date formatters if needed by parent/columns
     formatDate: parentFormatDate,
+    isDataLoading: isParentLoading = false,
     formatDateSimple: parentFormatDateSimple,
 }) => {
     // --- State ---
@@ -101,7 +102,8 @@ const DynamicTable = ({
     const [viewingItemId, setViewingItemId] = useState(null);
     const [editingItemId, setEditingItemId] = useState(null);
     const [showCreateForm, setShowCreateForm] = useState(false);
-        const [showObservationModal, setShowObservationModal] = useState(false); // <-- Add this state
+    const [showObservationModal, setShowObservationModal] = useState(false); // <-- Add this state
+    const showCombinedLoading = isLoading || isParentLoading;
 
     // --- End State ---
 
@@ -420,7 +422,7 @@ const DynamicTable = ({
                                         </th> ))}</tr> ))}
                                 </thead>
                                 <tbody>
-                                    {isLoading ? ( <tr><td colSpan={table?.getVisibleLeafColumns().length || 1} className="text-center py-4"><FontAwesomeIcon icon={faSpinner} spin size="2x" className="text-secondary" /><p>Chargement...</p></td></tr> )
+                                    {showCombinedLoading ? ( <tr><td colSpan={table?.getVisibleLeafColumns().length || 1} className="text-center py-4"><FontAwesomeIcon icon={faSpinner} spin size="2x" className="text-secondary" /><p>Chargement...</p></td></tr> )
                                     : table && table.getRowModel().rows.length > 0 ? ( table.getRowModel().rows.map(row => (
                                         <tr key={row.id} className={viewingItemId === row.original[identifierKey] || editingItemId === row.original[identifierKey] ? 'table-active' : ''}>
                                             {row.getVisibleCells().map(cell => ( <td key={cell.id} className="py-2 px-3 small" style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : undefined, minWidth: cell.column.columnDef.minSize, maxWidth: cell.column.columnDef.maxSize, }} title={typeof cell.getValue() === 'string' || typeof cell.getValue() === 'number' ? String(cell.getValue()) : undefined} >{flexRender(cell.column.columnDef.cell, cell.getContext())}</td> ))}
@@ -431,7 +433,7 @@ const DynamicTable = ({
                         </div>
                     </div>
                     {/* Pagination */}
-                    { !isLoading && table && table.getPageCount() > 0 && (
+                    { !showCombinedLoading && table && table.getPageCount() > 0 && (
                         <nav aria-label="Table pagination" className="mt-auto pt-2 flex-shrink-0 custom-minimal-pagination">
                             <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div className="text-muted small"> {table.getFilteredRowModel().rows.length} sur {rawData.length} {itemNamePlural.toLowerCase()} (Page {table.getState().pagination.pageIndex + 1} sur {table.getPageCount()}) </div>

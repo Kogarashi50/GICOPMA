@@ -1,5 +1,3 @@
-// src/pages/ConventionsPage.jsx (Full Copy-Paste Version)
-
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import DynamicTable from '../components/DynamicTable';
 import ConventionForm from './ConventionForm';
@@ -20,11 +18,11 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
+import './conventions.css';
 
 // --- Helpers ---
 
 const STATUT_OPTIONS = [
-    { value: "en cours d'approbation", label: "En Cours d'Approbation", color: "warning"  },
     { value: "approuvé",             label: "Approuvé",             color: "success"  },
     { value: "non visé",             label: "Non Visé",             color: "danger"   },
     { value: "en cours de visa",     label: "En Cours de Visa",     color: "warning"  },
@@ -45,6 +43,20 @@ const createSelectOptions = (data, key) => {
     return uniqueValues.map(val => ({ value: val, label: val }));
 };
 
+// --- Custom Filter Functions ---
+
+const exactMatchFilterFn = (row, columnId, filterValue) => {
+    const rowValue = row.getValue(columnId);
+
+    // If filter value is empty, show all rows
+    if (filterValue === null || filterValue === undefined) {
+        return true;
+    }
+
+    // Explicitly convert both to strings for a safe, type-agnostic comparison
+    return String(rowValue) === String(filterValue);
+};
+
 const costRangeFilterFn = (row, columnId, filterValue) => {
     if (typeof filterValue !== 'object' || filterValue === null) return true;
     const cost = parseFloat(String(row.getValue(columnId)).replace(/[^0-9.-]/g, ''));
@@ -55,40 +67,128 @@ const costRangeFilterFn = (row, columnId, filterValue) => {
     const isMaxOk = maxNum === undefined || cost <= maxNum;
     return isMinOk && isMaxOk;
 };
-// --- End Helpers ---
 
+const engagementTypeFilterFn = (row, columnId, filterValue) => {
+    if (filterValue === null || filterValue === undefined) return true;
+    const commitments = row.original.partner_commitments || [];
+    return commitments.some(commitment => {
+        const typeMatches = [
+            commitment.engagement_type_id === filterValue,
+            commitment.engagement_type?.id === filterValue,
+            String(commitment.engagement_type_id) === String(filterValue)
+        ];
+        return typeMatches.some(match => match === true);
+    });
+};
+
+const maitreOuvrageDelegueFilterFn = (row, columnId, filterValue) => {
+    if (filterValue === null || filterValue === undefined || filterValue === '') return true;
+    const delegues = row.original.maitres_ouvrage_delegues || [];
+    const fv = (typeof filterValue === 'object' && filterValue !== null)
+        ? (filterValue.value ?? filterValue.id ?? filterValue)
+        : filterValue;
+    const fvs = String(fv).trim().toLowerCase();
+    if (!fvs) return true;
+    return delegues.some(d => {
+        const id = d?.id ?? d?.Id ?? d?.value;
+        const nom = (d?.nom ?? d?.Nom ?? d?.label ?? '').toString().trim();
+        if (id !== undefined && String(id).toLowerCase() === fvs) return true;
+        if (nom && nom.toLowerCase() === fvs) return true;
+        return false;
+    });
+};
+
+const locationFilterFn = (row, columnId, filterValue) => {
+    if (filterValue === null || filterValue === undefined) {
+        return true;
+    }
+    const locations = row.getValue(columnId) || []; 
+    const filterId = String(filterValue);
+    return locations.some(loc => String(loc?.value) === filterId);
+};
 
 // --- Component Definition ---
 const ConventionsPage = () => {
     const BASE_API_URL = 'http://localhost:8000/api';
     const [searchParams, setSearchParams] = useSearchParams();
     const isCreating = searchParams.get('action') === 'create';
+ const action = searchParams.get('action');
+    const itemId = searchParams.get('id');
 
-    // --- State for Select Options & Lookups ---
-    const [allPartenairesOptions, setAllPartenairesOptions] = useState([]);
-    const [anneeOptions, setAnneeOptions] = useState([]);
-    const [statutOptions] = useState(STATUT_OPTIONS);
-    const [maitreOuvrageOptions, setMaitreOuvrageOptions] = useState([]);
+    // This function will be used by the child components to return to the table view
+    const handleClose = () => {
+        setSearchParams({}); // Clears all URL parameters
+    };
     const [optionsLoading, setOptionsLoading] = useState(true);
+    const [options, setOptions] = useState({
+        partenaires: [],
+        annees: [],
+        maitresOuvrage: [],
+        maitresOuvrageDelegues: [],
+        secteurs: [],
+        provinces: [],
+        statuts: STATUT_OPTIONS,
+        engagementTypes: [],
+        sous_types: [],
+    });
 
-    // --- Fetch Options for Selects & Lookups ---
+    const [filters, setFilters] = useState({
+        annee: null,
+        statut: null,
+        type: null,
+        maitreOuvrage: null,
+        maitreOuvrageDelegue: null,
+        secteur: null,
+        sous_type: null, // <-- ADD THIS
+
+        province: null,
+        engagementType: null,
+        coutGlobalMin: '',
+        coutGlobalMax: ''
+    });
+
     useEffect(() => {
         const fetchFilterOptions = async () => {
             setOptionsLoading(true);
             try {
-                const [partRes, convRes] = await Promise.all([
+                const [partRes, convRes, moRes, modRes, sectRes, provRes, engTypeRes] = await Promise.all([
                     axios.get(`${BASE_API_URL}/partenaires`, { withCredentials: true }),
-                    axios.get(`${BASE_API_URL}/conventions`, { withCredentials: true })
+                    axios.get(`${BASE_API_URL}/conventions`, { withCredentials: true }),
+                    axios.get(`${BASE_API_URL}/options/maitre-ouvrage`, { withCredentials: true }),
+                    axios.get(`${BASE_API_URL}/options/maitres-ouvrage-delegues`, { withCredentials: true }),
+                    axios.get(`${BASE_API_URL}/options/secteurs`, { withCredentials: true }),
+                    axios.get(`${BASE_API_URL}/options/provinces`, { withCredentials: true }),
+                    axios.get(`${BASE_API_URL}/options/engagement-types`, { withCredentials: true })
                 ]);
-                
-                const partData = partRes.data.partenaires || partRes.data || [];
-                setAllPartenairesOptions(partData.map(p => ({ value: p.Id, label: p.Description })));
+                const conventionsData = convRes.data?.conventions || [];
 
-                const conventions = convRes.data?.conventions || [];
-                setAnneeOptions(createSelectOptions(conventions, 'Annee_Convention'));
-                setMaitreOuvrageOptions(createSelectOptions(conventions, 'Maitre_Ouvrage'));
+                setOptions(prev => ({
+                    ...prev,
+                    partenaires: (partRes.data.partenaires || []).map(p => ({ value: p.Id, label: p.Description })),
+                    annees: createSelectOptions(convRes.data?.conventions || [], 'Annee_Convention'),
+                    secteurs: (Array.isArray(sectRes.data) ? sectRes.data : []).map(s => ({
+                        value: s.description_fr,
+                        label: s.description_fr,
+                    })),
+                    sous_types: createSelectOptions(conventionsData, 'sous_type'), // Populate here
+
+                    maitresOuvrage:(Array.isArray(moRes.data) ? moRes.data : []).map((m, idx) => {
+                        const rawId = m.id ?? m.Id ?? m.value;
+                        const label = m.nom ?? m.Nom ?? m.label ?? String(rawId ?? `${idx}`);
+                        const value = rawId !== undefined && rawId !== null ? rawId : label;
+                        return { value, label };
+                    }),
+                    maitresOuvrageDelegues: (Array.isArray(modRes.data) ? modRes.data : []).map((m, idx) => {
+                        const rawId = m.id ?? m.Id ?? m.value;
+                        const label = m.nom ?? m.Nom ?? m.label ?? String(rawId ?? `delegue_${idx}`);
+                        const value = rawId !== undefined && rawId !== null ? rawId : label;
+                        return { value, label };
+                    }),
+                    provinces: Array.isArray(provRes.data) ? provRes.data : [],
+                    engagementTypes: Array.isArray(engTypeRes.data) ? engTypeRes.data : []
+                }));
             } catch (error) {
-                console.error("Error fetching data for filter options:", error);
+                console.error("Error fetching filter options:", error);
             } finally {
                 setOptionsLoading(false);
             }
@@ -96,8 +196,33 @@ const ConventionsPage = () => {
         fetchFilterOptions();
     }, [BASE_API_URL]);
 
+    const handleFilterChange = useCallback((filterName, selectedOption, column) => {
+        setFilters(prev => ({ ...prev, [filterName]: selectedOption }));
 
-    // --- Column Definition ---
+        if (column) {
+            const filterValue = selectedOption?.value ?? undefined;
+            column.setFilterValue(filterValue);
+        }
+    }, []);
+
+    const resetFilters = useCallback((table) => {
+        setFilters({
+            annee: null,
+            statut: null,
+            type: null,
+            sous_type: null, // <-- ADD THIS
+
+            maitreOuvrage: null,
+            maitreOuvrageDelegue: null,
+            secteur: null,
+            province: null,
+            engagementType: null,
+            coutGlobalMin: '',
+            coutGlobalMax: ''
+        });
+        table.resetColumnFilters();
+    }, []);
+
     const conventionColumns = useMemo(() => [
         {
             accessorKey: 'Code',
@@ -133,16 +258,24 @@ const ConventionsPage = () => {
             size: 250, minSize: 150, maxSize: 300
         },
         {
-            accessorKey: 'type',
-            header: 'Type',
-            cell: info => {
-                const type = info.getValue();
-                if (!type) return '-';
-                const color = type === 'cadre' ? 'info' : 'primary';
-                return <Badge bg={color} className="w-100 text-capitalize">{type}</Badge>;
-            },
+    accessorKey: 'type',
+    header: 'Type',
+    cell: info => {
+        const type = info.getValue();
+        if (!type) return '-';
+        let color = 'primary'; // Default
+        if (type === 'cadre') color = 'info';
+        if (type === 'convention') color = 'secondary'; // New
+        if (type === 'maitrise d\'ouvrage delegue') color = 'dark'; // New
+        
+        return <Badge bg={color} className="w-100 text-capitalize">{type}</Badge>;
+    }},
+    {
+            accessorKey: 'sous_type',
+            header: 'Sous-type',
+            cell: info => info.getValue() || '-',
             meta: { enableGlobalFilter: true },
-            size: 110,
+            size: 180,
             filterFn: 'equalsString'
         },
         {
@@ -205,12 +338,73 @@ const ConventionsPage = () => {
             size: 40, minSize: 30, maxSize: 50
         },
         {
-            accessorKey: 'Maitre_Ouvrage',
+            id: 'Maitre_Ouvrage',
             header: 'M. Ouvrage',
-            cell: info => <div className="text-truncate" style={{ maxWidth: '200px' }} title={info.getValue()}>{info.getValue() || '-'}</div>,
+            accessorFn: row => row.Maitre_Ouvrage,
+            cell: info => {
+                const maitreOuvrageId = info.getValue();
+                if (maitreOuvrageId === null || maitreOuvrageId === undefined) return '-';
+                
+                const maitreOuvrage = options.maitresOuvrage.find(mo => mo && String(mo.value) === String(maitreOuvrageId));
+                
+                const label = maitreOuvrage?.label ?? `ID: ${maitreOuvrageId}`;
+                return <div className="text-truncate" style={{ maxWidth: '100px' }} title={label}>{label}</div>;
+            },
             meta: { enableGlobalFilter: true },
-            filterFn: 'equalsString'
+            filterFn: 'exactMatch'
         },
+        {
+            id: 'secteur',
+            header: 'Secteur',
+            accessorFn: row => row.secteur?.description_fr,
+            cell: info => <div className="text-truncate" title={info.getValue()}>{info.getValue() || '-'}</div>,
+            meta: { enableGlobalFilter: true },
+            filterFn: 'equalsString',
+            size: 150
+        },
+        {
+            id: 'provinces',
+            header: 'Province(s)',
+            accessorFn: row => {
+                const locData = row.localisation;
+                if (!locData) return [];
+                let provinceIds = [];
+                const trimmedData = String(locData).trim();
+                if (trimmedData.startsWith('[') && trimmedData.endsWith(']')) {
+                    try {
+                        const parsed = JSON.parse(trimmedData);
+                        if (Array.isArray(parsed)) provinceIds = parsed;
+                    } catch (e) {
+                        console.error(`Failed to parse JSON-like localisation data: "${trimmedData}"`, e);
+                        return [];
+                    }
+                } else {
+                    provinceIds = trimmedData
+                        .split(';')
+                        .map(id => parseInt(id.trim(), 10))
+                        .filter(id => !isNaN(id));
+                }
+                if (!Array.isArray(provinceIds) || provinceIds.length === 0) return [];
+                return provinceIds
+                    .map(id => options.provinces.find(p => p.value === id))
+                    .filter(Boolean);
+            },
+            cell: info => {
+                const provinces = info.getValue() || [];
+                if (provinces.length === 0) return '-';
+                return (
+                    <Stack direction="horizontal" gap={1} className="flex-wrap">
+                        {provinces.map(p => (
+                            <Badge key={p.value} bg="secondary" className="text-truncate">
+                                {p.label || p.Description || p.nom}
+                            </Badge>
+                        ))}
+                    </Stack>
+                );
+            },
+            filterFn: 'location',
+            size: 200
+        }, 
         {
             accessorKey: 'Annee_Convention',
             header: 'Année',
@@ -227,7 +421,52 @@ const ConventionsPage = () => {
             meta: { enableGlobalFilter: false },
             filterFn: 'costRange'
         },
-        // Hidden file-based filters/search (align with Appel d'Offre)
+        {
+            id: 'engagement_types',
+            header: 'Types Engagement',
+            accessorFn: row => row.partner_commitments,
+            cell: info => {
+                const commitments = info.getValue() || [];
+                const types = [...new Set(commitments.map(c => c.engagement_type_label))];
+                return (
+                    <Stack direction="horizontal" gap={1}>
+                        {types.map(type => (
+                            <Badge 
+                                key={type} 
+                                bg={type === 'Financier' ? 'success' : 
+                                    type === 'Assistance Technique' ? 'info' : 
+                                    type === 'Mise à disposition du foncier' ? 'warning' : 'secondary'}
+                                className="text-truncate"
+                                style={{ maxWidth: '100px' }}
+                            >
+                                {type}
+                            </Badge>
+                        ))}
+                    </Stack>
+                );
+            },
+            filterFn: 'engagementType',
+            size: 200
+        },
+        {
+            id: 'maitres_ouvrage_delegues',
+            header: 'M.O. Délégués',
+            accessorFn: row => row.maitres_ouvrage_delegues,
+            cell: info => {
+                const delegues = info.getValue() || [];
+                return (
+                    <Stack direction="horizontal" gap={1}>
+                        {delegues.map((d, idx) => (
+                            <Badge key={idx} bg="info" className="text-truncate">
+                                {d.nom}
+                            </Badge>
+                        ))}
+                    </Stack>
+                );
+            },
+            filterFn: 'maitreOuvrageDelegue',
+            size: 200
+        },
         { id: 'files_title', header: 'Titre Fichier (filtre)', size: 0, accessorFn: row => row, meta: { enableGlobalFilter: false }, enableHiding: true, filterFn: 'fileTitleIncludes' },
         { id: 'files_type', header: 'Type Fichier (filtre)', size: 0, accessorFn: row => row, meta: { enableGlobalFilter: false }, enableHiding: true, filterFn: 'fileTypeIncludes' },
         { id: 'files_search', header: 'Recherche Fichiers', size: 0, accessorFn: row => {
@@ -236,141 +475,176 @@ const ConventionsPage = () => {
             return files.map(f => [f.Intitule, f.file_name, f.file_type].filter(Boolean).join(' ')).join(' | ');
         }, meta: { enableGlobalFilter: true }, enableHiding: true },
         { id: 'has_files', header: 'A des fichiers', size: 0, accessorFn: row => row, meta: { enableGlobalFilter: false }, enableHiding: true, filterFn: 'hasFiles' },
-    ], [allPartenairesOptions]);
+    ], [options.provinces, options.maitresOuvrage]);
 
-    // --- State for Filters ---
-    const [filterAnnee, setFilterAnnee] = useState(null);
-    const [filterStatut, setFilterStatut] = useState(null);
-    const [filterType, setFilterType] = useState(null);
-    const [filterMaitreOuvrage, setFilterMaitreOuvrage] = useState(null);
-    const [filterCoutGlobalMin, setFilterCoutGlobalMin] = useState('');
-    const [filterCoutGlobalMax, setFilterCoutGlobalMax] = useState('');
-
-    // --- Filter Rendering Function ---
     const renderConventionFilters = useCallback((table) => {
-        const anneeColumn = table.getColumn('Annee_Convention');
-        const statutColumn = table.getColumn('Statut');
-        const typeColumn = table.getColumn('type');
-        const maitreOuvrageColumn = table.getColumn('Maitre_Ouvrage');
-        const coutGlobalColumn = table.getColumn('Cout_Global');
-        const filesTitleColumn = table.getColumn('files_title');
-        const filesTypeColumn = table.getColumn('files_type');
-        const hasFilesColumn = table.getColumn('has_files');
+        const columns = {
+            annee: table.getColumn('Annee_Convention'),
+            statut: table.getColumn('Statut'),
+            type: table.getColumn('type'),
+            sous_type: table.getColumn('sous_type'), // <-- Add accessor
 
-        const handleSelectChange = (setter, column, selectedOption) => {
-            setter(selectedOption);
-            column?.setFilterValue(selectedOption?.value ?? undefined);
+            maitreOuvrage: table.getColumn('Maitre_Ouvrage'),
+            secteur: table.getColumn('secteur'),
+            province: table.getColumn('provinces'),
+            coutGlobal: table.getColumn('Cout_Global'),
+            filesTitle: table.getColumn('files_title'),
+            filesType: table.getColumn('files_type'),
+            hasFiles: table.getColumn('has_files'),
+            engagementType: table.getColumn('engagement_types'),
+            maitreOuvrageDelegue: table.getColumn('maitres_ouvrage_delegues')
         };
         
-        const applyCostFilters = () => {
-            coutGlobalColumn?.setFilterValue({ min: filterCoutGlobalMin, max: filterCoutGlobalMax });
+        const selectStyles = { 
+            control: base => ({ ...base, minHeight: '31px', fontSize: '0.875rem' }) 
         };
-
-        const resetFilters = () => {
-            setFilterAnnee(null);
-            setFilterStatut(null);
-            setFilterType(null);
-            setFilterMaitreOuvrage(null);
-            setFilterCoutGlobalMin('');
-            setFilterCoutGlobalMax('');
-            table.resetColumnFilters();
-        };
-
-        const typeOptions = [
-            { value: 'cadre', label: 'Cadre' },
-            { value: 'specifique', label: 'Spécifique' }
-        ];
-
-        const selectStyles = { control: base => ({ ...base, minHeight: '31px', fontSize: '0.875rem' }) };
 
         return (
-            <Form className="p-3 border bg-light rounded mb-3">
-                <Row className="g-3 align-items-end">
-                    <Col xs={12}>
-                        <Form.Group controlId="filterType">
-                            <Form.Label size="sm" className="mb-1">Type</Form.Label>
-                            <Select options={typeOptions} value={filterType} onChange={(opt) => handleSelectChange(setFilterType, typeColumn, opt)} placeholder="Tous" isClearable isSearchable={false} styles={selectStyles}/>
-                        </Form.Group>
-                    </Col>
-                    <Col xs={12}>
-                        <Form.Group controlId="filterAnnee">
-                            <Form.Label size="sm" className="mb-1">Année</Form.Label>
-                            <Select options={anneeOptions} value={filterAnnee} onChange={(opt) => handleSelectChange(setFilterAnnee, anneeColumn, opt)} placeholder="Toutes" isClearable isSearchable={false} styles={selectStyles} isLoading={optionsLoading}/>
-                        </Form.Group>
-                    </Col>
-                    <Col xs={12}>
-                        <Form.Group controlId="filterStatut">
-                            <Form.Label size="sm" className="mb-1">Statut</Form.Label>
-                            <Select options={statutOptions} value={filterStatut} onChange={(opt) => handleSelectChange(setFilterStatut, statutColumn, opt)} placeholder="Tous" isClearable isSearchable={false} styles={selectStyles}/>
-                        </Form.Group>
-                    </Col>
-                    <Col xs={12}>
-                         <Form.Group controlId="filterMaitreOuvrage">
-                            <Form.Label size="sm" className="mb-1">Maitre Ouvrage</Form.Label>
-                            <Select options={maitreOuvrageOptions} value={filterMaitreOuvrage} onChange={(opt) => handleSelectChange(setFilterMaitreOuvrage, maitreOuvrageColumn, opt)} placeholder="Tous" isClearable isSearchable styles={selectStyles} isLoading={optionsLoading}/>
-                        </Form.Group>
-                    </Col>
-                     <Col xs={12}>
-                         <Form.Group controlId="filterCoutGlobal">
-                            <Form.Label size="sm" className="mb-1">Coût Global (Min-Max)</Form.Label>
-                             <InputGroup size="sm">
-                                 <Form.Control type="number" placeholder="Min" value={filterCoutGlobalMin} onChange={(e) => setFilterCoutGlobalMin(e.target.value)} onBlur={applyCostFilters} />
-                                 <Form.Control type="number" placeholder="Max" value={filterCoutGlobalMax} onChange={(e) => setFilterCoutGlobalMax(e.target.value)} onBlur={applyCostFilters} />
-                             </InputGroup>
-                         </Form.Group>
-                     </Col>
-                    <Col xs={12}>
-                        <Form.Group controlId="filterFilesTitleConv">
-                            <Form.Label size="sm" className="mb-1">Titre du fichier</Form.Label>
-                            <Form.Control size="sm" type="text" placeholder="Contient..." value={filesTitleColumn?.getFilterValue() || ''} onChange={(e) => filesTitleColumn?.setFilterValue(e.target.value || undefined)} />
-                        </Form.Group>
-                    </Col>
-                    <Col xs={12}>
-                        <Form.Group controlId="filterFilesTypeConv">
-                            <Form.Label size="sm" className="mb-1">Type de fichier</Form.Label>
-                            <Form.Control size="sm" type="text" placeholder="ex: pdf, word, image..." value={filesTypeColumn?.getFilterValue() || ''} onChange={(e) => filesTypeColumn?.setFilterValue(e.target.value || undefined)} />
-                        </Form.Group>
-                    </Col>
-                    <Col xs={12}>
-                        <Form.Group controlId="filterHasFilesConv">
-                            <Form.Check type="switch" id="has-files-conv-switch" label="Afficher uniquement les conventions avec fichiers" checked={Boolean(hasFilesColumn?.getFilterValue())} onChange={(e) => hasFilesColumn?.setFilterValue(e.target.checked || undefined)} />
-                        </Form.Group>
-                    </Col>
-                    <Col xs={12} className="d-flex justify-content-end">
-                        <Button variant="outline-secondary" size="sm" onClick={resetFilters} title="Réinitialiser les filtres">
-                             <FontAwesomeIcon icon={faTimes} />
-                        </Button>
-                    </Col>
-                </Row>
+            <Form className="convention-filters border bg-light rounded mb-3">
+                <div className="filters-content">
+                    <Row className="g-3">
+                        <Col xs={12}>
+                            <Form.Group controlId="filterType">
+                                <Form.Label size="sm" className="mb-1">Type</Form.Label>
+                                <Select 
+                                    options={[{ value: 'cadre', label: 'Cadre' }, { value: 'specifique', label: 'Spécifique' }
+                                           ,{ value: 'convention', label: 'Convention' }, // <-- ADD
+                                        { value: 'maitrise d\'ouvrage delegue', label: 'M.O. Déléguée' } // <-- ADD
+                                    ]}
+                                    value={filters.type}
+                                    onChange={(opt) => handleFilterChange('type', opt, columns.type)}
+                                    placeholder="Tous" isClearable styles={selectStyles}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col xs={12}>
+                            <Form.Group controlId="filterSousType">
+                                <Form.Label size="sm" className="mb-1">Sous-type</Form.Label>
+                                <Select 
+                                    options={options.sous_types}
+                                    value={filters.sous_type}
+                                    onChange={(opt) => handleFilterChange('sous_type', opt, columns.sous_type)}
+                                    placeholder="Tous" isClearable styles={selectStyles}
+                                    isLoading={optionsLoading}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col xs={12}>
+                            <Form.Group controlId="filterAnnee">
+                                <Form.Label size="sm" className="mb-1">Année</Form.Label>
+                                <Select options={options.annees} value={filters.annee} onChange={(opt) => handleFilterChange('annee', opt, columns.annee)} placeholder="Toutes" isClearable isSearchable={false} styles={selectStyles} isLoading={optionsLoading}/>
+                            </Form.Group>
+                        </Col>
+                        <Col xs={12}>
+                            <Form.Group controlId="filterStatut">
+                                <Form.Label size="sm" className="mb-1">Statut</Form.Label>
+                                <Select options={options.statuts} value={filters.statut} onChange={(opt) => handleFilterChange('statut', opt, columns.statut)} placeholder="Tous" isClearable isSearchable={false} styles={selectStyles}/>
+                            </Form.Group>
+                        </Col>
+                         <Col xs={12}>
+                             <Form.Group controlId="filterMaitreOuvrage">
+                                <Form.Label size="sm" className="mb-1">Maitre Ouvrage</Form.Label>
+                                <Select options={options.maitresOuvrage} value={filters.maitreOuvrage} onChange={(opt) => handleFilterChange('maitreOuvrage', opt, columns.maitreOuvrage)} placeholder="Tous" isClearable isSearchable styles={selectStyles} isLoading={optionsLoading}/>
+                            </Form.Group>
+                         </Col>
+                         <Col xs={12}>
+                             <Form.Group controlId="filterSecteur">
+                                <Form.Label size="sm" className="mb-1">Secteur</Form.Label>
+                                <Select 
+                                    options={options.secteurs}
+                                    value={filters.secteur}
+                                    onChange={(opt) => handleFilterChange('secteur', opt, columns.secteur)}
+                                    placeholder="Tous" isClearable isSearchable styles={selectStyles} isLoading={optionsLoading}
+                                />
+                            </Form.Group>
+                         </Col>
+                         <Col xs={12}>
+                             <Form.Group controlId="filterProvince">
+                                <Form.Label size="sm" className="mb-1">Localisation</Form.Label>
+                                <Select 
+                                    options={options.provinces}
+                                    value={filters.province}
+                                    onChange={(opt) => handleFilterChange('province', opt, columns.province)}
+                                    placeholder="Toutes" isClearable isSearchable styles={selectStyles} isLoading={optionsLoading}
+                                />
+                            </Form.Group>
+                         </Col>
+                         <Col xs={12}>
+                             <Form.Group controlId="filterMaitreOuvrageDelegue">
+                                <Form.Label size="sm" className="mb-1">Maître d'Ouvrage Délégué</Form.Label>
+                                <Select 
+                                    options={options.maitresOuvrageDelegues}
+                                    value={filters.maitreOuvrageDelegue}
+                                    onChange={(opt) => handleFilterChange('maitreOuvrageDelegue', opt, columns.maitreOuvrageDelegue)}
+                                    placeholder="Tous" isClearable isSearchable styles={selectStyles} isLoading={optionsLoading}
+                                />
+                            </Form.Group>
+                         </Col>
+                         <Col xs={12}>
+                             <Form.Group controlId="filterCoutGlobal">
+                                <Form.Label size="sm" className="mb-1">Coût Global (Min-Max)</Form.Label>
+                                <InputGroup size="sm">
+                                    <Form.Control 
+                                        type="number" placeholder="Min" value={filters.coutGlobalMin} 
+                                        onChange={(e) => setFilters(prev => ({ ...prev, coutGlobalMin: e.target.value }))} 
+                                        onBlur={() => columns.coutGlobal?.setFilterValue({ min: filters.coutGlobalMin, max: filters.coutGlobalMax })} 
+                                    />
+                                    <Form.Control 
+                                        type="number" placeholder="Max" value={filters.coutGlobalMax} 
+                                        onChange={(e) => setFilters(prev => ({ ...prev, coutGlobalMax: e.target.value }))} 
+                                        onBlur={() => columns.coutGlobal?.setFilterValue({ min: filters.coutGlobalMin, max: filters.coutGlobalMax })} 
+                                    />
+                                </InputGroup>
+                            </Form.Group>
+                         </Col>
+                        <Col xs={12}>
+                            <Form.Group controlId="filterEngagementType">
+                                <Form.Label size="sm" className="mb-1">Type d'Engagement</Form.Label>
+                                <Select 
+                                    options={options.engagementTypes}
+                                    value={filters.engagementType}
+                                    onChange={(opt) => handleFilterChange('engagementType', opt, columns.engagementType)}
+                                    placeholder="Tous les types" isClearable styles={selectStyles} isLoading={optionsLoading}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col xs={12} className="d-flex justify-content-end">
+                            <Button variant="outline-secondary" size="sm" onClick={() => resetFilters(table)} title="Réinitialiser les filtres">
+                                 <FontAwesomeIcon icon={faTimes} />
+                            </Button>
+                        </Col>
+                    </Row>
+                </div>
             </Form>
         );
-    }, [
-        filterAnnee, filterStatut, filterType, filterMaitreOuvrage,
-        filterCoutGlobalMin, filterCoutGlobalMax,
-        anneeOptions, statutOptions, maitreOuvrageOptions, optionsLoading
-    ]);
-
-    // --- DynamicTable Configuration ---
+    }, [filters, options, handleFilterChange, resetFilters, optionsLoading]);
+    
     const defaultCols = useMemo(() => [
         'Code', 'Intitule', 'type', 'rattachement', 'Statut',
-        'Annee_Convention', 'Maitre_Ouvrage',
-        'actions', 'partenaires'
+        'Annee_Convention', 'Maitre_Ouvrage', 
+        'actions',
     ], []);
+    
     const availableCols = useMemo(() => [
-        'Code', 'documents', 'Intitule', 'type', 'rattachement', 'Reference',
+        'Code', 'documents', 'Intitule', 'type', 'rattachement', 'Reference', 'secteur',
+        'provinces',
         'Annee_Convention', 'Objet', 'Objectifs', 'localisation', 'Maitre_Ouvrage',
         'partenaires', 'Cout_Global', 'Statut', 'Operationalisation',
-        // 'Groupe', 'Rang', 
         'created_at', 'updated_at'
     ], []);
+
     const searchExclusions = useMemo(() => [
         'created_at', 'updated_at', 'id', 'Id_Programme', 'id_projet',
-        // 'Groupe', 'Rang', 
-        'documents', 'Cout_Global',
-        'partenaires', 'localisation',
+        'documents', 'Cout_Global', 'partenaires', 'localisation',
+        'provinces',
     ], []);
+
     const customFilters = useMemo(() => ({
+        exactMatch: exactMatchFilterFn,
         costRange: costRangeFilterFn,
+        engagementType: engagementTypeFilterFn,
+        maitreOuvrageDelegue: maitreOuvrageDelegueFilterFn,
+        location: locationFilterFn,
         fileTitleIncludes: (row, _columnId, filterValue) => {
             const query = String(filterValue || '').trim().toLowerCase();
             if (!query) return true;
@@ -386,22 +660,30 @@ const ConventionsPage = () => {
             if (!query) return true;
             const files = Array.isArray(row?.original?.documents) ? row.original.documents : [];
             if (files.length === 0) return false;
-            return files.some(f => ((f.file_type || '') + '').toLowerCase().includes(query));
+            return files.some(f => {
+                const type = (f.file_type || '').toLowerCase();
+                return type.includes(query);
+            });
         },
-        hasFiles: (row, _columnId, filterValue) => {
-            const enabled = Boolean(filterValue);
-            if (!enabled) return true;
+        hasFiles: (row) => {
             const files = Array.isArray(row?.original?.documents) ? row.original.documents : [];
             return files.length > 0;
-        },
+        }
     }), []);
-    const handleFormClose = () => { setSearchParams({}); };
+     if (action === 'view' && itemId) {
+        return (
+            <ConventionVisualisation
+                itemId={itemId}
+                onClose={handleClose}
+                baseApiUrl={BASE_API_URL}
+            />
+        );
+    }
 
-    // --- Render DynamicTable ---
     return (
-        <div className="d-flex flex-column flex-grow-1" style={{ height: 'calc(91vh - 56px)', overflowY: 'hidden' }}>
+        <div className="conventions-page">
             {isCreating ? (
-                <ConventionForm onClose={handleFormClose} baseApiUrl={BASE_API_URL} />
+                <ConventionForm onSuccess={() => {}} />
             ) : (
                 <DynamicTable
                     fetchUrl="/conventions"
@@ -415,18 +697,20 @@ const ConventionsPage = () => {
                     defaultVisibleColumns={defaultCols}
                     availableColumnKeys={availableCols}
                     globalSearchExclusions={searchExclusions}
-                    itemsPerPage={10}
-                    customFilterFunctions={customFilters}
-                    baseApiUrl={BASE_API_URL}
-                    CreateComponent={ConventionForm}
-                    ViewComponent={ConventionVisualisation}
-                    EditComponent={ConventionForm}
-                    renderFilters={renderConventionFilters}
-                    actionColumnWidth={100}
-                    enableManualFiltering={true}
-                    enableColumnResizing={true}
-                    enableColumnOrdering={true}
                     tableClassName="table-striped table-hover table-sm"
+                    enableColumnOrdering={true}
+                    enableColumnResizing={true}
+                    enableManualFiltering={true }
+                    actionColumnWidth={100}
+                    renderFilters={renderConventionFilters}
+                    EditComponent={ConventionForm}
+                    ViewComponent={ConventionVisualisation}
+                    CreateComponent={ConventionForm}
+                    baseApiUrl={BASE_API_URL}
+                    customFilterFunctions={customFilters}
+                    itemsPerPage={9}
+                    isDataLoading={optionsLoading} 
+
                 />
             )}
         </div>

@@ -61,6 +61,8 @@ class ConvPart extends Model
         'Montant_Convenu',
         'is_signatory',  
         'autre_engagement',       // <<< ADDED
+        'engagement_type_id',      // <<< ADDED for multiple engagement types
+        'engagement_description',  // <<< ADDED for custom engagement description
         'date_signature', 
         'avenant_id',      // <<< ADDED
         'details_signature',    // <<< ADDED
@@ -112,5 +114,13 @@ class ConvPart extends Model
     public function engagementsAnnuels(): HasMany
     {
         return $this->hasMany(EngagementAnnuel::class, 'id_cp', 'Id_CP');
+    }
+
+    /**
+     * Get the engagement type for this convention partenaire.
+     */
+    public function engagementType()
+    {
+        return $this->belongsTo(EngagementType::class, 'engagement_type_id');
     }
 }

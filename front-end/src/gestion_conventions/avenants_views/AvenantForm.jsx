@@ -1,5 +1,3 @@
-// src/gestion_conventions/avenants_views/AvenantForm.jsx
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -18,7 +16,6 @@ import {
 import PropTypes from 'prop-types';
 
 const STATUT_OPTIONS = [
-    { value: "en cours d'approbation", label: "En Cours d'Approbation" },
     { value: "approuvé", label: "Approuvé" },
     { value: "non visé", label: "Non Visé" },
     { value: "en cours de visa", label: "En Cours de Visa" },
@@ -51,7 +48,8 @@ const calculateEngagementYears = (startYear, durationMonths) => {
     return Array.from({ length: numYears }, (_, i) => parseInt(startYear, 10) + i);
 };
 const parseCurrency = (value) => { 
-    if (typeof value !== 'string') return Number(value) || null; 
+    if (typeof value !== 'string' && typeof value !== 'number') return null;
+    if (typeof value === 'number') return value;
     const cleaned = value.replace(/[\s\u00A0]/g, '').replace(/[^0-9,.-]/g, '').replace(',', '.'); 
     const number = parseFloat(cleaned); 
     return isNaN(number) ? null : number; 
@@ -66,7 +64,6 @@ const getFileIcon = (filenameOrMimeType) => {
     return faFileAlt; 
 };
 
-// MISSION 1: Updated the options array with new value and improved labels
 const TYPE_MODIFICATION_OPTIONS = [ 
     { value: 'montant', label: 'Modification du Montant' }, 
     { value: 'durée', label: 'Prolongation de Durée' }, 
@@ -81,6 +78,7 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
         date_signature: '', 
         objet: '', 
         type_modification: [], 
+        montant_avenant: '', // ADDED
         montant_modifie: '',
         annee_avenant: new Date().getFullYear(),
         session: '',
@@ -109,7 +107,7 @@ const AvenantForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, ini
     const optionsFinishedLoading = useMemo(() => !loadingOptions.conventions && !loadingOptions.partenaires && !loadingOptions.fonctionnaires, [loadingOptions]);
     const storageBaseUrl = useMemo(() => baseApiUrl.replace('/api', ''), [baseApiUrl]);
     const [selectedConventionDetails, setSelectedConventionDetails] = useState(null);
-const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold border-0';
+    const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold border-0';
 
     const fetchOptions = useCallback(async () => {
         setLoadingOptions({ conventions: true, partenaires: true, fonctionnaires: true });
@@ -156,18 +154,21 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                 if (!isMounted) return;
 
                 const data = response.data.avenant || response.data;
+                // --- MODIFIED: Store full convention details ---
                 if (data.convention) {
                     setSelectedConventionDetails({
                         Annee_Convention: data.convention.Annee_Convention,
-                        duree_convention: data.convention.duree_convention
+                        duree_convention: data.convention.duree_convention,
+                        Cout_Global: data.convention.Cout_Global // IMPORTANT
                     });
-                } else if (data.convention_id) {
+                } else if (data.convention_id) { // Fallback fetch
                     try {
                         const convResponse = await axios.get(`${baseApiUrl}/conventions/${data.convention_id}`, { withCredentials: true });
                         const details = convResponse.data.convention || convResponse.data;
                         setSelectedConventionDetails({
                             Annee_Convention: details.Annee_Convention,
-                            duree_convention: details.duree_convention
+                            duree_convention: details.duree_convention,
+                            Cout_Global: details.Cout_Global // IMPORTANT
                         });
                     } catch (convError) {
                         console.error("Fallback failed to fetch convention details:", convError);
@@ -196,6 +197,7 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                     statut: findOption(STATUT_OPTIONS, data.statut),
                     date_visa: data.date_visa || '',
                     type_modification: findMultiOptionsFromArray(TYPE_MODIFICATION_OPTIONS, data.type_modification),
+                    montant_avenant: data.montant_avenant != null ? String(data.montant_avenant) : '', // ADDED
                     montant_modifie: data.montant_modifie != null ? String(data.montant_modifie) : '',
                     nouvelle_date_fin: data.nouvelle_date_fin || '',
                     remarques: data.remarques || '',
@@ -246,13 +248,30 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
 
     useEffect(() => { if (!isEditing && optionsFinishedLoading) { setFormData(initialFormData); setFichiers([]); setExistingFichiers([]); setFichiersToDelete([]); setAvenantPartnerDetails([]); setFormErrors({}); setSubmissionStatus({ loading: false, error: null, success: false }); setLoadingData(false); } }, [isEditing, optionsFinishedLoading, initialFormData]);
     
-    // MISSION 2: Updated validation logic for date_signature
+    // --- ADDED: useEffect for automatic amount calculation ---
+    useEffect(() => {
+        const typeValues = formData.type_modification?.map(t => t.value) || [];
+        if (typeValues.includes('montant') && selectedConventionDetails?.Cout_Global != null) {
+            const conventionAmount = parseCurrency(String(selectedConventionDetails.Cout_Global));
+            const avenantAmount = parseCurrency(formData.montant_avenant);
+
+            if (conventionAmount !== null && avenantAmount !== null) {
+                const newTotal = conventionAmount + avenantAmount;
+                // Set the calculated value, ensuring it's a string for the input
+                setFormData(prev => ({ ...prev, montant_modifie: String(newTotal.toFixed(2)) }));
+            } else {
+                 // If either value is invalid, clear the result
+                setFormData(prev => ({ ...prev, montant_modifie: '' }));
+            }
+        }
+    }, [formData.montant_avenant, selectedConventionDetails, formData.type_modification]);
+
+
     const validateForm = useCallback(() => { 
         const errors = {}; 
         if (!formData.convention_id) errors.convention_id = "Convention requise."; 
         if (!formData.numero_avenant?.trim()) errors.numero_avenant = "Numéro avenant requis."; 
         
-        // Only require date_signature if status is 'signé'
         if (formData.statut?.value === 'signé' && !formData.date_signature) {
             errors.date_signature = "Date signature requise pour le statut 'Signé'.";
         }
@@ -260,8 +279,9 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
         if (!formData.type_modification || formData.type_modification.length === 0) errors.type_modification = "Type modification requis."; 
         const typeValues = formData.type_modification?.map(t => t.value) || []; 
         if (typeValues.includes('montant')) { 
-            const montant = parseCurrency(formData.montant_modifie); 
-            if (montant === null || isNaN(montant) || montant < 0) errors.montant_modifie = "Montant modifié valide est requis.";
+            // MODIFIED: Validate the change amount, not the result
+            const montantAvenant = parseCurrency(formData.montant_avenant);
+            if (montantAvenant === null) errors.montant_avenant = "Le montant de l'avenant (variation) est requis.";
         } 
         if (typeValues.includes('durée')) { 
             if (!formData.nouvelle_date_fin) errors.nouvelle_date_fin = "Nouvelle date fin requise.";
@@ -288,16 +308,15 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
         return Object.keys(errors).length === 0; 
     }, [formData, avenantPartnerDetails]);
 
-    // MISSION 2: Automatically clear date_signature if status is not 'signé'
     const handleStatutChange = useCallback((selectedOption) => {
         setFormData(prev => ({
             ...prev,
             statut: selectedOption,
             date_visa: selectedOption?.value === 'visé' ? prev.date_visa : '',
-            date_signature: selectedOption?.value === 'signé' ? prev.date_signature : '' // Keep date if 'signé', clear otherwise
+            date_signature: selectedOption?.value === 'signé' ? prev.date_signature : ''
         }));
         if (formErrors.statut) setFormErrors(prev => ({ ...prev, statut: undefined }));
-        if (formErrors.date_signature) setFormErrors(prev => ({ ...prev, date_signature: undefined })); // Also clear validation error
+        if (formErrors.date_signature) setFormErrors(prev => ({ ...prev, date_signature: undefined }));
     }, [formErrors.statut, formErrors.date_signature]);
 
     const handleChange = useCallback((e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); if (formErrors[name]) setFormErrors(prev => { const next = {...prev}; delete next[name]; return next; }); }, [formErrors]);
@@ -309,11 +328,13 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
             setFormData(prev => ({ ...prev, convention_id: conventionIdValue }));
             if (conventionIdValue) {
             try {
+                // MODIFIED: Fetch full convention details
                 const response = await axios.get(`${baseApiUrl}/conventions/${conventionIdValue}`, { withCredentials: true });
                 const details = response.data.convention || response.data;
                 setSelectedConventionDetails({
                     Annee_Convention: details.Annee_Convention,
-                    duree_convention: details.duree_convention
+                    duree_convention: details.duree_convention,
+                    Cout_Global: details.Cout_Global, // IMPORTANT
                 });
             } catch (error) {
                 console.error("Failed to fetch convention details on select:", error);
@@ -328,9 +349,10 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
             setFormData(prev => ({ ...prev, type_modification: selectedOptions })); 
             const selectedTypeValues = selectedOptions.map(opt => opt.value); 
             
-            // Clear fields if the corresponding type is not selected
             setFormData(prevData => ({ 
                 ...prevData, 
+                // MODIFIED: Clear both amount fields if type is deselected
+                montant_avenant: selectedTypeValues.includes('montant') ? prevData.montant_avenant : '', 
                 montant_modifie: selectedTypeValues.includes('montant') ? prevData.montant_modifie : '', 
                 nouvelle_date_fin: selectedTypeValues.includes('durée') ? prevData.nouvelle_date_fin : '', 
             })); 
@@ -342,7 +364,10 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
             setFormErrors(prev => { 
                 const nextErrors = { ...prev }; 
                 delete nextErrors.type_modification; 
-                if (!selectedTypeValues.includes('montant')) delete nextErrors.montant_modifie; 
+                if (!selectedTypeValues.includes('montant')) {
+                    delete nextErrors.montant_modifie;
+                    delete nextErrors.montant_avenant; // ADDED
+                }
                 if (!selectedTypeValues.includes('durée')) delete nextErrors.nouvelle_date_fin; 
                 if (!selectedTypeValues.includes('partenaire')) { 
                     delete nextErrors.partenaires; 
@@ -460,7 +485,6 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
             if (key === 'statut') {
                 dataToSubmit.append(key, value?.value || '');
             } else if (key === 'type_modification') {
-                // Handle array of modification types
                 if (Array.isArray(value)) {
                     value.forEach((type, index) => {
                         dataToSubmit.append(`type_modification[${index}]`, type.value);
@@ -475,6 +499,8 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
 
         const selectedTypeValues = formData.type_modification?.map(t => t.value) || [];
         if (selectedTypeValues.includes('montant')) {
+            // MODIFIED: Send both parsed amounts
+            dataToSubmit.set('montant_avenant', parseCurrency(formData.montant_avenant) ?? '');
             dataToSubmit.set('montant_modifie', parseCurrency(formData.montant_modifie) ?? '');
         }
 
@@ -585,7 +611,6 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                             <Select inputId='statut-select-input' name="statut" options={STATUT_OPTIONS} value={formData.statut} onChange={handleStatutChange} styles={selectStyles} placeholder="- Sélectionner Statut -" isClearable className={formErrors.statut ? 'is-invalid' : ''} classNamePrefix="react-select"/>
                             <Form.Control.Feedback type="invalid" style={{display: formErrors.statut ? 'block' : 'none'}}>{formErrors.statut}</Form.Control.Feedback>
                         </Form.Group>
-                         {/* MISSION 2: Conditionally render the date_signature field */}
                          {formData.statut?.value === 'signé' && (
                              <Form.Group as={Col} md={4} controlId="formDate_signature">
                                  <Form.Label className="small mb-1 fw-medium">Date Signature<span className="text-danger">*</span></Form.Label>
@@ -605,7 +630,45 @@ const buttonCloseClass = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold b
                         )}
                     </Row>
                      
-                    <Row className="g-3 mb-3">{(formData.type_modification?.map(t => t.value) || []).includes('montant') && ( <Form.Group as={Col} md={6} controlId="formMontant_modifie"><Form.Label className="small mb-1 fw-medium">Nouveau Montant <span className="text-danger">*</span></Form.Label><InputGroup size="sm"><Form.Control className="p-2 rounded-start-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.montant_modifie} type="number" step="0.01" min="0" name="montant_modifie" value={formData.montant_modifie} onChange={handleChange} placeholder="0.00"/><InputGroup.Text className="rounded-end-pill">MAD</InputGroup.Text><Form.Control.Feedback type="invalid">{formErrors.montant_modifie}</Form.Control.Feedback></InputGroup></Form.Group> )} {(formData.type_modification?.map(t => t.value) || []).includes('durée') && ( <Form.Group as={Col} md={6} controlId="formNouvelle_date_fin"><Form.Label className="small mb-1 fw-medium">Nouvelle Date Fin <span className="text-danger">*</span></Form.Label><Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.nouvelle_date_fin} type="date" name="nouvelle_date_fin" value={formData.nouvelle_date_fin} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.nouvelle_date_fin}</Form.Control.Feedback></Form.Group> )} </Row>
+                    {/* --- MODIFIED: Montant section with calculation logic --- */}
+                    {(formData.type_modification?.map(t => t.value) || []).includes('montant') && (
+                        <Row className="g-3 mb-3">
+                            <Form.Group as={Col} md={4} controlId="formMontantInitial">
+                                <Form.Label className="small mb-1 fw-medium">Montant Initial Convention</Form.Label>
+                                <InputGroup size="sm">
+                                    <Form.Control className="p-2 rounded-start-pill bg-light" type="text" value={selectedConventionDetails?.Cout_Global != null ? parseFloat(selectedConventionDetails.Cout_Global).toLocaleString('fr-MA') : 'N/A'} readOnly disabled />
+                                    <InputGroup.Text className="rounded-end-pill">MAD</InputGroup.Text>
+                                </InputGroup>
+                            </Form.Group>
+                            <Form.Group as={Col} md={4} controlId="formMontant_avenant">
+                                <Form.Label className="small mb-1 fw-medium">Montant de l'Avenant (Variation) <span className="text-danger">*</span></Form.Label>
+                                <InputGroup size="sm">
+                                    <Form.Control className="p-2 rounded-start-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.montant_avenant} type="number" step="0.01" name="montant_avenant" value={formData.montant_avenant} onChange={handleChange} placeholder="Ex: 50000 ou -10000" />
+                                    <InputGroup.Text className="rounded-end-pill">MAD</InputGroup.Text>
+                                    <Form.Control.Feedback type="invalid">{formErrors.montant_avenant}</Form.Control.Feedback>
+                                </InputGroup>
+                            </Form.Group>
+                            <Form.Group as={Col} md={4} controlId="formMontant_modifie">
+                                <Form.Label className="small mb-1 fw-medium">Nouveau Montant Global (Résultat)</Form.Label>
+                                <InputGroup size="sm">
+                                    <Form.Control className="p-2 rounded-start-pill bg-light fw-bold" isInvalid={!!formErrors.montant_modifie} type="text" name="montant_modifie" value={formData.montant_modifie !== '' ? parseFloat(formData.montant_modifie).toLocaleString('fr-MA') : ''} readOnly disabled />
+                                    <InputGroup.Text className="rounded-end-pill">MAD</InputGroup.Text>
+                                    <Form.Control.Feedback type="invalid">{formErrors.montant_modifie}</Form.Control.Feedback>
+                                </InputGroup>
+                            </Form.Group>
+                        </Row>
+                    )}
+                    
+                    <Row className="g-3 mb-3">
+                        {(formData.type_modification?.map(t => t.value) || []).includes('durée') && ( 
+                            <Form.Group as={Col} md={6} controlId="formNouvelle_date_fin">
+                                <Form.Label className="small mb-1 fw-medium">Nouvelle Date Fin <span className="text-danger">*</span></Form.Label>
+                                <Form.Control className="p-2 rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors.nouvelle_date_fin} type="date" name="nouvelle_date_fin" value={formData.nouvelle_date_fin} onChange={handleChange} size="sm"/>
+                                <Form.Control.Feedback type="invalid">{formErrors.nouvelle_date_fin}</Form.Control.Feedback>
+                            </Form.Group> 
+                        )} 
+                    </Row>
+
                     {(formData.type_modification?.map(t => t.value) || []).includes('partenaire') && ( <Card className="mb-3 shadow-sm border-light"><Card.Header className='bg-light py-2'><h6 className='mb-0 fw-semibold text-secondary'>Détails Modification Partenaires</h6></Card.Header><Card.Body className="pb-2 pt-3"><Form.Group as={Row} className="mb-3" controlId="formPartenaireSelectConditional"><Form.Label column sm={3} className="small pt-1 fw-medium text-sm-end"> Sélection Partenaires <span className="text-danger">*</span></Form.Label><Col sm={9}><Select inputId='avenant-partenaire-select-conditional' name="partenaireSelector" options={partenaireOptions} value={partenaireOptions.filter(opt => avenantPartnerDetails.some(p => p.id === opt.value))} onChange={handleAvenantPartnerSelectionChange} styles={selectStyles} placeholder="- Choisir partenaires concernés -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.partenaires} className={formErrors.partenaires ? 'is-invalid' : ''} classNamePrefix="react-select" menuPortalTarget={document.body} menuPlacement="auto"/><Form.Control.Feedback type="invalid" style={{display: formErrors.partenaires ? 'block' : 'none'}}>{formErrors.partenaires}</Form.Control.Feedback></Col></Form.Group>{avenantPartnerDetails.length > 0 && ( <div className="mt-3 border-top pt-3">{avenantPartnerDetails.map((partner, index) => (
                         <div key={partner.id} id={`formAvenantDetail_${partner.id}`} className={`mb-3 ${index < avenantPartnerDetails.length - 1 ? 'border-bottom pb-3' : ''}`}>
                             <Row className="mb-2 align-items-center px-sm-3">

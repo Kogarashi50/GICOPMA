@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Programme;
 use App\Models\Province; 
 use App\Models\Document;
-use App\Models\ConvPart; 
+use App\Models\ConvPart;
+use App\Models\MaitreOuvrage;
+use App\Models\MaitreOuvrageDelegue;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,7 +34,11 @@ class Convention extends Model
         'code_provisoire',
         'fichier', // Filename stored here, actual file info in Document model
         'classification_prov',
-        'categorie',
+        // 'categorie',
+        'date_envoi_visa_mi',
+        'sous_type', // <-- ADD THIS
+        'requires_council_approval',
+        'secteur_id',  // <-- ADD THIS LINE
         'intitule',
         'reference',
         'id_projet',
@@ -68,6 +74,7 @@ class Convention extends Model
 
     'membres_comite_technique' => 'array',
     'membres_comite_pilotage' => 'array',
+    'requires_council_approval' => 'boolean', 
 ];
 
     /**
@@ -121,6 +128,24 @@ public function conventionCadre(): BelongsTo
 
         return $this->hasMany(Avenant::class, 'convention_id', 'id');
     }
+
+    /**
+     * Get the maîtres d'ouvrage associated with the convention.
+     */
+    public function maitresOuvrage(): BelongsToMany
+    {
+        return $this->belongsToMany(MaitreOuvrage::class, 'convention_maitre_ouvrage', 'convention_id', 'maitre_ouvrage_id')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get the maîtres d'ouvrage délégués associated with the convention.
+     */
+    public function maitresOuvrageDelegues(): BelongsToMany
+    {
+        return $this->belongsToMany(MaitreOuvrageDelegue::class, 'convention_maitre_ouvrage_delegue', 'convention_id', 'maitre_ouvrage_delegue_id')
+                    ->withTimestamps();
+    }
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -131,5 +156,9 @@ public function conventionCadre(): BelongsTo
             ->setDescriptionForEvent(fn(string $eventName) => $eventName)
     
             ->useLogName('convention');
+    }
+     public function secteur(): BelongsTo
+    {
+        return $this->belongsTo(Secteur::class, 'secteur_id');
     }
 }

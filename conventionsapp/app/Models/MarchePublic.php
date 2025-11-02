@@ -60,6 +60,8 @@ class MarchePublic extends Model
         'date_engagement_tresorerie',
         'projectable_id',
         'projectable_type',
+        'date_visa_tresorerie',
+        'date_approbation_president',
         // --- END NEW FILLABLE FIELDS ---
     ];
 
@@ -85,6 +87,8 @@ class MarchePublic extends Model
         'avancement_physique' => 'double',     // Cast to float/double
         'avancement_financier' => 'double',    // Cast to float/double
         'date_engagement_tresorerie' => 'date:Y-m-d',
+        'date_visa_tresorerie' => 'date:Y-m-d',
+        'date_approbation_president' => 'date:Y-m-d'
         // --- END CASTS FOR NEW FIELDS ---
         // Timestamps are automatically handled if columns exist and $timestamps isn't false
         // 'created_at' => 'datetime',

@@ -17,8 +17,18 @@
       line-height: 1.4; /* Adjust line height */
       max-height: calc(1.4em * 3); /* Calculate max height based on line height and clamp */
   }
+  .bg-light-primary {
+    background-color: rgba(7, 48, 255, 0.05);
+}
+.bg-light-success {
+    background-color: rgba(25, 135, 84, 0.05);
+}
   /* Convention Visualisation Component Styles */
+.bg-light-yellow{
+      background-color: rgba(254, 215, 86, 0.212);
 
+
+}
 .convention-visualisation-container {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
 }

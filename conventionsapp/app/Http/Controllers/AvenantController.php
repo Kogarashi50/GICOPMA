@@ -26,7 +26,7 @@ class AvenantController extends Controller
     {
         try {
             $query = Avenant::with([
-                'convention:id,Code,Intitule',
+                'convention:id,Code,Intitule,Cout_Global', // Ensure Cout_Global is available if needed
                 'documents',
                 'partnerCommitments'
             ]);
@@ -36,7 +36,7 @@ class AvenantController extends Controller
                 $query->with($relations);
             }
 
-            $avenants = $query->orderBy('date_creation', 'desc')->get(); // Changed to date_creation for logical order
+            $avenants = $query->orderBy('date_creation', 'desc')->get();
             return response()->json(['avenants' => $avenants], 200);
 
         } catch (\Exception $e) {
@@ -53,17 +53,15 @@ class AvenantController extends Controller
         $validator = Validator::make($request->all(), [
             'convention_id' => 'required|integer|exists:convention,id',
             'numero_avenant' => 'required|string|max:255',
-            
-            // MISSION 2: date_signature is now required only if statut is 'signé'
             'date_signature' => 'nullable|required_if:statut,signé|date',
-            
             'objet' => 'nullable|string',
-            
-            // MISSION 1: Added 'technique_administratif' to the list of allowed types - now supports multiple values
             'type_modification' => 'required|array',
             'type_modification.*' => ['required', Rule::in(['montant', 'durée', 'partenaire', 'technique_administratif', 'autre'])],
             
+            // MODIFIED: Added validation for the new field
+            'montant_avenant' => 'nullable|numeric',
             'montant_modifie' => 'nullable|numeric|min:0',
+
             'nouvelle_date_fin' => 'nullable|date|after_or_equal:date_signature',
             'id_fonctionnaire' => 'nullable|string',
             'code' => 'nullable|string|max:50',
@@ -85,7 +83,7 @@ class AvenantController extends Controller
         }
 
         $validatedData = $validator->validated();
- $sessionValue = $validatedData['session'] ?? 'NS';
+        $sessionValue = $validatedData['session'] ?? 'NS';
         $sessionFormatted = is_numeric($sessionValue) ? str_pad($sessionValue, 2, '0', STR_PAD_LEFT) : 'NS';
         $validatedData['code'] = sprintf(
             '%s/%s/%s',
@@ -174,17 +172,15 @@ class AvenantController extends Controller
         $validator = Validator::make($request->all(), [
             'convention_id' => 'required|integer|exists:convention,id',
             'numero_avenant' => 'required|string|max:255',
-
-            // MISSION 2: date_signature is now required only if statut is 'signé'
             'date_signature' => 'nullable|required_if:statut,signé|date',
-
             'objet' => 'nullable|string',
-
-            // MISSION 1: Added 'technique_administratif' to the list of allowed types - now supports multiple values
             'type_modification' => 'required|array',
             'type_modification.*' => ['required', Rule::in(['montant', 'durée', 'partenaire', 'technique_administratif', 'autre'])],
             
+            // MODIFIED: Added validation for the new field
+            'montant_avenant' => 'nullable|numeric',
             'montant_modifie' => 'nullable|numeric|min:0',
+
             'nouvelle_date_fin' => 'nullable|date|after_or_equal:date_signature',
             'id_fonctionnaire' => 'nullable|string',
             'code' => 'nullable|string|max:50',

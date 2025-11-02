@@ -2,37 +2,38 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    faSpinner, faExclamationTriangle, faTimes, faTrashAlt, faUndo,
-    faFilePdf, faFileWord, faFileExcel, faFileImage, faFileAlt,
-    faPlusCircle, faExternalLinkAlt, faUsers,
-    faHandshake, faUserShield, faFolderOpen // ADDED: New icons for styling
+    faExclamationTriangle, faTimes, faTrashAlt, faUndo, faFilePdf, faFileWord,
+    faFileExcel, faFileImage, faFileAlt, faPlusCircle, faExternalLinkAlt, faUsers,
+    faHandshake, faUserShield, faFolderOpen, faSpinner, faBuilding, faUserTie
 } from '@fortawesome/free-solid-svg-icons';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import {
     Form, Button, Row, Col, Card, Alert, Spinner,
-    ToggleButton, ToggleButtonGroup,
-    InputGroup, FormCheck, ListGroup, Badge, Stack, Modal
+    ToggleButton, ToggleButtonGroup, ListGroup, Badge, Modal
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
+import MaitreOuvrageManager from './MaitreOuvrageManager';
+import PartenaireManager from './PartenaireManager';
+import PartenaireEngagementManager from './PartenaireEngagementManager';
 
-// Styles for react-select
+
+// --- Styles and Helpers ---
 const selectStyles = {
     control: (provided, state) => ({
         ...provided, width: '100%', maxWidth: '100%', backgroundColor: '#f8f9fa',
         borderRadius: '1.5rem',
-        
         border: state.selectProps.className?.includes('is-invalid') ? '1px solid #dc3545' : (state.isFocused ? '1px solid #86b7fe' : '1px solid #ced4da'),
         boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13, 110, 253, 0.25)' : 'none',
         minHeight: '38px', fontSize: '0.875rem',
     }),
     valueContainer: (provided) => ({ ...provided, padding: '0.25rem 0.8rem', flexWrap: 'wrap', maxWidth: '100%', overflow: 'hidden' }),
     input: (provided) => ({ ...provided, margin: '0px', padding: '0px', fontSize: '0.875rem' }),
-    indicatorSeparator: () => ({ display: 'none', }),
+    indicatorSeparator: () => ({ display: 'none' }),
     indicatorsContainer: (provided) => ({ ...provided, padding: '1px', height: '36px' }),
     placeholder: (provided) => ({ ...provided, color: '#6c757d', fontSize: '0.875rem' }),
     menu: (provided) => ({ ...provided, borderRadius: '0.5rem', boxShadow: '0 0.5rem 1rem rgba(0, 0, 0, 0.15)', zIndex: 1055 }),
-    option: (provided, state) => ({ ...provided, backgroundColor: state.isSelected ? '#0d6efd' : state.isFocused ? '#e9ecef' : null, color: state.isSelected ? 'white' : 'black', fontSize: '0.875rem', padding: '0.5rem 1rem' }),
+    option: (provided, state) => ({ ...provided, backgroundColor: state.isSelected ? '#0d6efd' : state.isFocused ? '#e9ecef' : 'white', color: state.isSelected ? 'white' : 'black', fontSize: '0.875rem', padding: '0.5rem 1rem' }),
     multiValue: (provided) => ({ ...provided, backgroundColor: '#e0e0e0', borderRadius: '0.5rem' }),
     multiValueLabel: (provided) => ({ ...provided, color: '#333', fontSize: '0.8rem', paddingRight: '6px' }),
     multiValueRemove: (provided) => ({ ...provided, color: '#555', ':hover': { backgroundColor: '#c0c0c0', color: 'white' } }),
@@ -41,12 +42,22 @@ const selectStyles = {
 };
 const inputClass = "form-control form-control-sm rounded-pill shadow-sm bg-light border";
 const textareaClass = "form-control form-control-sm rounded-3 shadow-sm bg-light border";
-
-// --- Helpers ---
 const parseCurrency = (value) => { if (typeof value !== 'string') return Number(value) || 0; const cleaned = value.replace(/[\s\u00A0]/g, '').replace(/[^0-9,.-]/g, '').replace(',', '.'); const number = parseFloat(cleaned); return isNaN(number) ? 0 : number; };
 const generateTempId = () => `temp_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-const safeParseInt = (value) => { if (value === null || value === undefined) return null; const parsed = parseInt(String(value), 10); return Number.isInteger(parsed) ? parsed : null; };
 const getFileIcon = (filenameOrMimeType) => { if (!filenameOrMimeType) return faFileAlt; const lowerCase = String(filenameOrMimeType).toLowerCase(); if (lowerCase.includes('pdf')) return faFilePdf; if (lowerCase.includes('doc')) return faFileWord; if (lowerCase.includes('xls')) return faFileExcel; if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].some(ext => lowerCase.endsWith(ext)) || lowerCase.startsWith('image/')) return faFileImage; return faFileAlt; };
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
 
 // --- Component ---
 const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, baseApiUrl = 'http://localhost:8000/api' }) => {
@@ -54,29 +65,54 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
     const INTITULE_MAX = 250;
     const FILE_INTITULE_MAX = 120;
     const [formData, setFormData] = useState({
-        Code: '', code_provisoire: '', Classification_prov: '', Categorie: '', Intitule: '', Reference: '',
-        Annee_Convention: '', Objet: '', Objectifs: '', provinces: [], Maitre_Ouvrage: '',
-        Cout_Global: '', Statut: null, Operationalisation: 'Non', Groupe: '', Rang: '',
-        programmeId: null, projetId: null, conventionCadreId: null, observations: '',
-        fonctionnaires: [],
-        type: 'specifique', 
-        date_reception_vise: '',
-        duree_convention: '',
-        maitre_ouvrage_delegue: '',
-        membres_comite_technique: [],
-        membres_comite_pilotage: [],        
+        Code: '',
+        code_provisoire: '',
+        Intitule: '',
+        Annee_Convention: '',
+        type: 'specifique',
+        sous_type: '', // <-- ADD THIS
+        requires_council_approval: true,
         numero_approbation: '',
         session: '',
+        Statut: null,
+        Cout_Global: '',
+        duree_convention: '',
         date_visa: '',
+        date_reception_vise: '',
+        conventionCadreId: null,
+        projetId: null,
+        programmeId: null,
+        observations: '',
+        provinces: [],
+        fonctionnaires: [],
+        maitresOuvrage: [],
+        maitresOuvrageDelegues: [],
+        membres_comite_technique: [],
+        membres_comite_pilotage: [],
+        Classification_prov: '',
+        secteurId: null, // <-- ADD THIS LINE
+        Reference: '',
+        date_envoi_visa_mi: '', // Add new date field to state
+        Objet: '',
+        Objectifs: '',
+        Maitre_Ouvrage: null,
+        maitre_ouvrage_delegue:null,
+        Operationalisation: 'Non',
+        Groupe: '',
+        Rang: '',
     });
-    const [selectedPartnerDetails, setSelectedPartnerDetails] = useState([]);
+    const [selectedPartenaires, setSelectedPartenaires] = useState([]);
+    const [partnerEngagements, setPartnerEngagements] = useState([]);
+    const [engagementTypes, setEngagementTypes] = useState([]);
     const [programmesOptions, setProgrammesOptions] = useState([]);
     const [provincesOptions, setProvincesOptions] = useState([]);
-    const [allPartenairesOptions, setAllPartenairesOptions] = useState([]);
     const [projetsOptions, setProjetsOptions] = useState([]);
     const [fonctionnairesOptions, setFonctionnairesOptions] = useState([]);
     const [conventionCadreOptions, setConventionCadreOptions] = useState([]);
-    const [loadingOptions, setLoadingOptions] = useState({ programmes: true, partenaires: true, provinces: true, projets: true, fonctionnaires: true, conventionsCadre: true });
+    const [secteursOptions, setSecteursOptions] = useState([]); // <-- ADD THIS LINE
+    const [loadingOptions, setLoadingOptions] = useState(true);
+    const [maitresOuvrageOptions, setMaitresOuvrageOptions] = useState([]); // <-- ADD THIS
+    const [maitresOuvrageDeleguesOptions, setMaitresOuvrageDeleguesOptions] = useState([]);
     const [submissionStatus, setSubmissionStatus] = useState({ loading: false, error: null, success: false });
     const [formErrors, setFormErrors] = useState({});
     const [loadingData, setLoadingData] = useState(!!itemId);
@@ -88,944 +124,801 @@ const ConventionForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, 
     const [dataToResubmit, setDataToResubmit] = useState(null);
 
     const isEditing = useMemo(() => itemId !== null, [itemId]);
-    const optionsFinishedLoading = useMemo(() => !loadingOptions.programmes && !loadingOptions.partenaires && !loadingOptions.provinces && !loadingOptions.projets && !loadingOptions.fonctionnaires && !loadingOptions.conventionsCadre, [loadingOptions]);
-    const storageBaseUrl = useMemo(() => baseApiUrl.replace('/api', ''), [baseApiUrl]);
-    const STATUT_OPTIONS = useMemo(() => [  { value: "en cours d'approbation", label: "En Cours d'Approbation", color: "warning" }, { value: "approuvé", label: "Approuvé", color: "success" }, { value: "non visé", label: "Non Visé", color: "danger" }, { value: "en cours de visa", label: "En Cours de Visa", color: "warning" }, { value: "visé", label: "Visé", color: "info" }, { value: "non signé", label: "Non Signé", color: "secondary"}, { value: "en cours de signature", label: "En Cours de Signature", color: "warning" }, { value: "signé", label: "Signé", color: "primary" } ], []);
-    const groupedStatutOptions = useMemo(() => { const groups = []; const groupLabels = ["Approbation", "Visa", "Signature"]; const groupSize = 3; for (let i = 0; i < STATUT_OPTIONS.length; i += groupSize) { groups.push({ label: groupLabels[Math.floor(i / groupSize)], options: STATUT_OPTIONS.slice(i, i + groupSize) }); } return groups; }, [STATUT_OPTIONS]);
+    const SOUS_TYPE_OPTIONS = useMemo(() => ({
+        'convention': [
+            { value: 'Convention de partenariat', label: 'Convention de partenariat' },
+            { value: 'Protocole d\'accord', label: 'Protocole d\'accord' },
+            { value: 'Accord', label: 'Accord' },
+            { value: 'Contrat', label: 'Contrat' }
+        ],
+        'maitrise d\'ouvrage delegue': [
+ { value: 'Convention de partenariat', label: 'Convention de partenariat' },
+            { value: 'Protocole d\'accord', label: 'Protocole d\'accord' },
+            { value: 'Accord', label: 'Accord' },
+            { value: 'Contrat', label: 'Contrat' }
+            ],
+        'cadre': [
+             { value: 'Convention de partenariat', label: 'Convention de partenariat' },
+            { value: 'Protocole d\'accord', label: 'Protocole d\'accord' },
+            { value: 'Accord', label: 'Accord' },
+            { value: 'Contrat', label: 'Contrat' }
+        ],
+        'specifique': [
+             { value: 'Convention de partenariat', label: 'Convention de partenariat' },
+            { value: 'Protocole d\'accord', label: 'Protocole d\'accord' },
+            { value: 'Accord', label: 'Accord' },
+            { value: 'Contrat', label: 'Contrat' }
+        ]
+    }), []);
+    const STATUT_OPTIONS = useMemo(() => [
+        { value: "approuvé", label: "Approuvé", color: "success" },
+        { value: "non visé", label: "Non Visé", color: "danger" },
+        { value: "en cours de visa", label: "En Cours de Visa", color: "warning" },
+        { value: "visé", label: "Visé", color: "info" },
+        { value: "non signé", label: "Non Signé", color: "secondary" },
+        { value: "en cours de signature", label: "En Cours de Signature", color: "warning" },
+        { value: "signé", label: "Signé", color: "primary" }
+    ], []);
+    const groupedStatutOptions = useMemo(() => [{ label: "Approbation", options: STATUT_OPTIONS.slice(0, 1) }, { label: "Visa", options: STATUT_OPTIONS.slice(1, 4) }, { label: "Signature", options: STATUT_OPTIONS.slice(4, 7) }], [STATUT_OPTIONS]);
 
     const autosizeIntitule = useCallback(() => {
-        const el = intituleRef.current;
-        if (!el) return;
-        el.style.height = 'auto';
-        el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+        if (intituleRef.current) {
+            intituleRef.current.style.height = 'auto';
+            intituleRef.current.style.height = Math.min(intituleRef.current.scrollHeight, 200) + 'px';
+        }
     }, []);
     useEffect(() => { autosizeIntitule(); }, [formData.Intitule, autosizeIntitule]);
 
     const fetchOptions = useCallback(async () => {
-        console.log("Fetching options...");
-        setLoadingOptions({ programmes: true, partenaires: true, provinces: true, projets: true, fonctionnaires: true, conventionsCadre: true });
-        
-        const getArray = (response, key) => {
-            const data = response?.data;
-            if (key && data && Array.isArray(data[key])) return data[key];
-            if (Array.isArray(data)) return data;
-            return [];
-        };
+        setLoadingOptions(true);
+        const get = (url, params = {}) => axios.get(url, { ...params, withCredentials: true });
+        const getArray = (res) => (Array.isArray(res?.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []));
 
         try {
-            const cadreOptionsUrl = `${baseApiUrl}/conventions/options/cadre`;
-            const params = isEditing && itemId ? { params: { exclude: itemId } } : {};
+            const cadreParams = isEditing ? { params: { exclude: itemId } } : {};
+            const results = await Promise.allSettled([
+                get(`${baseApiUrl}/options/programmes`),
+                get(`${baseApiUrl}/options/partenaires`),
+                get(`${baseApiUrl}/options/provinces`),
+                get(`${baseApiUrl}/options/projets`),
+                get(`${baseApiUrl}/options/fonctionnaires`),
+                get(`${baseApiUrl}/conventions/options/cadre`, cadreParams),
+                get(`${baseApiUrl}/options/engagement-types`),
+                get(`${baseApiUrl}/options/secteurs`), // <-- ADD THIS API CALL
+                get(`${baseApiUrl}/options/maitre-ouvrage`), // <-- ADD THIS
+                get(`${baseApiUrl}/options/maitre-ouvrage-delegue`)
 
-            const [progRes, partRes, provRes, projRes, foncRes, cadreRes] = await Promise.all([
-                axios.get(`${baseApiUrl}/options/programmes`, { withCredentials: true }),
-                axios.get(`${baseApiUrl}/options/partenaires`, { withCredentials: true }),
-                axios.get(`${baseApiUrl}/options/provinces`, { withCredentials: true }),
-                axios.get(`${baseApiUrl}/options/projets`, { withCredentials: true }),
-                axios.get(`${baseApiUrl}/options/fonctionnaires`, { withCredentials: true }),
-                axios.get(cadreOptionsUrl, { ...params, withCredentials: true }),
             ]);
 
-            setProgrammesOptions(getArray(progRes, 'programmes').map(p => ({ value: p.Id || p.id || p.value , label: p.Description || p.label })));
-            setAllPartenairesOptions(getArray(partRes, 'partenaires').map(p => ({ value: p.Id || p.value, label: p.Description_Arr || p.Description || p.label || `Partenaire ID ${p.Id || p.value}` })));
-            setProvincesOptions(getArray(provRes)); 
-            setProjetsOptions(getArray(projRes, 'projets').map(p => ({ value: p.ID_Projet || p.value, label: (p.Code_Projet ? `${p.Code_Projet} - ` : '') + (p.Nom_Projet || p.label || 'N/A') })));
-            setFonctionnairesOptions(getArray(foncRes, 'fonctionnaires').map(f => ({ value: f.id || f.value, label: f.nom_complet || f.label || `ID ${f.id || f.value}` })));
-            setConventionCadreOptions(getArray(cadreRes)); 
-            
-            console.log("All options loaded.");
-        } catch (err) { 
-            console.error("Erreur chargement options:", err); 
-            setSubmissionStatus(prev => ({ ...prev, error: "Erreur chargement des listes pour le formulaire." })); 
-        }
-        finally { 
-            setLoadingOptions({ programmes: false, partenaires: false, provinces: false, projets: false, fonctionnaires: false, conventionsCadre: false }); 
+const [progRes, partRes, provRes, projRes, foncRes, cadreRes, engTypeRes, sectRes, moRes, modRes] = results            
+            if (progRes.status === 'fulfilled') setProgrammesOptions(getArray(progRes.value));
+            if (provRes.status === 'fulfilled') setProvincesOptions(getArray(provRes.value));
+            if (projRes.status === 'fulfilled') setProjetsOptions(getArray(projRes.value));
+            if (foncRes.status === 'fulfilled') setFonctionnairesOptions(foncRes.value.data.fonctionnaires.map(opt=>({value:opt.id,label:opt.nom_complet})));
+            if (cadreRes.status === 'fulfilled') setConventionCadreOptions(getArray(cadreRes.value));
+            if (engTypeRes.status === 'fulfilled') setEngagementTypes(getArray(engTypeRes.value));
+            if (moRes.status === 'fulfilled') setMaitresOuvrageOptions(getArray(moRes.value));
+            if (modRes.status === 'fulfilled') setMaitresOuvrageDeleguesOptions(getArray(modRes.value));
+           if (sectRes.status === 'fulfilled') {
+ const rawSecteurs = getArray(sectRes.value);
+                const normalized = rawSecteurs.map(s => ({
+                    value: s.id,
+                    label: s.description_fr ?? s.description_ar ?? `Secteur ${s.id}`,
+                    // keep original fields in case some code relies on them
+                    id: s.id,
+                    description_fr: s.description_fr,
+                    description_ar: s.description_ar
+                }));
+                setSecteursOptions(normalized);
+            }
+        } catch (err) {
+            setSubmissionStatus(prev => ({ ...prev, error: "Erreur de chargement des listes pour le formulaire." }));
+        } finally {
+            setLoadingOptions(false);
         }
     }, [baseApiUrl, isEditing, itemId]);
 
     useEffect(() => { fetchOptions(); }, [fetchOptions]);
 
     useEffect(() => {
-        if (!itemId || !optionsFinishedLoading) { if (!itemId) setLoadingData(false); return; }
+        if (!itemId || loadingOptions) {
+            if (!itemId) setLoadingData(false);
+            return;
+        }
+
         let isMounted = true;
         const fetchConventionData = async () => {
-            console.log(`[Form Edit Load] Fetching data ID: ${itemId}`);
             setLoadingData(true);
-            setSubmissionStatus({ loading: false, error: null, success: false });
-            setFormErrors({}); setExistingDocuments([]); setNewFiles([]); setDocumentsToDelete([]);
-            setDataToResubmit(null); setShowConfirmModal(false);
             try {
                 const response = await axios.get(`${baseApiUrl}/conventions/${itemId}`, { withCredentials: true });
-                const data = response.data.convention || response.data;
-                console.log(data)
                 if (!isMounted) return;
-                if (!data || typeof data !== 'object') throw new Error(`Format de réponse invalide ID ${itemId}.`);
+
+                const data = response.data.convention;
+                const findOption = (opts, val) => opts?.find(opt => String(opt.value).toLowerCase() === String(val).toLowerCase()) || null;
+                 const principalMaitreOuvrage = findOption(maitresOuvrageOptions, data.Maitre_Ouvrage);
+                const principalMaitreOuvrageDelegue = findOption(maitresOuvrageDeleguesOptions, data.maitre_ouvrage_delegue);
+                const findMultiOptions = (opts, str) => {
+                    if (!str || !opts?.length) return [];
+                    const ids = new Set(str.split(';').map(v => v?.trim().toLowerCase()));
+                    return opts.filter(opt => ids.has(String(opt.value).toLowerCase()));
+                };
                 
-                const findOption = (options, valueToFind, valueKey = 'value') => options?.find(opt => String(opt[valueKey]).toLowerCase() === String(valueToFind).toLowerCase()) || null;
-                const findMultiOptions = (options, valuesString, valueKey = 'value') => { if (!valuesString || typeof valuesString !== 'string' || !options?.length) return []; const selectedValues = valuesString.split(';').map(v => String(v).trim().toLowerCase()).filter(v => v); return options.filter(opt => selectedValues.includes(String(opt[valueKey]).toLowerCase())); };
+                const findMultiOptions2=(opts,str)=>{
+                      if (!str || !opts?.length) return [];
+                    const ids = JSON.parse(str)
+                    let result=opts.filter(opt => ids.includes(opt.value))
+                    return result
 
-                const selectedStatutOption = findOption(STATUT_OPTIONS, data.Statut, 'value');
-                const selectedProgrammeOption = findOption(programmesOptions, data.Id_Programme || data.id_programme || data.programme?.Id);
-                const selectedProjetOption = findOption(projetsOptions, data.id_projet || data.ID_Projet || data.projet?.ID_Projet);
-                const selectedProvinceOptions = findMultiOptions(provincesOptions, data.localisation);
-                const selectedFonctionnaireOptions = findMultiOptions(fonctionnairesOptions, data.id_fonctionnaire);
-                const selectedConventionCadre = findOption(conventionCadreOptions, data.convention_cadre_id);
 
-                setFormData({
-                    Code: String(data.Code ?? ''), 
-                    code_provisoire: String(data.code_provisoire ?? ''),
-                    numero_approbation: String(data.numero_approbation ?? ''),
-                    date_reception_vise: data.date_reception_vise || '',
-                    duree_convention: String(data.duree_convention ?? ''),
-                    maitre_ouvrage_delegue: String(data.maitre_ouvrage_delegue ?? ''),
-                    session: String(data.session ?? ''),
-                    type: String(data.type ?? ''), 
-                    membres_comite_technique: (data.membres_comite_technique || []).map(member => ({ value: member, label: member })),
-                    membres_comite_pilotage: (data.membres_comite_pilotage || []).map(member => ({ value: member, label: member })),
-                    Classification_prov: String(data.Classification_prov ?? ''), 
-                    Categorie: String(data.Categorie ?? ''), 
-                    Intitule: String(data.Intitule ?? ''), 
-                    Reference: String(data.Reference ?? ''), 
-                    Annee_Convention: String(data.Annee_Convention ?? ''), 
-                    Objet: String(data.Objet ?? ''), 
-                    Objectifs: String(data.Objectifs ?? ''), 
-                    Maitre_Ouvrage: String(data.Maitre_Ouvrage ?? ''), 
-                    Cout_Global: String(data.Cout_Global ?? ''), 
-                    Statut: selectedStatutOption, 
+                }
+                setFormData(prev => ({
+                    ...prev,
+                    Code: data.Code || '',
+                    code_provisoire: data.code_provisoire || '',
+                    Intitule: data.Intitule || '',
+                    Annee_Convention: data.Annee_Convention || '',
+                    type: data.type || 'specifique',
+                    numero_approbation: data.numero_approbation || '',
+                    session: data.session || '',
+                    Statut: findOption(STATUT_OPTIONS, data.Statut),
+                    Cout_Global: data.Cout_Global || '',
+                    requires_council_approval: !!data.requires_council_approval, // Ensure it's a true boolean
+                    sous_type:data.sous_type||'',
+                    Maitre_Ouvrage: principalMaitreOuvrage,
+                    maitre_ouvrage_delegue: principalMaitreOuvrageDelegue,
+                    duree_convention: data.duree_convention || '',
                     date_visa: data.date_visa || '',
-                    Operationalisation: String(data.Operationalisation ?? ''), 
-                    Groupe: String(data.Groupe ?? ''), Rang: String(data.Rang ?? ''), observations: String(data.observations ?? ''), 
-                    provinces: selectedProvinceOptions, 
-                    programmeId: selectedProgrammeOption, 
-                    projetId: selectedProjetOption, 
-                    conventionCadreId: selectedConventionCadre,
-                    fonctionnaires: selectedFonctionnaireOptions
-                });
+                    date_reception_vise: data.date_reception_vise || '',
+                    date_envoi_visa_mi: data.date_envoi_visa_mi || '', // Populate on edit
+                    conventionCadreId: findOption(conventionCadreOptions, data.convention_cadre_id),
+                    projetId: findOption(projetsOptions, data.id_projet),
+                    programmeId: findOption(programmesOptions, data.Id_Programme),
+                    observations: data.observations || '',
+                    provinces: findMultiOptions2(provincesOptions, data.localisation),
+                    fonctionnaires: findMultiOptions2(fonctionnairesOptions, data.id_fonctionnaire),
+                    maitresOuvrage: (data.maitres_ouvrage || []).map(mo => ({ value: mo.id, label: mo.nom })),
+                    maitresOuvrageDelegues: (data.maitres_ouvrage_delegues || []).map(mod => ({ value: mod.id, label: mod.nom })),
+                    membres_comite_technique: (data.membres_comite_technique || []).map(m => ({ value: m, label: m })),
+                    membres_comite_pilotage: (data.membres_comite_pilotage || []).map(m => ({ value: m, label: m })),
+                    Classification_prov: data.Classification_prov || '',
+                    Reference: data.Reference || '',
+                    Objet: data.Objet || '',
+                    secteurId: findOption(secteursOptions, data.secteur_id), // <-- ADD THIS
+                    Objectifs: data.Objectifs || '',
+                    Operationalisation: data.Operationalisation || 'Non',
+                    Groupe: data.Groupe || '',
+                    Rang: data.Rang || '',
+                }));
 
-                const commitmentsArray = data.partner_commitments || [];
-                setSelectedPartnerDetails(commitmentsArray.map(commit => ({
-                     tempId: generateTempId(), 
-                     id: commit.Id_Partenaire, 
-                     Id_CP: safeParseInt(commit.Id_CP), 
-                     label: commit.label || `Partenaire ID ${commit.Id_Partenaire}`,
-                    engagement_type: (commit.autre_engagement) ? 'autre' : 'financier',
-                    montant: String(commit.Montant_Convenu ?? ''),
-                    autre_engagement: commit.autre_engagement || '',
-                    engagements_annuels: commit.engagements_annuels || [],
-                    is_signatory: !!commit.is_signatory,
-                     date_signature: commit.date_signature || '',
-                     details_signature: commit.details_signature || '',
+                const commitments = data.partner_commitments || [];
+                const uniquePartnerIds = [...new Set(commitments.map(c => c.Id_Partenaire))];
+                setSelectedPartenaires(uniquePartnerIds.map(id => {
+                    const c = commitments.find(item => item.Id_Partenaire === id);
+                    return { value: id, label: c?.label || `ID: ${id}` };
+                }));
+                setPartnerEngagements(commitments.map(c => ({
+                    id: c.Id_CP || generateTempId(),
+                    partenaire_id: c.Id_Partenaire,
+                    partenaire_label: c.label || `Partenaire ID ${c.Id_Partenaire}`,
+                    engagement_type_id: c.engagement_type_id,
+                    engagement_type_label: c.engagement_type_label,
+                    montant_convenu: c.Montant_Convenu || '',
+                    autre_engagement: c.autre_engagement || '',
+                    engagement_description: c.engagement_description || '',
+                    is_signatory: !!c.is_signatory,
+                    date_signature: c.date_signature || '',
+                    details_signature: c.details_signature || ''
                 })));
-                
-                const fetchedDocs = data.documents || [];
-                setExistingDocuments(fetchedDocs.map(doc => ({ id: doc.Id_Doc, name: doc.file_name || `Document ${doc.Id_Doc}`, url: doc.url || null, type: doc.file_type, intitule: doc.Intitule || '', })));
-                
-            } catch (err) { console.error("Erreur chargement données convention:", err); if (isMounted) setSubmissionStatus({ loading: false, error: err.response?.data?.message || err.message || "Erreur chargement données.", success: false }); }
-            finally { if (isMounted) setLoadingData(false); }
+
+                setExistingDocuments((data.documents || []).map(doc => ({ id: doc.Id_Doc, name: doc.file_name, url: doc.url, type: doc.file_type, intitule: doc.Intitule || '' })));
+            } catch (err) {
+                if (isMounted) setSubmissionStatus({ loading: false, error: err.response?.data?.message || "Erreur chargement des données.", success: false });
+            } finally {
+                if (isMounted) setLoadingData(false);
+            }
         };
         fetchConventionData();
         return () => { isMounted = false; };
-    }, [itemId, baseApiUrl, optionsFinishedLoading, allPartenairesOptions, programmesOptions, provincesOptions, projetsOptions, conventionCadreOptions, STATUT_OPTIONS, storageBaseUrl, fonctionnairesOptions]);
-
-    useEffect(() => {
-        if (!isEditing && optionsFinishedLoading) {
-            setFormData({ Code: '', code_provisoire: '', Classification_prov: '',type: 'specifique', Categorie: '', Intitule: '', Reference: '', Annee_Convention: '', Objet: '', Objectifs: '', provinces: [], Maitre_Ouvrage: '', Cout_Global: '', date_reception_vise: '', duree_convention: '', maitre_ouvrage_delegue: '' , Statut: null, Operationalisation: 'Non', Groupe: '', Rang: '', programmeId: null, projetId: null, conventionCadreId: null, observations: '', fonctionnaires: [], numero_approbation: '', session: '', date_visa: '' , membres_comite_technique: [], membres_comite_pilotage: []});
-            setSelectedPartnerDetails([]); setFormErrors({}); setSubmissionStatus({ loading: false, error: null, success: false }); setLoadingData(false);
-            setExistingDocuments([]); setNewFiles([]); setDocumentsToDelete([]);
-            setDataToResubmit(null); setShowConfirmModal(false);
-        }
-    }, [isEditing, optionsFinishedLoading]);
+    }, [itemId, loadingOptions, baseApiUrl, conventionCadreOptions, programmesOptions, projetsOptions, provincesOptions, fonctionnairesOptions, STATUT_OPTIONS,secteursOptions]);
 
     const validateForm = () => {
         const errors = {};
-        if (!formData.Intitule?.trim()) errors.Intitule = "Intitulé requis.";
-        if (!formData.Annee_Convention) errors.Annee_Convention = "Année requise.";
-       else if (isNaN(parseInt(formData.Annee_Convention)) || String(formData.Annee_Convention).length !== 4) errors.Annee_Convention = "Année invalide (YYYY).";
-        if (!formData.type) errors.type = "Le type de convention est requis."; 
-        if (formData.type === 'specifique' && !formData.conventionCadreId) errors.convention_cadre_id = "La convention cadre est requise.";
-        if (!formData.numero_approbation?.trim()) errors.numero_approbation = "Le numéro d'approbation est requis.";
-        if (!formData.session) errors.session = "La session est requise.";
-        if (!formData.Statut) errors.Statut = "Statut requis.";
-        if (formData.Cout_Global && isNaN(parseCurrency(formData.Cout_Global))) errors.Cout_Global = "Coût Global doit être un nombre.";
-        if (formData.Groupe && isNaN(parseInt(formData.Groupe))) errors.Groupe = "Groupe doit être un nombre entier.";
-        if (selectedPartnerDetails.length > 0) {
-            selectedPartnerDetails.forEach((p) => {
-                const amount = parseCurrency(p.montant);
-                if (p.montant !== '' && (isNaN(amount) || amount < 0)) errors[`montant_${p.id}`] = `Montant invalide pour ${p.label}.`;
-                if (p.is_signatory && !p.date_signature) errors[`date_sig_${p.id}`] = `Date signature requise pour ${p.label} (signataire).`;
-            });
+        if (!formData.Intitule?.trim()) {
+            errors.intitule = "Intitulé requis.";
         }
-        if (formData.observations && formData.observations.length > 20000) errors.observations = "Observations max 20000 caractères.";
+        if (!formData.Annee_Convention) {
+            errors.annee_convention = "Année requise.";
+        }
+        if (formData.type === 'specifique' && !formData.conventionCadreId) {
+            errors.convention_cadre_id = "La convention cadre est requise.";
+        }
+        if (!String(formData.numero_approbation || '').trim()) {
+            errors.numero_approbation = "N° d'approbation requis.";
+        }
+        if (!formData.session) {
+            errors.session = "Session requise.";
+        }
+        if (!formData.Statut) {
+            errors.statut = "Statut requis.";
+        }
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
-     };
+    };
 
-    const calculateEngagementYears = (startYear, durationMonths) => {
-        const start = parseInt(startYear, 10);
-        const duration = parseInt(durationMonths, 10);
-        if (isNaN(start) || isNaN(duration) || start <= 1900 || duration <= 0) {
-            return [];
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        if (name === 'Intitule') {
+            requestAnimationFrame(autosizeIntitule);
         }
-        const numYears = Math.ceil(duration / 12);
-        return Array.from({ length: numYears }, (_, i) => start + i);
+    };
+    
+    const handleTypeToggleChange = (value) => {
+        setFormData(prev => ({ ...prev, type: value,sous_type: '', // Reset sous_type
+projetId: value === 'cadre' ? null : prev.projetId, conventionCadreId: value === 'cadre' ? null : prev.conventionCadreId, programmeId: value === 'specifique' ? null : prev.programmeId }));
     };
 
-    const handleYearlyAmountChange = (tempId, year, value) => {
-        setSelectedPartnerDetails(prevDetails =>
-            prevDetails.map(p => {
-                if (p.tempId === tempId) {
-                    const updatedEngagements = p.engagements_annuels ? [...p.engagements_annuels] : [];
-                    const yearIndex = updatedEngagements.findIndex(e =>  Number(e.annee) === year);
-                    const numericValue = value.replace(/[^0-9.]/g, '');
 
-                    if (yearIndex > -1) {
-                        updatedEngagements[yearIndex].montant_prevu = numericValue;
-                    } else {
-                        updatedEngagements.push({ annee: year, montant_prevu: numericValue });
-                    }
-                    const finalEngagements = updatedEngagements.filter(e => e.montant_prevu && e.montant_prevu !== '');
-                    return { ...p, engagements_annuels: finalEngagements };
-                }
-                return p;
-            })
-        );
-    };
-    const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: undefined })); if (name === 'Intitule') { requestAnimationFrame(autosizeIntitule); } };
-    const handleProgrammeChange = (selectedOption) => { setFormData(prev => ({ ...prev, programmeId: selectedOption })); if (formErrors.Id_Programme) setFormErrors(prev => ({ ...prev, Id_Programme: undefined })); };
+    const handleEngagementsChange = useCallback((engagements) => {
+        setPartnerEngagements(engagements.map(eng => ({
+            ...eng,
+            id: eng.id || generateTempId()
+        })));
+    }, []);
+    
+    const handlePartenairesChange = (selectedOptions) => { setSelectedPartenaires(selectedOptions || []); };
+    const handleMaitresOuvrageChange = (selectedOptions) => { setFormData(prev => ({ ...prev, maitresOuvrage: selectedOptions || [] })); };
+    const handleMaitresOuvrageDeleguesChange = (selectedOptions) => { setFormData(prev => ({ ...prev, maitresOuvrageDelegues: selectedOptions || [] })); };
+    const handleMaitreOuvragePrincipalChange = (selectedOption) => { setFormData(prev => ({ ...prev, Maitre_Ouvrage: selectedOption })); };
+const handleMaitreOuvrageDeleguePrincipalChange = (selectedOption) => { setFormData(prev => ({ ...prev, maitre_ouvrage_delegue: selectedOption })); };
 
-const handleEngagementTypeChange = (tempId, type) => {
-    setSelectedPartnerDetails(prevDetails =>
-        prevDetails.map(p => {
-            if (p.tempId === tempId) {
-                const updatedPartner = { ...p, engagement_type: type };
-                if (type === 'financier') {
-                    updatedPartner.autre_engagement = '';
-                } else {
-                    updatedPartner.montant = '';
-                }
-                return updatedPartner;
-            }
-            return p;
-        })
-    );
-};
+    const handleProvinceChange = (selectedOptions) => { setFormData(prev => ({ ...prev, provinces: selectedOptions || [] })); };
+    const handleFonctionnaireChange = (selectedOptions) => { setFormData(prev => ({ ...prev, fonctionnaires: selectedOptions || [] })); };
+    const handleStatutChange = (selectedOption) => { setFormData(prev => ({ ...prev, Statut: selectedOption })); };
+    const handleProgrammeChange = (selectedOption) => { setFormData(prev => ({ ...prev, programmeId: selectedOption })); };
+const handleSecteurChange = (selectedOption) => { setFormData(prev => ({ ...prev, secteurId: selectedOption })); };
+    const handleProjetChange = (selectedOption) => { setFormData(prev => ({ ...prev, projetId: selectedOption })); };
+    const handleConventionCadreChange = (selectedOption) => { setFormData(prev => ({ ...prev, conventionCadreId: selectedOption })); };
 
-const handleAutreEngagementChange = (tempId, value) => {
-    setSelectedPartnerDetails(prevDetails =>
-        prevDetails.map(p => (p.tempId === tempId ? { ...p, autre_engagement: value } : p))
-    );
-};
-const handleTypeToggleChange = (value) => {
-    let updatedFormData = { ...formData, type: value };
-    if (value === 'cadre') {
-        updatedFormData.projetId = null; 
-        updatedFormData.conventionCadreId = null;
-    } else if (value === 'specifique') {
-        updatedFormData.programmeId = null;
-    }
-
-    setFormData(updatedFormData);
-
-    if (formErrors.type) setFormErrors(prev => ({ ...prev, type: undefined }));
-    if (formErrors.Id_Programme) setFormErrors(prev => ({ ...prev, Id_Programme: undefined }));
-    if (formErrors.Id_Projet) setFormErrors(prev => ({ ...prev, Id_Projet: undefined }));
-    if (formErrors.convention_cadre_id) setFormErrors(prev => ({...prev, convention_cadre_id: undefined}));
-};
-    const handleProvinceChange = (selectedOptions) => { setFormData(prev => ({ ...prev, provinces: selectedOptions || [] })); if (formErrors.Province) setFormErrors(prev => ({ ...prev, Province: undefined })); };
-    const handleStatutChange = (selectedOption) => { setFormData(prev => ({ ...prev, Statut: selectedOption , date_visa: selectedOption?.value === 'visé' ? prev.date_visa : '' })); if (formErrors.Statut) setFormErrors(prev => ({ ...prev, Statut: undefined })); };
-    const handleProjetChange = (selectedOption) => { setFormData(prev => ({ ...prev, projetId: selectedOption })); if (formErrors.Id_Projet) { setFormErrors(prev => ({ ...prev, Id_Projet: undefined })); } };
-    const handleConventionCadreChange = (selectedOption) => { setFormData(prev => ({ ...prev, conventionCadreId: selectedOption })); if (formErrors.convention_cadre_id) { setFormErrors(prev => ({ ...prev, convention_cadre_id: undefined })); } };
-    const handleFonctionnaireChange = (selectedOptions) => { setFormData(prev => ({ ...prev, fonctionnaires: selectedOptions || [] })); if (formErrors.id_fonctionnaire) { setFormErrors(prev => ({ ...prev, id_fonctionnaire: undefined })); } };
-    const handleFileChange = (e) => { const files = Array.from(e.target.files); if (files.length > 0) { setNewFiles(prev => { const currentIdentifiers = new Set(prev.map(fw => `${(fw.file?.name || fw.name)}_${(fw.file?.size || fw.size)}`)); const newlyAdded = files.filter(f => !currentIdentifiers.has(`${f.name}_${f.size}`)).map(f => ({ file: f, intitule: '', showIntitule: false })); return [...prev, ...newlyAdded]; }); if (formErrors.fichiers) setFormErrors(prev => ({ ...prev, fichiers: undefined })); } e.target.value = null; };
-    const handleRemoveNewFile = (indexToRemove) => { setNewFiles(prev => prev.filter((_, index) => index !== indexToRemove)); };
-    const handleMarkForDeletion = (docId) => { setDocumentsToDelete(prev => [...new Set([...prev, docId])]); };
-    const handleUnmarkForDeletion = (docId) => { setDocumentsToDelete(prev => prev.filter(id => id !== docId)); if (formErrors.fichiers_delete) setFormErrors(prev => ({ ...prev, fichiers_delete: undefined })); };
-    const handlePartnerSelectionChange = (selectedOptions) => { const newSelectedPartnersOptions = selectedOptions || []; setSelectedPartnerDetails(prevDetails => { const keptDetails = prevDetails.filter(detail => newSelectedPartnersOptions.some(opt => opt.value === detail.id)); 
-        const addedDetails = newSelectedPartnersOptions.filter(option => !prevDetails.some(detail => detail.id === option.value)).map(option => ({ tempId: generateTempId(), id: option.value, Id_CP: null, label: option.label,        engagements_annuels: [],
- montant: '',engagement_type: 'financier',autre_engagement: '', is_signatory: false, date_signature: '', details_signature: '', })); return [...keptDetails, ...addedDetails]; }); if (formErrors.partenaires) setFormErrors(prev => ({ ...prev, partenaires: undefined })); if (formErrors.signatories) setFormErrors(prev => ({ ...prev, signatories: undefined })); const newPartnerIds = newSelectedPartnersOptions.map(opt => opt.value); setFormErrors(prev => { const nextErrors = { ...prev }; Object.keys(nextErrors).forEach(key => { const matchAmount = key.match(/^montant_(\d+)$/); const matchDate = key.match(/^date_sig_(\d+)$/); const matchDetails = key.match(/^details_sig_(\d+)$/); const partnerIdStr = matchAmount?.[1] || matchDate?.[1] || matchDetails?.[1]; if (partnerIdStr && !newPartnerIds.includes(parseInt(partnerIdStr, 10))) delete nextErrors[key]; }); return nextErrors; }); };
-    const handleCommitmentChange = (tempId, value) => { setSelectedPartnerDetails(prevDetails => prevDetails.map(p => p.tempId === tempId ? { ...p, montant: value } : p)); const partnerId = selectedPartnerDetails.find(p=>p.tempId === tempId)?.id; if(partnerId) { const errorKey = `montant_${partnerId}`; if (formErrors[errorKey]) setFormErrors(prev => ({ ...prev, [errorKey]: undefined })); } };
-    const handleSignatoryChange = (tempId, isChecked) => { setSelectedPartnerDetails(prevDetails => prevDetails.map(p => p.tempId === tempId ? { ...p, is_signatory: isChecked, date_signature: isChecked ? p.date_signature : '', details_signature: isChecked ? p.details_signature : '' } : p)); const partnerId = selectedPartnerDetails.find(p=>p.tempId === tempId)?.id; if(partnerId){ if (isChecked && formErrors.signatories) setFormErrors(prev => ({ ...prev, signatories: undefined })); const dateErrorKey = `date_sig_${partnerId}`; const detailsErrorKey = `details_sig_${partnerId}`; if (!isChecked && formErrors[dateErrorKey]) setFormErrors(prev => ({ ...prev, [dateErrorKey]: undefined })); if (!isChecked && formErrors[detailsErrorKey]) setFormErrors(prev => ({ ...prev, [detailsErrorKey]: undefined })); } };
-    const handleSignatureDateChange = (tempId, value) => { setSelectedPartnerDetails(prevDetails => prevDetails.map(p => p.tempId === tempId ? { ...p, date_signature: value } : p)); const partnerId = selectedPartnerDetails.find(p=>p.tempId === tempId)?.id; if(partnerId) { const errorKey = `date_sig_${partnerId}`; if (formErrors[errorKey]) setFormErrors(prev => ({ ...prev, [errorKey]: undefined })); } };
-    const handleSignatureDetailsChange = (tempId, value) => { setSelectedPartnerDetails(prevDetails => prevDetails.map(p => p.tempId === tempId ? { ...p, details_signature: value } : p)); const partnerId = selectedPartnerDetails.find(p=>p.tempId === tempId)?.id; if(partnerId) { const errorKey = `details_sig_${partnerId}`; if (formErrors[errorKey]) setFormErrors(prev => ({ ...prev, [errorKey]: undefined })); } };
-    const handleModalConfirm = () => { setShowConfirmModal(false); if (dataToResubmit) { executeSubmit(dataToResubmit, true); } else { setSubmissionStatus({ loading: false, error: "Erreur interne: Impossible de confirmer.", success: false }); } };
-    const handleModalCancel = () => { setShowConfirmModal(false); setDataToResubmit(null); setSubmissionStatus({ loading: false, error: "Mise à jour annulée par l'utilisateur après demande de confirmation.", success: false }); };
 
     const executeSubmit = async (formDataPayload, confirmDelete = false) => {
         setSubmissionStatus({ loading: true, error: null, success: false });
-        setFormErrors({}); 
-        setDataToResubmit(null); 
-
-        if (confirmDelete) {
-            formDataPayload.append('confirm_delete_commitments', '1');
-        } else {
-            if(formDataPayload.has('confirm_delete_commitments')) {
-                 formDataPayload.delete('confirm_delete_commitments');
-            }
-        }
-
-        const url = isEditing ? `${baseApiUrl}/conventions/${itemId}` : `${baseApiUrl}/conventions`;
-        const config = { headers: { 'Accept': 'application/json' }, withCredentials: true };
+        if (confirmDelete) formDataPayload.append('confirm_delete_commitments', '1');
         if (isEditing) formDataPayload.append('_method', 'PUT');
 
+        const url = isEditing ? `${baseApiUrl}/conventions/${itemId}` : `${baseApiUrl}/conventions`;
+
         try {
-            const response = await axios.post(url, formDataPayload, config);
+            const response = await axios.post(url, formDataPayload, { headers: { 'Accept': 'application/json' }, withCredentials: true });
             setSubmissionStatus({ loading: false, error: null, success: true });
-            const returnedConvention = response.data.convention;
-            if (isEditing) { onItemUpdated?.(returnedConvention); } 
-            else { onItemCreated?.(returnedConvention); }
-            setTimeout(onClose, 1500); 
+            const cb = isEditing ? onItemUpdated : onItemCreated;
+            cb?.(response.data.convention);
+            setTimeout(onClose, 1200);
         } catch (err) {
-            let errorMsg = `Une erreur s'est produite lors de la soumission.`;
-            if (err.response) {
-                if (err.response.status === 409 && err.response.data?.requires_confirmation) {
-                    setSubmissionStatus({ loading: false, error: null, success: false }); 
-                    setConfirmModalData({ message: err.response.data.message || "Confirmation requise.", details: err.response.data.details || [] });
-                    setDataToResubmit(formDataPayload); 
-                    setShowConfirmModal(true); 
-                    return; 
-                }
-                errorMsg = err.response.data?.message || `Erreur serveur (${err.response.status})`;
-                 if (err.response.status === 422 && typeof err.response.data.errors === 'object') {
-                       const serverErrors = err.response.data.errors;
-                       const mappedErrors = {}; 
-                       const partnerCommitmentsPayload = JSON.parse(formDataPayload.get('partner_commitments') || '[]');
-                       Object.keys(serverErrors).forEach(key => {
-                            if (key.startsWith('partner_commitments.')) {
-                                const parts = key.split('.');
-                                if(parts.length > 1 && !isNaN(parseInt(parts[1]))) {
-                                    const index = parseInt(parts[1]); const field = parts.slice(2).join('.');
-                                    const partnerWithError = partnerCommitmentsPayload[index];
-                                    if(partnerWithError && partnerWithError.Id_Partenaire) {
-                                        const partnerId = partnerWithError.Id_Partenaire;
-                                        if(field === 'Montant_Convenu') mappedErrors[`montant_${partnerId}`] = serverErrors[key].join(' ');
-                                        else if(field === 'date_signature') mappedErrors[`date_sig_${partnerId}`] = serverErrors[key].join(' ');
-                                        else if(field === 'details_signature') mappedErrors[`details_sig_${partnerId}`] = serverErrors[key].join(' ');
-                                        else if (field === 'id_cp') mappedErrors['partenaires'] = (mappedErrors['partenaires'] || '') + ` Err Eng P.${partnerId}: ${serverErrors[key].join(' ')}`;
-                                        else mappedErrors['partenaires'] = (mappedErrors['partenaires'] || '') + serverErrors[key].join(' ');
-                                    } else { mappedErrors['partenaires'] = (mappedErrors['partenaires'] || '') + ` Err eng #${index+1}: ` + serverErrors[key].join(' '); }
-                                } else { mappedErrors['partenaires'] = (mappedErrors['partenaires'] || '') + serverErrors[key].join(' '); }
-                            } else if (key === 'partner_commitments') { mappedErrors['partenaires'] = serverErrors[key].join(' '); }
-                            else if (key.startsWith('fichiers.') || key === 'fichiers') { mappedErrors.fichiers = (mappedErrors.fichiers || '') + serverErrors[key].join(' ') + ' '; }
-                            else if (key.startsWith('deleted_document_ids.') || key === 'deleted_document_ids') { mappedErrors.fichiers_delete = (mappedErrors.fichiers_delete || '') + serverErrors[key].join(' ') + ' '; }
-                            else if (key === 'id_fonctionnaire') mappedErrors['id_fonctionnaire'] = serverErrors[key].join(' ');
-                            else { const formKey = Object.keys(formData).find(fk => fk.toLowerCase() === key.toLowerCase()) || key; if (key === 'id_projet') mappedErrors['Id_Projet'] = serverErrors[key].join(' '); else if (key === 'id_programme') mappedErrors['Id_Programme'] = serverErrors[key].join(' '); else if (key === 'convention_cadre_id') mappedErrors['convention_cadre_id'] = serverErrors[key].join(' '); else if (key === 'localisation') mappedErrors['Province'] = serverErrors[key].join(' '); else mappedErrors[formKey] = serverErrors[key].join(' '); }
-                       });
-                       setFormErrors(mappedErrors);
-                       errorMsg = "Erreurs de validation (serveur).";
-                  }
-            } else if (err.request) { errorMsg = "Aucune réponse reçue du serveur."; }
-            else { errorMsg = `Erreur JavaScript: ${err.message}`; }
-            setSubmissionStatus({ loading: false, error: errorMsg, success: false });
+            const error = err.response;
+            if (error?.status === 409 && error.data?.requires_confirmation) {
+                setConfirmModalData({ message: error.data.message, details: error.data.details });
+                setDataToResubmit(formDataPayload);
+                setShowConfirmModal(true);
+                setSubmissionStatus({ loading: false, error: null, success: false });
+                return;
+            }
+            if (error?.status === 422) setFormErrors(error.data.errors || {});
+            setSubmissionStatus({ loading: false, error: error?.data?.message || "Une erreur est survenue.", success: false });
         }
     };
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("DEBUG: State on Submit:", formData);
-        setShowConfirmModal(false); 
         if (!validateForm()) {
             setSubmissionStatus({ loading: false, error: "Veuillez corriger les erreurs indiquées.", success: false });
-             const firstErrorKey = Object.keys(formErrors)[0]; let errorElementId = `form${firstErrorKey}`; if (firstErrorKey?.startsWith('montant_') || firstErrorKey?.startsWith('date_sig_') || firstErrorKey?.startsWith('details_sig_')) { errorElementId = `formDetail_${firstErrorKey.split('_').pop()}`; } else if (['Province', 'Id_Programme', 'Id_Projet', 'convention_cadre_id', 'partenaires', 'Statut', 'id_fonctionnaire'].includes(firstErrorKey)) { errorElementId = `form${firstErrorKey}`; } else if (firstErrorKey === 'fichiers' || firstErrorKey === 'fichiers_delete') { errorElementId = 'file-management-card'; } const elementToScroll = document.getElementById(errorElementId); if (elementToScroll) { elementToScroll.scrollIntoView({ behavior: 'smooth', block: 'center' }); } else { window.scrollTo({ top: 0, behavior: 'smooth' }); }
             return;
         }
-        const dataPayload = new FormData();
-        const comiteTechnique = formData.membres_comite_technique.map(member => member.value);
-        dataPayload.append('membres_comite_technique', JSON.stringify(comiteTechnique));
-        const comitePilotage = formData.membres_comite_pilotage.map(member => member.value);
-        dataPayload.append('membres_comite_pilotage', JSON.stringify(comitePilotage));
-        dataPayload.append('code', formData.Code);
-        dataPayload.append('type', formData.type);
-        dataPayload.append('code_provisoire', formData.code_provisoire ?? '');
-        dataPayload.append('convention_cadre_id', formData.conventionCadreId?.value ?? '');
-        dataPayload.append('intitule', formData.Intitule);
-        dataPayload.append('annee_convention', formData.Annee_Convention);
-        dataPayload.append('statut', formData.Statut?.value ?? '');
-        dataPayload.append('classification_prov', formData.Classification_prov ?? '');
-        dataPayload.append('categorie', formData.Categorie ?? '');
-        dataPayload.append('reference', formData.Reference ?? '');
-        dataPayload.append('objet', formData.Objet ?? '');
-        dataPayload.append('date_visa', formData.date_visa ?? '');
-        dataPayload.append('date_reception_vise', formData.date_reception_vise ?? '');
-        dataPayload.append('duree_convention', formData.duree_convention ?? '');
-        dataPayload.append('maitre_ouvrage_delegue', formData.maitre_ouvrage_delegue ?? '');
-        dataPayload.append('objectifs', formData.Objectifs ?? '');
-        dataPayload.append('maitre_ouvrage', formData.Maitre_Ouvrage ?? '');
-        const partenaireIdsString = selectedPartnerDetails.map(p => p.id).join(';');
-        dataPayload.append('partenaire', partenaireIdsString);
-        dataPayload.append('operationalisation', formData.Operationalisation ?? '');
-        dataPayload.append('groupe', formData.Groupe ?? '');
-        dataPayload.append('rang', formData.Rang ?? '');
-        dataPayload.append('observations', formData.observations ?? '');
-        dataPayload.append('cout_global', formData.Cout_Global ? parseCurrency(formData.Cout_Global) : '');
-        dataPayload.append('Id_Programme', formData.programmeId?.value ?? '');
-        dataPayload.append('id_projet', formData.projetId?.value ?? '');
-        dataPayload.append('session', formData.session ?? '');
-        dataPayload.append('numero_approbation', formData.numero_approbation ?? '');
 
-        const provinceIds = formData.provinces.map(p => p.value).join(';');
-        dataPayload.append('localisation', provinceIds);
-        const fonctionnaireIds = formData.fonctionnaires.map(f => f.value).join(';');
-        dataPayload.append('id_fonctionnaire', fonctionnaireIds);
-        const partnerCommitmentsPayload = selectedPartnerDetails.map(p => {
-            let commitment = {
-                Id_Partenaire: p.id,
-                Montant_Convenu: p.engagement_type === 'financier' && p.montant ? parseCurrency(p.montant) : null,
-                autre_engagement: p.engagement_type === 'autre' && p.autre_engagement ? p.autre_engagement : null,
-                is_signatory: p.is_signatory,
-                date_signature: p.is_signatory && p.date_signature ? p.date_signature : null,
-                details_signature: p.is_signatory && p.details_signature ? p.details_signature : null,
-                 engagements_annuels: p.engagements_annuels?.map(e => ({
-            annee: e.annee,
-            montant_prevu: parseCurrency(e.montant_prevu)
-        })) || []
-    
-            };
-            if (isEditing && p.Id_CP !== null && p.Id_CP !== undefined) {
-                commitment.id_cp = p.Id_CP;
+        const dataPayload = new FormData();
+        
+        // Map form fields to backend field names
+        const fieldMappings = {
+            'Intitule': 'intitule',
+            'sous_type': 'sous_type', // <-- ADD THIS
+    'requires_council_approval': 'requires_council_approval' ,
+            'Annee_Convention': 'annee_convention',
+            'conventionCadreId': 'convention_cadre_id',
+            'projetId': 'id_projet',
+            'programmeId': 'Id_Programme',
+            'Statut': 'statut',
+            'secteurId': 'secteur_id', // <-- ADD THIS MAPPING
+            'type': 'type',
+            'numero_approbation': 'numero_approbation',
+            'session': 'session',
+            'Cout_Global': 'cout_global',
+            'observations': 'observations',
+             'Maitre_Ouvrage': 'maitre_ouvrage',
+            'maitre_ouvrage_delegue': 'maitre_ouvrage_delegue',
+             'date_envoi_visa_mi': 'date_envoi_visa_mi' // Map the new field
+
+
+        };
+        if (formData.type === ('maitrise d\'ouvrage delegue' || formData.type === 'convention' )&& !formData.requires_council_approval) {
+    dataPayload.append('code', formData.Code || '');
+}
+
+        // Process form data with correct field names
+        Object.entries(formData).forEach(([key, value]) => {
+            const backendKey = fieldMappings[key] || key.toLowerCase();
+            let processedValue = value;
+
+            // --- START OF MODIFICATION ---
+
+            // Define all keys that hold a single react-select object
+            const singleSelectKeys = [
+                'Statut', 'conventionCadreId', 'projetId', 'programmeId', 
+                'secteurId', 'Maitre_Ouvrage', 'maitre_ouvrage_delegue'
+            ];
+        if (key === 'requires_council_approval') {
+                // Convert boolean to 1 or 0 for the backend validator
+                processedValue = value ? '1' : '0';
+            } 
+           else if (singleSelectKeys.includes(key)) {
+                // For all single-select fields, extract the 'value' property
+                processedValue = value?.value || '';
+            } else if (Array.isArray(value)) {
+                // This correctly handles multi-select fields
+                processedValue = JSON.stringify(value.map(v => v.value));
+            } else if (key === 'Cout_Global') {
+                processedValue = value ? parseCurrency(value) : '';
             }
-            return commitment;
+
+
+            dataPayload.append(backendKey, processedValue ?? '');
         });
+
+        // Handle special fields
+        dataPayload.set('localisation', JSON.stringify(formData.provinces.map(p => p.value)));
+        dataPayload.set('maitres_ouvrage_ids', JSON.stringify(formData.maitresOuvrage.map(mo => mo.value)));
+        dataPayload.set('maitres_ouvrage_delegues_ids', JSON.stringify(formData.maitresOuvrageDelegues.map(mod => mod.value)));
+        dataPayload.set('id_fonctionnaire', JSON.stringify(formData.fonctionnaires.map(f => f.value)));
+
+        // Handle partner commitments
+        const partnerCommitmentsPayload = partnerEngagements.map(eng => ({
+            id_cp: typeof eng.id === 'number' ? eng.id : null,
+            Id_Partenaire: eng.partenaire_id,
+            engagement_type_id: eng.engagement_type_id,
+            Montant_Convenu: eng.montant_convenu ? parseCurrency(eng.montant_convenu) : null,
+            autre_engagement: eng.autre_engagement || null,
+            engagement_description: eng.engagement_description || null,
+            is_signatory: eng.is_signatory,
+            date_signature: eng.is_signatory ? eng.date_signature : null,
+            details_signature: eng.is_signatory ? eng.details_signature : null
+        }));
         dataPayload.append('partner_commitments', JSON.stringify(partnerCommitmentsPayload));
-        if (newFiles.length > 0) { newFiles.forEach((fw, index) => { const fileObj = fw.file || fw; dataPayload.append('fichiers[]', fileObj); if (typeof fw.intitule === 'string') { dataPayload.append(`intitules[${index}]`, fw.intitule); } }); }
-        if (isEditing && existingDocuments.length > 0) {
-            const docsMeta = existingDocuments
-                .filter(d => typeof d.intitule === 'string' && d.intitule.trim() !== '')
-                .map(d => ({ id: d.id, intitule: d.intitule.trim() }));
-            if (docsMeta.length > 0) {
-                dataPayload.append('documents_existants_meta', JSON.stringify(docsMeta));
-            }
+
+        // Handle files
+        newFiles.forEach((fw, i) => {
+            dataPayload.append('fichiers[]', fw.file);
+            dataPayload.append(`intitules[${i}]`, fw.intitule);
+        });
+
+        if (isEditing) {
+            dataPayload.append('_method', 'PUT');
+            dataPayload.append('documents_existants_meta', JSON.stringify(existingDocuments.map(d => ({ 
+                id: d.id, 
+                intitule: d.intitule 
+            }))));
+            dataPayload.append('deleted_document_ids', JSON.stringify(documentsToDelete));
         }
-        if (isEditing && documentsToDelete.length > 0) { dataPayload.append('deleted_document_ids', JSON.stringify(documentsToDelete)); }
+
         executeSubmit(dataPayload, false);
     };
 
-    const isSubmitDisabled = submissionStatus.loading || loadingData || Object.values(loadingOptions).some(l => l);
-    if (loadingOptions.programmes || loadingOptions.partenaires || loadingOptions.provinces || loadingOptions.projets || loadingOptions.fonctionnaires || loadingOptions.conventionsCadre || (isEditing && loadingData)) {
-        return ( <div className="d-flex justify-content-center align-items-center p-5" style={{minHeight: '400px'}}> <Spinner animation="border" variant="primary" /> <span className='ms-3 text-muted'>Chargement...</span> </div> );
-    }
+    const handleFileChange = (e) => { setNewFiles(prev => [...prev, ...Array.from(e.target.files).map(f => ({ file: f, intitule: '' }))]); e.target.value = null; };
+    const handleRemoveNewFile = (index) => { setNewFiles(prev => prev.filter((_, i) => i !== index)); };
+    const handleMarkForDeletion = (id) => { setDocumentsToDelete(prev => [...new Set([...prev, id])]); };
+    const handleUnmarkForDeletion = (id) => { setDocumentsToDelete(prev => prev.filter(docId => docId !== id)); };
+    const handleModalConfirm = () => { if(dataToResubmit) executeSubmit(dataToResubmit, true); setShowConfirmModal(false); };
+    const handleModalCancel = () => setShowConfirmModal(false);
 
+    if (loadingOptions || loadingData) {
+        return <div className="d-flex justify-content-center align-items-center p-5" style={{ minHeight: '400px' }}><Spinner animation="border" variant="primary" /><span className='ms-3 text-muted'>Chargement du formulaire...</span></div>;
+    }
+    const isSpecialType = ['maitrise d\'ouvrage delegue', 'convention'].includes(formData.type);
+    const showAutoGeneratedCodeFields = !isSpecialType || formData.requires_council_approval;
+    const showManualCodeField = isSpecialType && !formData.requires_council_approval;
+    const availableSousTypes = SOUS_TYPE_OPTIONS[formData.type] || [];
+    const showSousTypeField = availableSousTypes.length > 0;
     return (
         <>
-            <div className="p-4" style={{ backgroundColor: '#fff', borderRadius: '15px', boxShadow: '0 6px 18px rgba(0,0,0,0.1)', maxHeight: 'calc(90vh - 80px)', overflowY: 'auto'}}>
-                 <div className="d-flex justify-content-between align-items-center mb-4 flex-shrink-0 border-bottom pb-2">
+            <div className='p-4'  style={{
+    backgroundColor: '#fff', 
+    borderRadius: '15px',
+    ...(isEditing ? {
+        boxShadow: 'none'
+    } : {
+        boxShadow: '0 6px 18px rgba(0,0,0,0.1)',
+        height: 'calc(100vh - 110px)',
+        display: 'flex',
+        flexDirection: 'column'
+    })
+}}>
+                <div className="d-flex justify-content-between align-items-center mb-4 flex-shrink-0 border-bottom pb-2">
                     <div><h5 className="text-uppercase fw-bold text-secondary mb-1">{isEditing ? 'Modifier la' : 'Créer une nouvelle'}</h5><h2 className="mb-0 fw-bold">Convention {isEditing ? `(Code: ${formData.Code})` : ''}</h2></div>
                     <Button variant="light" className='btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold' onClick={onClose} size="sm" title="Retour">Revenir a la liste</Button>
                 </div>
-                <div className="flex-grow-1">
-                     {submissionStatus.error && <Alert variant="danger" className="mb-3 py-2" dismissible onClose={() => setSubmissionStatus(prev => ({...prev, error: null}))}><FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/> {submissionStatus.error}</Alert>}
-                     {submissionStatus.success && <Alert variant="success" className="mb-3 py-2">Convention {isEditing ? 'modifiée' : 'créée'} avec succès !</Alert>}
-                    <Form noValidate onSubmit={handleSubmit}>
-<Card className=" shadow-none border-0">
-    <Card.Body  style={{ paddingInline: '0.75rem' }}>
-        <Row className="align-items-center text-center">
-            
-            <Col>
-                <ToggleButtonGroup
-                    type="radio"
-                    name="type"
-                    value={formData.type}
-                    onChange={handleTypeToggleChange}
-                    className="w-50 "
-                >
-                    <ToggleButton
-                        id="type-toggle-cadre"
-                        value="cadre"
-                        variant="outline-warning"
-                        className="w-20 rounded m-3 shadow-sm"
-                    >
-                        <span className='text-dark'>Convention Cadre</span>
-                    </ToggleButton>
-                    <div className="w-20"></div>
-                    <ToggleButton
-                        id="type-toggle-specifique"
-                        value="specifique"
-                        variant="outline-warning"
-                        className="w-20 rounded m-3 shadow-sm"
-                    >
-                        <span className='text-dark'>Convention Spécifique</span>
-                    </ToggleButton>
-                </ToggleButtonGroup>
-                 {formErrors.type && (
-                     <div className="d-block invalid-feedback text-white mt-2 text-center">
-                        {formErrors.type}
-                    </div>
-                )}
-            </Col>
-        </Row>
+                <div className="flex-grow-1 px-2" style={{ overflowY: 'auto', scrollBehavior: 'smooth' }}>
+                    {submissionStatus.error && <Alert variant="danger" className="mb-3 py-2" dismissible onClose={() => setSubmissionStatus(prev => ({ ...prev, error: null }))}><FontAwesomeIcon icon={faExclamationTriangle} className="me-2" /> {submissionStatus.error}</Alert>}
+                    {submissionStatus.success && <Alert variant="success" className="mb-3 py-2">Convention {isEditing ? 'modifiée' : 'créée'} avec succès !</Alert>}
+    <div className="container-fluid"> {/* <-- Add this wrapper */}
+
+                    <Form noValidate onSubmit={handleSubmit} id="convention-main-form">
+                        
+                        <Card className="shadow-none border-0">
+    
+    <Card.Body className="d-flex justify-content-center" style={{ paddingInline: '0.75rem' }}>
+        <ToggleButtonGroup 
+            type="radio" 
+            name="type" 
+            value={formData.type} 
+            onChange={handleTypeToggleChange} 
+            className='d-flex flex-wrap justify-content-center gap-3'
+        >
+            {/* Using padding for button size and rounded-pill for style */}
+            <ToggleButton id="type-toggle-cadre" value="cadre" variant="outline-warning" className="rounded-pill shadow-sm px-4 py-2">
+                <span className='text-dark'>Convention Cadre</span>
+            </ToggleButton>
+            <ToggleButton id="type-toggle-specifique" value="specifique" variant="outline-warning" className="rounded-pill shadow-sm px-4 py-2">
+                <span className='text-dark'>Convention Spécifique</span>
+            </ToggleButton>
+            <ToggleButton id="type-toggle-convention" value="convention" variant="outline-warning" className="rounded-pill shadow-sm px-4 py-2">
+        <span className='text-dark'>Convention</span>
+    </ToggleButton>
+    <ToggleButton id="type-toggle-mod" value="maitrise d'ouvrage delegue" variant="outline-warning" className="rounded-pill shadow-sm px-4 py-2">
+        <span className='text-dark'>Maîtrise d'Ouvrage Déléguée</span>
+    </ToggleButton>
+        </ToggleButtonGroup>
+        
+        {/* Note: The error message will now appear below the centered buttons, which is fine. */}
+        {formErrors.type && <div className="d-block invalid-feedback text-white mt-2 text-center">{formErrors.type}</div>}
     </Card.Body>
 </Card>
+
                         <Row className="mb-3 g-3">
                             <Form.Group as={Col} md={8} controlId="formIntitule">
-                                <Form.Label className=" mb-1 fw-medium">Intitulé <span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    ref={intituleRef}
-                                    className={textareaClass}
-                                    isInvalid={!!formErrors.Intitule}
-                                    required
-                                    as="textarea"
-                                    rows={1}
-                                    name="Intitule"
-                                    value={formData.Intitule}
-                                    onChange={handleChange}
-                                    size="sm"
-                                    placeholder={isEditing ? "Modifier l'intitulé de la convention..." : "Saisir l'intitulé de la convention..."}
-                                    maxLength={INTITULE_MAX}
-                                    onFocus={autosizeIntitule}
-                                />
-                                <div className="form-text  d-flex justify-content-between">
-                                    <span>Utilisez des termes clairs et précis.</span>
-                                    <span>{(formData.Intitule || '').length}/{INTITULE_MAX}</span>
-                                </div>
+                                <Form.Label className=" w-100  mb-1 fw-medium">
+                                    {bilingualLabel("Intitulé", "العنوان", true)}
+                                </Form.Label>
+                                <Form.Control ref={intituleRef} className={textareaClass} isInvalid={!!formErrors.Intitule} required as="textarea" rows={1} name="Intitule" value={formData.Intitule} onChange={handleChange} size="sm" placeholder="Saisir l'intitulé..." maxLength={INTITULE_MAX} onFocus={autosizeIntitule} />
+                                <div className="form-text d-flex justify-content-between"><span>Utilisez des termes clairs et précis.</span><span>{(formData.Intitule || '').length}/{INTITULE_MAX}</span></div>
                                 <Form.Control.Feedback type="invalid">{formErrors.Intitule}</Form.Control.Feedback>
                             </Form.Group>
                             <Form.Group as={Col} md={4} controlId="formAnnee_Convention">
-                                <Form.Label className=" mb-1 fw-medium">Année Convention <span className="text-danger">*</span></Form.Label>
-                                <Form.Control className={inputClass} isInvalid={!!formErrors.Annee_Convention} required type="number" name="Annee_Convention" value={formData.Annee_Convention} onChange={handleChange} size="sm" placeholder="YYYY" min="1900" max={new Date().getFullYear() + 10}/>
+                                <Form.Label className=" w-100  mb-1 fw-medium">
+                                    {bilingualLabel("Année De Session", "سنة الدورة", formData.requires_council_approval)}
+                                </Form.Label>
+                                <Form.Control className={inputClass} isInvalid={!!formErrors.Annee_Convention} required type="number" name="Annee_Convention" value={formData.Annee_Convention} onChange={handleChange} size="sm" placeholder="YYYY" min="1900" max={new Date().getFullYear() + 10} />
                                 <Form.Control.Feedback type="invalid">{formErrors.Annee_Convention}</Form.Control.Feedback>
                             </Form.Group>
                         </Row>
-                                            
+{isSpecialType && (
+    <Row className="mb-3 g-3 justify-content-center">
+        <Col md={8}>
+            <Card className="shadow-sm border-2 border-primary">
+                <Card.Body className="text-center">
+                    <Form.Group controlId="formRequiresCouncilApproval">
+                        <Form.Check 
+                            type="switch"
+                            id="requires-approval-switch"
+                            label="Cette convention requiert-elle l'approbation du conseil ? / تحتاج للمصادقة من طرف المجلس"
+                            checked={formData.requires_council_approval}
+                            onChange={(e) => setFormData(prev => ({ ...prev, requires_council_approval: e.target.checked }))}
+                        />
+                    </Form.Group>
+                </Card.Body>
+            </Card>
+        </Col>
+    </Row>
+)}
+{showAutoGeneratedCodeFields && (
                         <Row className="mb-3 g-3">
-                                                         <Form.Group as={Col} md={4} controlId="formDureeConvention">
-                                <Form.Label className=" mb-1 fw-medium">Durée de la convention (mois)</Form.Label>
-                                <Form.Control 
-                                    className={inputClass} 
-                                    isInvalid={!!formErrors.duree_convention} 
-                                    type="number" 
-                                    name="duree_convention" 
-                                    placeholder="ex: 36"
-                                    value={formData.duree_convention} 
-                                    onChange={handleChange} 
-                                    size="sm"
-                                />
+                            <Form.Group as={Col} md={4} controlId="formDureeConvention">
+                                <Form.Label className=" w-100  mb-1 fw-medium">
+                                    {bilingualLabel("Durée (mois)", "المدة (بالأشهر)")}
+                                </Form.Label>
+                                <Form.Control className={inputClass} isInvalid={!!formErrors.duree_convention} type="number" name="duree_convention" placeholder="ex: 36" value={formData.duree_convention} onChange={handleChange} size="sm" />
                                 <Form.Control.Feedback type="invalid">{formErrors.duree_convention}</Form.Control.Feedback>
                             </Form.Group>
-
+                            
                             <Form.Group as={Col} md={4} controlId="formNumeroApprobation">
-                                <Form.Label className=" mb-1 fw-medium">Numéro d'approbation <span className="text-danger">*</span></Form.Label>
-                                <Form.Control 
-                                    className={inputClass} 
-                                    isInvalid={!!formErrors.numero_approbation} 
-                                    type="text" 
-                                    name="numero_approbation" 
-                                    value={formData.numero_approbation} 
-                                    onChange={handleChange} 
-                                    size="sm"
-                                />
+                                <Form.Label className=" w-100  mb-1 fw-medium">
+                                    {bilingualLabel("N° approbation", "رقم الموافقة",true)} 
+                                </Form.Label>
+                                <Form.Control className={inputClass} isInvalid={!!formErrors.numero_approbation} type="text" name="numero_approbation" value={formData.numero_approbation} onChange={handleChange} size="sm" />
                                 <Form.Control.Feedback type="invalid">{formErrors.numero_approbation}</Form.Control.Feedback>
                             </Form.Group>
                             <Form.Group as={Col} md={4} controlId="formSession">
-                                <Form.Label className=" mb-1 fw-medium">Session (Mois) <span className="text-danger">*</span></Form.Label>
-                                <Form.Select
-                                    className={inputClass}
-                                    name="session"
-                                    value={formData.session}
-                                    onChange={handleChange}
-                                    isInvalid={!!formErrors.session}
-                                    size="sm"
-                                >
+                                <Form.Label className=" w-100  mb-1 fw-medium">
+                                    {bilingualLabel("Session (Mois)", "الدورة (الشهر)",true)} 
+                                </Form.Label>
+                                <Form.Select className={inputClass} name="session" value={formData.session} onChange={handleChange} isInvalid={!!formErrors.session} size="sm">
                                     <option value="">Sélectionner un mois</option>
-                                    {[...Array(12).keys()].map(i => (
-                                        <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('fr', { month: 'long' })}</option>
-                                    ))}
+                                    {[...Array(12).keys()].map(i => (<option key={i + 1} value={i + 1}>{new Date(0, i).toLocaleString('fr', { month: 'long' })}</option>))}
                                 </Form.Select>
                                 <Form.Control.Feedback type="invalid">{formErrors.session}</Form.Control.Feedback>
                             </Form.Group>
                         </Row>
-               
+)}
+{showManualCodeField && (
+    <Row className="mb-3 g-3">
+        <Form.Group as={Col} md={4} controlId="formDureeConvention">
+                                <Form.Label className=" w-100  mb-1 fw-medium">
+                                    {bilingualLabel("Durée (mois)", "المدة (بالأشهر)")}
+                                </Form.Label>
+                                <Form.Control className={inputClass} isInvalid={!!formErrors.duree_convention} type="number" name="duree_convention" placeholder="ex: 36" value={formData.duree_convention} onChange={handleChange} size="sm" />
+                                <Form.Control.Feedback type="invalid">{formErrors.duree_convention}</Form.Control.Feedback>
+                            </Form.Group>
 
+        <Form.Group as={Col} md={8} controlId="formManualCode">
+            <Form.Label className=" w-100  mb-1 fw-medium">
+                {bilingualLabel("Code Convention (Manuel)", "رمز الاتفاقية (يدوي)", true)} 
+            </Form.Label>
+            <Form.Control 
+                className={inputClass} 
+                isInvalid={!!formErrors.code} 
+                required 
+                type="text" 
+                name="Code" // Use 'Code' to match existing state property
+                value={formData.Code} 
+                onChange={handleChange} 
+                size="sm"
+                placeholder="Saisir le code manuellement..."
+            />
+            <Form.Control.Feedback type="invalid">{formErrors.code}</Form.Control.Feedback>
+        </Form.Group>
+    </Row>
+)}
+<br/>
+<hr/>
+                        <Row className="mb-3 g-3 mt-3">
+<Form.Group as={Col} md={6} controlId="formMaitre_Ouvrage">
+        <Form.Label className=" w-100  mb-1 fw-medium">
+            {bilingualLabel("Maitre d'Ouvrage (Principal)", "صاحب المشروع (الرئيسي)")}
+        </Form.Label>
+        <MaitreOuvrageManager 
+                        isMulti={false} // Use the manager for consistency (we'll adapt it soon)
+                        selectedMaitresOuvrage={formData.Maitre_Ouvrage} 
+                        onSelectionChange={handleMaitreOuvragePrincipalChange} 
+                        baseApiUrl={baseApiUrl} 
+                        type="maitre_ouvrage"
+                        // No exclusions needed for the principal
+                    />
 
-                                                  <Row className="mb-3 g-3">
-                             <Form.Group as={Col}  controlId="formMaitre_Ouvrage"><Form.Label className=" mb-1 fw-medium">Maitre Ouvrage</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Maitre_Ouvrage} type="text" name="Maitre_Ouvrage" value={formData.Maitre_Ouvrage} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Maitre_Ouvrage}</Form.Control.Feedback></Form.Group>
-                             
+        <Form.Control.Feedback type="invalid">{formErrors.Maitre_Ouvrage}</Form.Control.Feedback>
+    </Form.Group>
+    <Form.Group as={Col} md={6} controlId="formMaitreOuvrageDelegue">
+        <Form.Label className=" w-100  mb-1 fw-medium">
+            {bilingualLabel("Maitre d'Ouvrage Délégué (Principal)", "صاحب المشروع المنتدب (الرئيسي)")}
+        </Form.Label>
+         <MaitreOuvrageManager 
+                        isMulti={false} // Use the manager for consistency (we'll adapt it soon)
+                        selectedMaitresOuvrage={formData.maitre_ouvrage_delegue} 
+                        onSelectionChange={handleMaitreOuvrageDeleguePrincipalChange} 
+                        baseApiUrl={baseApiUrl} 
+                        type="maitre_ouvrage_delegue"
+                        // No exclusions needed for the principal
+        />
+
+        <Form.Control.Feedback type="invalid">{formErrors.maitre_ouvrage_delegue}</Form.Control.Feedback>
+    </Form.Group>
+    
+
+                        </Row>
+
+<Card className="mb-4 shadow-sm" style={{ borderLeft: '4px solid #6f42c1' }}>
+    <Card.Header className='bg-white py-2'><h6 className='mb-0 fw-bold text-purple'><FontAwesomeIcon icon={faBuilding} className="me-2" />Maîtres d'Ouvrage</h6></Card.Header>
+    <Card.Body className="pb-3 pt-3" style={{ backgroundColor: '#f8f9fa' }}>
+
+        <div className="d-md-flex gap-3">
+            <div className="flex-fill mb-3 mb-md-0">
+                <MaitreOuvrageManager 
+                    selectedMaitresOuvrage={formData.maitresOuvrage} 
+                    onSelectionChange={handleMaitresOuvrageChange} 
+                    baseApiUrl={baseApiUrl} 
+                    excludedOptions={formData.Maitre_Ouvrage ? [formData.Maitre_Ouvrage] : []}
+                    type="maitre_ouvrage" 
+                />
+            </div>
+            <div className="flex-fill">
+                <MaitreOuvrageManager 
+
+                    selectedMaitresOuvrage={formData.maitresOuvrageDelegues} 
+                    onSelectionChange={handleMaitresOuvrageDeleguesChange} 
+                    baseApiUrl={baseApiUrl}
+                    excludedOptions={formData.maitre_ouvrage_delegue ? [formData.maitre_ouvrage_delegue] : []}
+                    type="maitre_ouvrage_delegue" 
+                />
+            </div>
+        </div>
+    </Card.Body>
+</Card>
+
+                        <Row className="mb-3 g-3">
+                            
                             {formData.type === 'cadre' && (
                                 <Form.Group as={Col} md={6} lg={6} controlId="formId_Programme">
-                                    <Form.Label className=" mb-1 fw-medium">Programme</Form.Label>
-                                    <Select inputId='programme-select-input' name="programmeId" menuPlacement="auto" options={programmesOptions} value={formData.programmeId} onChange={handleProgrammeChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.programmes} className={formErrors.Id_Programme ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/>
-                                    <Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Programme ? 'block' : 'none'}}>{formErrors.Id_Programme}</Form.Control.Feedback>
+                                    <Form.Label className=" w-100  mb-1 fw-medium">
+                                        {bilingualLabel("Programme", "البرنامج")}
+                                    </Form.Label>
+                                    <Select inputId='programme-select-input' name="programmeId" menuPlacement="auto" options={programmesOptions} value={formData.programmeId} onChange={handleProgrammeChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions} className={formErrors.Id_Programme ? 'is-invalid' : ''} />
+                                    <Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Programme ? 'block' : 'none' }}>{formErrors.Id_Programme}</Form.Control.Feedback>
                                 </Form.Group>
                             )}
                             {formData.type === 'specifique' && (
                                 <>
                                     <Form.Group as={Col} md={4} lg={4} controlId="formconvention_cadre_id">
-                                        <Form.Label className=" mb-1 fw-medium">Convention Cadre de Rattachement <span className="text-danger">*</span></Form.Label>
-                                        <Select inputId='convention-cadre-select-input' name="conventionCadreId" menuPlacement="auto" options={conventionCadreOptions} value={formData.conventionCadreId} onChange={handleConventionCadreChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.conventionsCadre} className={formErrors.convention_cadre_id ? 'is-invalid' : ''} classNamePrefix="react-select"/>
-                                        <Form.Control.Feedback type="invalid" style={{ display: formErrors.convention_cadre_id ? 'block' : 'none'}}>{formErrors.convention_cadre_id}</Form.Control.Feedback>
+                                        <Form.Label className=" w-100  mb-1 fw-medium">
+                                            {bilingualLabel("Convention Cadre", "الاتفاقية الإطار", true)} 
+                                        </Form.Label>
+                                        <Select inputId='convention-cadre-select-input' name="conventionCadreId" menuPlacement="auto" options={conventionCadreOptions} value={formData.conventionCadreId} onChange={handleConventionCadreChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions} className={formErrors.conventionCadreId ? 'is-invalid' : ''} />
+                                        <Form.Control.Feedback type="invalid" style={{ display: formErrors.conventionCadreId ? 'block' : 'none' }}>{formErrors.conventionCadreId}</Form.Control.Feedback>
                                     </Form.Group>
                                     <Form.Group as={Col} md={4} lg={4} controlId="formId_Projet">
-                                        <Form.Label className=" mb-1 fw-medium">Projet</Form.Label>
-                                        <Select inputId='projet-select-input' name="projetId" menuPlacement="auto" options={projetsOptions} value={formData.projetId} onChange={handleProjetChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions.projets} className={formErrors.Id_Projet ? 'is-invalid' : ''} classNamePrefix="react-select" isMulti={false}/>
-                                        <Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Projet ? 'block' : 'none'}}>{formErrors.Id_Projet}</Form.Control.Feedback>
+                                        <Form.Label className=" w-100  mb-1 fw-medium">
+                                            {bilingualLabel("Projet", "المشروع")}
+                                        </Form.Label>
+                                        <Select inputId='projet-select-input' name="projetId" menuPlacement="auto" options={projetsOptions} value={formData.projetId} onChange={handleProjetChange} styles={selectStyles} placeholder="- Selectionner -" isClearable isLoading={loadingOptions} className={formErrors.Id_Projet ? 'is-invalid' : ''} />
+                                        <Form.Control.Feedback type="invalid" style={{ display: formErrors.Id_Projet ? 'block' : 'none' }}>{formErrors.Id_Projet}</Form.Control.Feedback>
                                     </Form.Group>
                                 </>
                             )}
-                        </Row>       
-                                                  <Row className="mb-3 g-3">
-    <Form.Group as={Col} md={6} controlId="formMaitreOuvrageDelegue">
-        <Form.Label className=" mb-1 fw-medium">Maitre d'ouvrage délégué</Form.Label>
-        <Form.Control 
-            className={inputClass} 
-            isInvalid={!!formErrors.maitre_ouvrage_delegue} 
-            type="text" 
-            name="maitre_ouvrage_delegue" 
-            value={formData.maitre_ouvrage_delegue} 
-            onChange={handleChange} 
-            size="sm"
-        />
-        <Form.Control.Feedback type="invalid">{formErrors.maitre_ouvrage_delegue}</Form.Control.Feedback>
-    </Form.Group>
-                                <Form.Group as={Col} md={6} controlId="formCout_Global"><Form.Label className=" mb-1 fw-medium">Cout Global (MAD)</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Cout_Global} type="number" step="0.01" min="0" name="Cout_Global" value={formData.Cout_Global} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Cout_Global}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col}  controlId="formCout_Global"><Form.Label className=" w-100  mb-1 fw-medium">
+                                {bilingualLabel("Cout Global (MAD)", "التكلفة الإجمالية (درهم)")}
+                            </Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Cout_Global} type="number" step="0.01" min="0" name="Cout_Global" value={formData.Cout_Global} onChange={handleChange} size="sm" /><Form.Control.Feedback type="invalid">{formErrors.Cout_Global}</Form.Control.Feedback></Form.Group>
+                        </Row>
 
-
-</Row>          
                         <Row className="mb-3 g-3">
-                            <Form.Group as={Col} md={4} controlId="formStatut"><Form.Label className=" mb-1 fw-medium">Statut <span className="text-danger">*</span></Form.Label><Select inputId='statut-select-input' name="Statut" options={groupedStatutOptions} value={formData.Statut} onChange={handleStatutChange} styles={selectStyles} placeholder="- Sélectionner Statut -" isClearable formatGroupLabel={(group) => (<div style={{ fontWeight: 'bold', color: '#555', borderTop: '1px solid #eee', paddingTop: '5px', marginTop:'5px' }}>{group.label}</div>)} className={formErrors.Statut ? 'is-invalid' : ''} classNamePrefix="react-select"/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Statut ? 'block' : 'none'}}>{formErrors.Statut}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col} md={4} controlId="formStatut"><Form.Label className=" w-100  mb-1 fw-medium">
+                                {bilingualLabel("Statut", "الحالة",true)} 
+                            </Form.Label><Select inputId='statut-select-input' name="Statut" options={groupedStatutOptions} value={formData.Statut} onChange={handleStatutChange} styles={selectStyles} placeholder="- Sélectionner Statut -" isClearable formatGroupLabel={(group) => (<div style={{ fontWeight: 'bold', color: '#555', borderTop: '1px solid #eee', paddingTop: '5px', marginTop: '5px' }}>{group.label}</div>)} className={formErrors.Statut ? 'is-invalid' : ''} /><Form.Control.Feedback type="invalid" style={{ display: formErrors.Statut ? 'block' : 'none' }}>{formErrors.Statut}</Form.Control.Feedback></Form.Group>
+                            {formData.Statut?.value === 'en cours de visa' && (
+                                    <Form.Group as={Col} md={4} controlId="formDateEnvoiVisaMi">
+                                        <Form.Label className=" w-100  mb-1 fw-medium">
+                                            {bilingualLabel("Date d'envoi visa MI", "تاريخ الإرسال للتأشيرة", true)}
+                                        </Form.Label>
+                                        <Form.Control 
+                                            className={inputClass} 
+                                            isInvalid={!!formErrors.date_envoi_visa_mi} 
+                                            required 
+                                            type="date" 
+                                            name="date_envoi_visa_mi" 
+                                            value={formData.date_envoi_visa_mi} 
+                                            onChange={handleChange} 
+                                            size="sm" 
+                                        />
+                                        <Form.Control.Feedback type="invalid">{formErrors.date_envoi_visa_mi}</Form.Control.Feedback>
+                                    </Form.Group>
+                                )}
                             {formData.Statut?.value === 'visé' && (
-                                <><Form.Group as={Col} md={4} controlId="formDateVisa">
-                                    <Form.Label className=" mb-1 fw-medium">Date de visa</Form.Label>
-                                    <Form.Control 
-                                        className={inputClass} 
-                                        isInvalid={!!formErrors.date_visa} 
-                                        required 
-                                        type="date" 
-                                        name="date_visa" 
-                                        value={formData.date_visa} 
-                                        onChange={handleChange} 
-                                        size="sm"
-                                    />
+                                <>
+                                <Form.Group as={Col} md={4} controlId="formDateVisa">
+                                    <Form.Label className=" w-100  mb-1 fw-medium">
+                                        {bilingualLabel("Date de visa", "تاريخ التأشيرة")}
+                                    </Form.Label>
+                                    <Form.Control className={inputClass} isInvalid={!!formErrors.date_visa} required type="date" name="date_visa" value={formData.date_visa} onChange={handleChange} size="sm" />
                                     <Form.Control.Feedback type="invalid">{formErrors.date_visa}</Form.Control.Feedback>
                                 </Form.Group>
                                 <Form.Group as={Col} md={4} controlId="formDateReceptionVise">
-                               <Form.Label className=" mb-1 fw-medium">Date de réception de convention visée</Form.Label>
-                              <Form.Control 
-                              className={inputClass} 
-                              isInvalid={!!formErrors.date_reception_vise} 
-                              required type="date" name="date_reception_vise" 
-                              value={formData.date_reception_vise} onChange={handleChange} size="sm" />
-                                <Form.Control.Feedback type="invalid">{formErrors.date_reception_vise}</Form.Control.Feedback>
-                             </Form.Group></>
+                                    <Form.Label className=" w-100  mb-1 fw-medium">
+                                        {bilingualLabel("Date de réception", "تاريخ الاستلام")}
+                                    </Form.Label>
+                                    <Form.Control className={inputClass} isInvalid={!!formErrors.date_reception_vise} required type="date" name="date_reception_vise" value={formData.date_reception_vise} onChange={handleChange} size="sm" />
+                                    <Form.Control.Feedback type="invalid">{formErrors.date_reception_vise}</Form.Control.Feedback>
+                                </Form.Group>
+                                </>
                             )}
-                                                      <Form.Group as={Col} md={4}  controlId="formCodeProvisoire">
-                                <Form.Label className=" mb-1 fw-medium">Code Provisoire</Form.Label>
-                                <Form.Control 
-                                    className={inputClass} 
-                                    isInvalid={!!formErrors.code_provisoire} 
-                                    type="text" 
-                                    name="code_provisoire" 
-                                    value={formData.code_provisoire} 
-                                    onChange={handleChange} 
-                                    size="md"
-                                    placeholder="Optionnel..."
-                                />
+                            <Form.Group as={Col} md={4} controlId="formCodeProvisoire">
+                                <Form.Label className=" w-100  mb-1 fw-medium">
+                                    {bilingualLabel("Code Provisoire", "الرمز المؤقت")}
+                                </Form.Label>
+                                <Form.Control className={inputClass} isInvalid={!!formErrors.code_provisoire} type="text" name="code_provisoire" value={formData.code_provisoire} onChange={handleChange} size="md" placeholder="Optionnel..." />
                                 <Form.Control.Feedback type="invalid">{formErrors.code_provisoire}</Form.Control.Feedback>
                             </Form.Group>
-                            <Form.Group as={Col} md={4} controlId="formOperationalisation"><Form.Label className=" mb-1 fw-medium">Opérationnel</Form.Label>
-                                <div> 
-                                        <Form.Check
-                                            inline
-                                            type="radio"
-                                            label="Oui"
-                                            name="Operationalisation"
-                                            id="operationalisation-operationnel"
-                                            value="Oui"
-                                            checked={formData.Operationalisation === 'Oui'}
-                                            onChange={handleChange}
-                                            isInvalid={!!formErrors.Operationalisation}
-                                        />
-                                        <Form.Check
-                                            inline
-                                            type="radio"
-                                            label="Non"
-                                            name="Operationalisation"
-                                            id="operationalisation-non-operationnel"
-                                            value="Non"
-                                            checked={formData.Operationalisation === 'Non'}
-                                            onChange={handleChange}
-                                            isInvalid={!!formErrors.Operationalisation}
-                                        />
-                                        {formErrors.Operationalisation && (
-                                            <Form.Control.Feedback type="invalid" style={{ display: 'block' }}>
-                                                {formErrors.Operationalisation}
-                                            </Form.Control.Feedback>
-                                        )}
-                                    </div>                                    </Form.Group>
-
+                            <Form.Group as={Col} md={4} controlId="formOperationalisation"><Form.Label className=" w-100  mb-1 fw-medium">
+                                {bilingualLabel("Opérationnel", "تشغيلي")}
+                            </Form.Label>
+                                <div>
+                                    <Form.Check inline type="radio" label="Oui" name="Operationalisation" id="operationalisation-oui" value="Oui" checked={formData.Operationalisation === 'Oui'} onChange={handleChange} isInvalid={!!formErrors.Operationalisation} />
+                                    <Form.Check inline type="radio" label="Non" name="Operationalisation" id="operationalisation-non" value="Non" checked={formData.Operationalisation === 'Non'} onChange={handleChange} isInvalid={!!formErrors.Operationalisation} />
+                                    {formErrors.Operationalisation && (<Form.Control.Feedback type="invalid" style={{ display: 'block' }}>{formErrors.Operationalisation}</Form.Control.Feedback>)}
+                                </div>
+                            </Form.Group>
                         </Row>
- 
-                         {/* START: PARTNER BLOCK (NEW STYLE) */}
+
                         <Card className="mb-4 shadow-sm" style={{ borderLeft: '4px solid #198754' }}>
-                            <Card.Header className='bg-white py-2'>
-                                <h6 className='mb-0 fw-bold text-success'>
-                                    <FontAwesomeIcon icon={faHandshake} className="me-2"/>
-                                    Partenaires & Engagements
-                                </h6>
-                            </Card.Header>
-                            <Card.Body className="pb-2 pt-3" style={{backgroundColor: '#f8f9fa'}}>
-                                <Form.Group as={Row} className="mb-3" id="formPartenaires">
-                                    <Form.Label column sm={3} className=" pt-1 fw-medium text-sm-end">Sélection Partenaires</Form.Label>
-                                    <Col sm={9}>
-                                        <Select inputId='partenaire-select-input' name="partenaireSelector" options={allPartenairesOptions} value={allPartenairesOptions.filter(opt => selectedPartnerDetails.some(p => p.id === opt.value))} onChange={handlePartnerSelectionChange} styles={selectStyles} placeholder="- Choisir ou ajouter -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.partenaires} className={formErrors.partenaires || formErrors.signatories ? 'is-invalid' : ''} classNamePrefix="react-select"/>
-                                        {(formErrors.partenaires || formErrors.signatories) && <div className="invalid-feedback d-block ps-1 ">{formErrors.partenaires} {formErrors.signatories}</div>}
-                                    </Col>
-                                </Form.Group>
-                                {selectedPartnerDetails.length > 0 && ( <div className="mt-3 border-top pt-3">
-                                    {selectedPartnerDetails.map((partner, index) => (
-                                        <div key={partner.tempId} id={`formDetail_${partner.id}`} className={`mb-3 ${index < selectedPartnerDetails.length - 1 ? 'border-bottom pb-3' : ''}`}>
-                                            <Row className="mb-2 align-items-center px-sm-3">
-                                                <Col sm={12} md={4} className="mb-2 mb-md-0">
-                                                    <Form.Group>
-                                                        <Form.Label className=" mb-1 fw-medium text-muted">Type d'engagement</Form.Label>
-                                                        <ToggleButtonGroup
-                                                            type="radio"
-                                                            name={`engagement-type-${partner.tempId}`}
-                                                            value={partner.engagement_type}
-                                                            onChange={(type) => handleEngagementTypeChange(partner.tempId, type)}
-                                                            size="sm"
-                                                            className="d-flex"
-                                                        >
-                                                            <ToggleButton id={`type-financier-${partner.tempId}`} value="financier" variant="outline-success" className="w-100">
-                                                                Financier
-                                                            </ToggleButton>
-                                                            <ToggleButton id={`type-autre-${partner.tempId}`} value="autre" variant="outline-success" className="w-100">
-                                                                Autre Nature
-                                                            </ToggleButton>
-                                                        </ToggleButtonGroup>
-                                                    </Form.Group>
-                                                </Col>
-                                                <Col sm={12} md={5} className="mb-2 mb-md-0">
-                                                    {partner.engagement_type === 'financier' ? (
-                                                        <Form.Group>
-                                                            <Form.Label className=" mb-1 fw-medium text-muted">Montant (MAD)</Form.Label>
-                                                            <InputGroup size="sm" className="flex-nowrap">
-                                                                <Form.Control
-                                                                    type="number" step="0.01" min="0"
-                                                                    value={partner.montant}
-                                                                    onChange={(e) => handleCommitmentChange(partner.tempId, e.target.value)}
-                                                                    placeholder="Montant convenu"
-                                                                    className="form-control-sm rounded-start-pill shadow-sm bg-white border-1"
-                                                                    isInvalid={!!formErrors[`montant_${partner.id}`]}
-                                                                />
-                                                                <InputGroup.Text className="rounded-end-pill">MAD</InputGroup.Text>
-                                                                <Form.Control.Feedback type="invalid">{formErrors[`montant_${partner.id}`]}</Form.Control.Feedback>
-                                                            </InputGroup>
-                                                        </Form.Group>
-                                                    ) : (
-                                                        <Form.Group>
-                                                            <Form.Label className=" mb-1 fw-medium text-muted">Description de l'engagement</Form.Label>
-                                                            <Form.Control
-                                                                as="textarea" rows={1}
-                                                                value={partner.autre_engagement}
-                                                                onChange={(e) => handleAutreEngagementChange(partner.tempId, e.target.value)}
-                                                                placeholder="Ex: Mise à disposition du terrain..."
-                                                                className="form-control-sm rounded-3 shadow-sm bg-white border-1"
-                                                                isInvalid={!!formErrors[`autre_engagement_${partner.id}`]}
-                                                            />
-                                                            <Form.Control.Feedback type="invalid">{formErrors[`autre_engagement_${partner.id}`]}</Form.Control.Feedback>
-                                                        </Form.Group>
-                                                    )}
-                                                </Col>
-                                                <Col sm={12} md={3} className="d-flex align-items-end justify-content-center pt-1">
-                                                    <FormCheck
-                                                        type="switch"
-                                                        id={`signatory-check-${partner.tempId}`}
-                                                        label="Signataire?"
-                                                        checked={partner.is_signatory}
-                                                        onChange={(e) => handleSignatoryChange(partner.tempId, e.target.checked)}
-                                                        className="form-check-lg "
-                                                    />
-                                                </Col>
-                                            </Row>
-                                            {partner.engagement_type === 'financier' && formData.Annee_Convention && formData.duree_convention && (
-                                                (() => {
-                                                    const engagementYears = calculateEngagementYears(formData.Annee_Convention, formData.duree_convention);
-                                                    if (engagementYears.length === 0) return null;
-                                                    const yearlyTotal = partner.engagements_annuels?.reduce((sum, item) => sum + parseCurrency(item.montant_prevu), 0) || 0;
-                                                    const totalCommitment = parseCurrency(partner.montant);
-                                                    const isTotalMismatch = yearlyTotal !== totalCommitment;
-                                                    return (
-                                                        <Row className="mt-2 mb-2 px-sm-3 justify-content-end">
-                                                            <Col sm={12}>
-                                                                <div className="p-2 border rounded-3 bg-light">
-                                                                    <p className=" fw-medium text-muted mb-2">Répartition annuelle prévisionnelle :</p>
-                                                                    <Row className="g-2">
-                                                                        {engagementYears.map(year => {
-                                                                            const engagementForYear = partner.engagements_annuels?.find(e => Number(e.annee) === year);
-                                                                            return (
-                                                                                <Col key={year} xs={6} sm={4} md={3}>
-                                                                                    <InputGroup size="sm">
-                                                                                        <InputGroup.Text>{year}</InputGroup.Text>
-                                                                                        <Form.Control
-                                                                                            type="number"
-                                                                                            step="0.01"
-                                                                                            placeholder="Montant"
-                                                                                            value={engagementForYear?.montant_prevu || ''}
-                                                                                            onChange={(e) => handleYearlyAmountChange(partner.tempId, year, e.target.value)}
-                                                                                        />
-                                                                                    </InputGroup>
-                                                                                </Col>
-                                                                            );
-                                                                        })}
-                                                                    </Row>
-                                                                    {isTotalMismatch && totalCommitment > 0 && (
-                                                                        <Alert variant="warning" className="mt-2 py-1 px-2  mb-0">
-                                                                            <FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/>
-                                                                            La somme de la répartition ({yearlyTotal.toLocaleString('fr-MA')} MAD) ne correspond pas à l'engagement total ({totalCommitment.toLocaleString('fr-MA')} MAD).
-                                                                        </Alert>
-                                                                    )}
-                                                                </div>
-                                                            </Col>
-                                                        </Row>
-                                                    );
-                                                })()
-                                            )}
-                                            {partner.is_signatory && ( <Row className="mt-2 mb-1 px-sm-3">
-                                                <Col sm={5} md={4} className="d-none d-sm-block"></Col>
-                                                <Col xs={12} sm={4} md={4} className="mb-2 mb-sm-0"> <Form.Group controlId={`formDateSig_${partner.id}`}><Form.Label className=" mb-0 fw-medium text-muted">Date Signature</Form.Label><Form.Control type="date" size="sm" value={partner.date_signature} onChange={(e) => handleSignatureDateChange(partner.tempId, e.target.value)} className="form-control-sm rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors[`date_sig_${partner.id}`]} required={partner.is_signatory}/><Form.Control.Feedback type="invalid" className="">{formErrors[`date_sig_${partner.id}`]}</Form.Control.Feedback></Form.Group> </Col>
-                                                <Col xs={12} sm={3} md={4}> <Form.Group controlId={`formDetailsSig_${partner.id}`}><Form.Label className=" mb-0 fw-medium text-muted">Détails Signature</Form.Label><Form.Control type="text" size="sm" value={partner.details_signature} onChange={(e) => handleSignatureDetailsChange(partner.tempId, e.target.value)} placeholder="Lieu, observations..." className="form-control-sm rounded-pill shadow-sm bg-white border-1" isInvalid={!!formErrors[`details_sig_${partner.id}`]}/><Form.Control.Feedback type="invalid" className="">{formErrors[`details_sig_${partner.id}`]}</Form.Control.Feedback></Form.Group> </Col>
-                                            </Row> )}
-                                        </div>
-                                    ))}
-                                </div> )}
+                            <Card.Header className='bg-white py-2'><h6 className='mb-0 fw-bold text-success'><FontAwesomeIcon icon={faHandshake} className="me-2" />Partenaires & Engagements</h6></Card.Header>
+                            <Card.Body className="pb-3 pt-3" style={{ backgroundColor: '#f8f9fa' }}>
+                                <PartenaireManager 
+                                    selectedPartenaires={selectedPartenaires} 
+                                    onSelectionChange={setSelectedPartenaires} 
+                                    baseApiUrl={baseApiUrl} 
+                                />
+                                {selectedPartenaires.length > 0 && (
+                                    <div className="mt-4">
+                                        <PartenaireEngagementManager
+                                            selectedPartenaires={selectedPartenaires}
+                                            onEngagementsChange={handleEngagementsChange}
+                                            engagementTypes={engagementTypes}
+                                            initialEngagements={partnerEngagements}
+                                        />
+                                    </div>
+                                )}
                             </Card.Body>
                         </Card>
-                        {/* END: PARTNER BLOCK */}
 
-
-                                {/* START: COMMITTEE BLOCK (NEW STYLE) */}
                         <Card className="mb-4 shadow-sm" style={{ borderLeft: '4px solid #0dcaf0' }}>
-                            <Card.Header className='bg-white py-2'>
-                                <h6 className='mb-0 fw-bold text-info'>
-                                    <FontAwesomeIcon icon={faUserShield} className="me-2"/>
-                                    Comités de Suivi
-                                </h6>
-                            </Card.Header>
-                            <Card.Body className="pb-3 pt-3" style={{backgroundColor: '#f8f9fa'}}>
+                            <Card.Header className='bg-white py-2'><h6 className='mb-0 fw-bold text-info'><FontAwesomeIcon icon={faUserShield} className="me-2" />Comités de Suivi</h6></Card.Header>
+                            <Card.Body className="pb-3 pt-3" style={{ backgroundColor: '#f8f9fa' }}>
                                 <Row>
                                     <Col md={12} className="mb-3">
                                         <Form.Group controlId="formMembresTechnique">
-                                            <Form.Label className=" mb-1 fw-medium">Membres du Comité Technique</Form.Label>
-                                            <CreatableSelect
-                                                isMulti
-                                                isClearable
-                                                components={{ DropdownIndicator: null }} 
-                                                value={formData.membres_comite_technique}
-                                                onChange={(newValue) => setFormData(prev => ({ ...prev, membres_comite_technique: newValue || [] }))}
-                                                placeholder="Saisir un nom et appuyer sur Entrée..."
-                                                styles={{
-                                                    ...selectStyles, 
-                                                    menu: () => ({ display: 'none' }) 
-                                                }}                        
-                                                noOptionsMessage={() => "Saisir un nom pour l'ajouter"}
-                                                formatCreateLabel={(inputValue) => `Ajouter "${inputValue}"`}
-                                            />
+                                            <Form.Label className=" w-100   w-100 mb-1 fw-medium">Membres Comité Technique</Form.Label>
+                                            <CreatableSelect isMulti isClearable components={{ DropdownIndicator: null }} value={formData.membres_comite_technique} onChange={(newValue) => setFormData(prev => ({ ...prev, membres_comite_technique: newValue || [] }))} placeholder="Saisir un nom et appuyer sur Entrée..." styles={{ ...selectStyles, menu: () => ({ display: 'none' }) }} noOptionsMessage={() => "Saisir un nom pour l'ajouter"} formatCreateLabel={(inputValue) => `Ajouter "${inputValue}"`} />
                                         </Form.Group>
                                     </Col>
                                     <Col md={12}>
                                         <Form.Group controlId="formMembresPilotage">
-                                            <Form.Label className=" mb-1 fw-medium">Membres du Comité de Pilotage</Form.Label>
-                                            <CreatableSelect
-                                                isMulti
-                                                isClearable
-                                                components={{ DropdownIndicator: null }} 
-                                                value={formData.membres_comite_pilotage}
-                                                onChange={(newValue) => setFormData(prev => ({ ...prev, membres_comite_pilotage: newValue || [] }))}
-                                                placeholder="Saisir un nom et appuyer sur Entrée..."
-                                                styles={{
-                                                    ...selectStyles,
-                                                    menu: () => ({ display: 'none' })
-                                                }}
-                                                noOptionsMessage={() => "Saisir un nom pour l'ajouter"}
-                                                formatCreateLabel={(inputValue) => `Ajouter "${inputValue}"`}
-                                            />
+                                            <Form.Label className=" w-100   w-100 mb-1 fw-medium">Membres Comité de Pilotage</Form.Label>
+                                            <CreatableSelect isMulti isClearable components={{ DropdownIndicator: null }} value={formData.membres_comite_pilotage} onChange={(newValue) => setFormData(prev => ({ ...prev, membres_comite_pilotage: newValue || [] }))} placeholder="Saisir un nom et appuyer sur Entrée..." styles={{ ...selectStyles, menu: () => ({ display: 'none' }) }} noOptionsMessage={() => "Saisir un nom pour l'ajouter"} formatCreateLabel={(inputValue) => `Ajouter "${inputValue}"`} />
                                         </Form.Group>
                                     </Col>
                                 </Row>
                             </Card.Body>
                         </Card>
-                        {/* END: COMMITTEE BLOCK */}
 
-                         {/* START: FILES BLOCK (NEW STYLE) */}
                         <Card className="mb-4 shadow-sm" id="file-management-card" style={{ borderLeft: '4px solid #fd7e14' }}>
-                            <Card.Header className='bg-white py-2'>
-                                <h6 className='mb-0 fw-bold text-warning'>
-                                    <FontAwesomeIcon icon={faFolderOpen} className="me-2"/>
-                                    Gestion des Fichiers
-                                </h6>
-                            </Card.Header>
-                            <Card.Body className="pb-3 pt-3" style={{backgroundColor: '#f8f9fa'}}>
+                            <Card.Header className='bg-white py-2'><h6 className='mb-0 fw-bold text-warning'><FontAwesomeIcon icon={faFolderOpen} className="me-2" />Gestion des Fichiers</h6></Card.Header>
+                            <Card.Body className="pb-3 pt-3" style={{ backgroundColor: '#f8f9fa' }}>
                                 {isEditing && existingDocuments.length > 0 && (
                                     <>
-                                        <h6 className=" text-muted mb-2">Fichiers Actuels :</h6>
-                                        <ListGroup variant="flush" className="mb-3 existing-files-list border rounded-3">
+                                        <h6 className="text-muted mb-2">Fichiers Actuels :</h6>
+                                        <ListGroup variant="flush" className="mb-3 border rounded-3">
                                             {existingDocuments.map((doc) => (
-                                                <ListGroup.Item key={doc.id} className={`px-2 py-2 border-bottom ${documentsToDelete.includes(doc.id) ? 'bg-light text-muted text-decoration-line-through' : ''}`} style={{ transition: 'background-color 0.3s ease' }}>
+                                                <ListGroup.Item key={doc.id} className={`px-2 py-2 border-bottom ${documentsToDelete.includes(doc.id) ? 'bg-light text-muted text-decoration-line-through' : ''}`}>
                                                     <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
                                                         <div className="d-flex align-items-center text-truncate me-2">
-                                                            <FontAwesomeIcon icon={getFileIcon(doc.type || doc.name)} className="me-2 text-secondary" fixedWidth title={doc.type || 'Type inconnu'}/>
-                                                            {doc.url ? (
-                                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" title={`Voir ${doc.name}`} className={`text-truncate me-2  fw-medium ${documentsToDelete.includes(doc.id) ? 'text-muted' : 'link-primary'}`} style={{ maxWidth: '250px' }}>
-                                                                    {doc.name}
-                                                                    <FontAwesomeIcon icon={faExternalLinkAlt} size="xs" className="ms-1"/>
-                                                                </a>
-                                                            ) : (
-                                                                <span title={doc.name} className={`text-truncate me-2  fw-medium ${documentsToDelete.includes(doc.id) ? 'text-muted' : ''}`} style={{ maxWidth: '250px' }}>{doc.name}</span>
-                                                            )}
+                                                            <FontAwesomeIcon icon={getFileIcon(doc.type || doc.name)} className="me-2 text-secondary" fixedWidth />
+                                                            {doc.url ? (<a href={doc.url} target="_blank" rel="noopener noreferrer" className={`text-truncate me-2 fw-medium ${documentsToDelete.includes(doc.id) ? 'text-muted' : 'link-primary'}`}>{doc.name}<FontAwesomeIcon icon={faExternalLinkAlt} size="xs" className="ms-1" /></a>) : (<span className={`text-truncate me-2 fw-medium ${documentsToDelete.includes(doc.id) ? 'text-muted' : ''}`}>{doc.name}</span>)}
                                                         </div>
                                                         <div className="flex-grow-1 d-flex align-items-center gap-2">
                                                             <div className="flex-grow-1">
-                                                                <Form.Control
-                                                                    type="text"
-                                                                    size="sm"
-                                                                    placeholder={doc.name ? `Intitulé (ex: ${doc.name})` : 'Intitulé du fichier'}
-                                                                    value={doc.intitule || ''}
-                                                                    onChange={(e) => setExistingDocuments(prev => prev.map(d => d.id === doc.id ? { ...d, intitule: e.target.value } : d))}
-                                                                    className="form-control-sm rounded-3 shadow-sm"
-                                                                    disabled={documentsToDelete.includes(doc.id)}
-                                                                    maxLength={FILE_INTITULE_MAX}
-                                                                />
-                                                                <div className="form-text  text-muted d-flex justify-content-end mt-1">
-                                                                    {(doc.intitule || '').length}/{FILE_INTITULE_MAX}
-                                                                </div>
+                                                                <Form.Control type="text" size="sm" placeholder={`Intitulé...`} value={doc.intitule || ''} onChange={(e) => setExistingDocuments(prev => prev.map(d => d.id === doc.id ? { ...d, intitule: e.target.value } : d))} className="form-control-sm rounded-3 shadow-sm" disabled={documentsToDelete.includes(doc.id)} maxLength={FILE_INTITULE_MAX} />
+                                                                <div className="form-text text-muted d-flex justify-content-end mt-1">{(doc.intitule || '').length}/{FILE_INTITULE_MAX}</div>
                                                             </div>
-                                                            {documentsToDelete.includes(doc.id) ? (
-                                                                <Button variant="outline-secondary" size="sm" className="flex-shrink-0" onClick={() => handleUnmarkForDeletion(doc.id)} title="Annuler la suppression"><FontAwesomeIcon icon={faUndo} /></Button>
-                                                            ) : (
-                                                                <Button variant="outline-danger" size="sm" className="flex-shrink-0" onClick={() => handleMarkForDeletion(doc.id)} title="Marquer pour suppression"><FontAwesomeIcon icon={faTrashAlt} /></Button>
-                                                            )}
+                                                            {documentsToDelete.includes(doc.id) ? (<Button variant="outline-secondary" size="sm" onClick={() => handleUnmarkForDeletion(doc.id)}><FontAwesomeIcon icon={faUndo} /></Button>) : (<Button variant="outline-danger" size="sm" onClick={() => handleMarkForDeletion(doc.id)}><FontAwesomeIcon icon={faTrashAlt} /></Button>)}
                                                         </div>
                                                     </div>
                                                 </ListGroup.Item>
                                             ))}
                                         </ListGroup>
-                                        {formErrors.fichiers_delete && <Form.Text className="text-danger  d-block mb-2">{formErrors.fichiers_delete}</Form.Text>}
+                                        {formErrors.fichiers_delete && <Form.Text className="text-danger d-block mb-2">{formErrors.fichiers_delete}</Form.Text>}
                                     </>
                                 )}
                                 {newFiles.length > 0 && (
                                     <>
-                                        <h6 className=" text-muted mb-2 mt-3">Nouveaux Fichiers à Ajouter :</h6>
-                                        <ListGroup variant="flush" className="mb-3 new-files-list border rounded-3">
+                                        <h6 className="text-muted mb-2 mt-3">Nouveaux Fichiers :</h6>
+                                        <ListGroup variant="flush" className="mb-3 border rounded-3">
                                             {newFiles.map((fw, index) => (
-                                                <ListGroup.Item key={`${(fw.file?.name || fw.name)}-${(fw.file?.size || fw.size)}-${index}`} className="px-2 py-2 border-bottom">
+                                                <ListGroup.Item key={`${fw.file.name}-${fw.file.size}-${index}`} className="px-2 py-2 border-bottom">
                                                     <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
                                                         <div className="d-flex align-items-center text-truncate me-2">
-                                                            <FontAwesomeIcon icon={getFileIcon((fw.file?.type || fw.file?.name || ''))} className="me-2 text-secondary" fixedWidth />
-                                                            <span className="text-truncate me-2 " title={fw.file?.name} style={{ maxWidth: '250px' }}>{fw.file?.name}</span>
+                                                            <FontAwesomeIcon icon={getFileIcon(fw.file.type || fw.file.name)} className="me-2 text-secondary" fixedWidth />
+                                                            <span className="text-truncate me-2">{fw.file.name}</span>
                                                         </div>
                                                         <div className="flex-grow-1 d-flex align-items-center gap-2">
                                                             <div className="flex-grow-1">
-                                                                <Form.Control
-                                                                    type="text"
-                                                                    size="sm"
-                                                                    placeholder={fw.file?.name ? `Intitulé (ex: ${fw.file.name})` : 'Intitulé du fichier'}
-                                                                    value={fw.intitule || ''}
-                                                                    onChange={(e) => setNewFiles(prev => prev.map((it, idx) => idx === index ? { ...it, intitule: e.target.value } : it))}
-                                                                    className="form-control-sm rounded-3 shadow-sm"
-                                                                    maxLength={FILE_INTITULE_MAX}
-                                                                />
-                                                                <div className="form-text  text-muted d-flex justify-content-end mt-1">
-                                                                    {(fw.intitule || '').length}/{FILE_INTITULE_MAX}
-                                                                </div>
+                                                                <Form.Control type="text" size="sm" placeholder={`Intitulé...`} value={fw.intitule} onChange={(e) => setNewFiles(prev => prev.map((item, idx) => idx === index ? { ...item, intitule: e.target.value } : item))} className="form-control-sm rounded-3 shadow-sm" maxLength={FILE_INTITULE_MAX} />
+                                                                <div className="form-text text-muted d-flex justify-content-end mt-1">{(fw.intitule || '').length}/{FILE_INTITULE_MAX}</div>
                                                             </div>
-                                                            <Badge bg="light" text="dark" pill className=" fw-normal">{((fw.file?.size || 0) / 1024 / 1024).toFixed(2)} Mo</Badge>
-                                                            <Button variant="outline-warning" size="sm" onClick={() => handleRemoveNewFile(index)} title="Retirer ce fichier"><FontAwesomeIcon icon={faTimes} /></Button>
+                                                            <Badge bg="light" text="dark" pill>{(fw.file.size / 1024 / 1024).toFixed(2)} Mo</Badge>
+                                                            <Button variant="outline-warning" size="sm" onClick={() => handleRemoveNewFile(index)}><FontAwesomeIcon icon={faTimes} /></Button>
                                                         </div>
                                                     </div>
                                                 </ListGroup.Item>
@@ -1034,51 +927,113 @@ const handleTypeToggleChange = (value) => {
                                     </>
                                 )}
                                 <Form.Group id="formFichiers" className={`mt-3 text-center ${formErrors.fichiers ? 'is-invalid' : ''}`}>
-                                    <Form.Label htmlFor="file-upload-input" className="btn btn-outline-secondary rounded-pill shadow-sm px-4 py-2"> <FontAwesomeIcon icon={faPlusCircle} className="me-2" /> {isEditing ? 'Ajouter Fichiers' : 'Sélectionner Fichiers'} </Form.Label>
-                                    <Form.Control type="file" id="file-upload-input" multiple onChange={handleFileChange} style={{ display: 'none' }} accept=".pdf,.doc,.docx,image/*,.xls,.xlsx"/>
-                                    <Form.Control.Feedback type="invalid" className="d-block text-center mt-1 ">{formErrors.fichiers}</Form.Control.Feedback>
+                                    <Form.Label htmlFor="file-upload-input" className="btn btn-outline-secondary rounded-pill shadow-sm px-4 py-2"><FontAwesomeIcon icon={faPlusCircle} className="me-2" /> {isEditing ? 'Ajouter' : 'Sélectionner'} Fichiers</Form.Label>
+                                    <Form.Control type="file" id="file-upload-input" multiple onChange={handleFileChange} style={{ display: 'none' }} accept=".pdf,.doc,.docx,image/*,.xls,.xlsx" />
+                                    <Form.Control.Feedback type="invalid" className="d-block text-center mt-1">{formErrors.fichiers}</Form.Control.Feedback>
                                 </Form.Group>
                             </Card.Body>
                         </Card>
-                        {/* END: FILES BLOCK */}
 
                         <Row className="mb-3 g-3">
-                            <Form.Group as={Col}  controlId="formId_Fonctionnaire">
-                                <Form.Label className=" mb-1 fw-medium"><FontAwesomeIcon icon={faUsers} className="me-1" /> Points Focaux</Form.Label>
-                                <Select inputId='fonctionnaire-select-input' name="fonctionnaires" menuPlacement="auto" options={fonctionnairesOptions} value={formData.fonctionnaires} onChange={handleFonctionnaireChange} styles={selectStyles} placeholder="- Selectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.fonctionnaires} className={formErrors.id_fonctionnaire ? 'is-invalid' : ''} classNamePrefix="react-select"/>
-                                <Form.Control.Feedback type="invalid" style={{ display: formErrors.id_fonctionnaire ? 'block' : 'none'}}>{formErrors.id_fonctionnaire}</Form.Control.Feedback>
+                            <Form.Group as={Col} controlId="formId_Fonctionnaire">
+                                <Form.Label className=" w-100  mb-1 fw-medium">
+                                    {bilingualLabel("Points Focaux", "نقاط الاتصال")}
+                                </Form.Label>
+                                <Select inputId='fonctionnaire-select-input' name="fonctionnaires" menuPlacement="auto" options={fonctionnairesOptions} value={formData.fonctionnaires} onChange={handleFonctionnaireChange} styles={selectStyles} placeholder="- Selectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions} className={formErrors.id_fonctionnaire ? 'is-invalid' : ''} />
+                                <Form.Control.Feedback type="invalid" style={{ display: formErrors.id_fonctionnaire ? 'block' : 'none' }}>{formErrors.id_fonctionnaire}</Form.Control.Feedback>
                             </Form.Group>
-                              <Form.Group as={Col}  controlId="formProvince"><Form.Label className=" mb-1 fw-medium">Localisation (Provinces)</Form.Label><Select inputId='province-select-input' name="provinces" menuPlacement="auto" options={provincesOptions} value={formData.provinces} onChange={handleProvinceChange} styles={selectStyles} placeholder="- Selectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.provinces} className={formErrors.Province ? 'is-invalid' : ''} classNamePrefix="react-select"/><Form.Control.Feedback type="invalid" style={{ display: formErrors.Province ? 'block' : 'none'}}>{formErrors.Province}</Form.Control.Feedback></Form.Group>
-                      </Row>
-                        <Row className="mb-3 g-3">
+                            <Form.Group as={Col} controlId="formProvince">
+                                <Form.Label className=" w-100  mb-1 fw-medium">
+                                    {bilingualLabel("Localisation", "الموقع")}
+                                </Form.Label>
+                                <Select inputId='province-select-input' name="provinces" menuPlacement="auto" options={provincesOptions} value={formData.provinces} onChange={handleProvinceChange} styles={selectStyles} placeholder="- Selectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions} className={formErrors.Province ? 'is-invalid' : ''} />
+                                <Form.Control.Feedback type="invalid" style={{ display: formErrors.Province ? 'block' : 'none' }}>{formErrors.Province}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Row>
 
-                            <Form.Group as={Col}  controlId="formReference"><Form.Label className=" mb-1 fw-medium">Reference</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Reference} type="text" name="Reference" value={formData.Reference} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Reference}</Form.Control.Feedback></Form.Group>
-                            <Form.Group as={Col}  controlId="formCategorie"><Form.Label className=" mb-1 fw-medium">Categorie</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Categorie} type="text" name="Categorie" value={formData.Categorie} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Categorie}</Form.Control.Feedback></Form.Group>
-                      </Row>
-                          <Row className="mb-3 g-3">
-                            <Form.Group as={Col}  controlId="formObjet"><Form.Label className=" mb-1 fw-medium">Objet</Form.Label><Form.Control className={textareaClass} isInvalid={!!formErrors.Objet} as="textarea" rows={1} name="Objet" value={formData.Objet} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Objet}</Form.Control.Feedback></Form.Group>
-                            <Form.Group as={Col}  controlId="formObjectifs"><Form.Label className=" mb-1 fw-medium">Objectifs</Form.Label><Form.Control className={textareaClass} isInvalid={!!formErrors.Objectifs} as="textarea" rows={1} name="Objectifs" value={formData.Objectifs} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Objectifs}</Form.Control.Feedback></Form.Group>
+                       <Row className="mb-3 g-3">
+    <Form.Group as={Col} controlId="formReference">
+        <Form.Label className=" w-100  mb-1 fw-medium">
+            {bilingualLabel("Reference", "المرجع")}
+        </Form.Label>
+        <Form.Control className={inputClass} isInvalid={!!formErrors.Reference} type="text" name="Reference" value={formData.Reference} onChange={handleChange} size="sm" />
+        <Form.Control.Feedback type="invalid">{formErrors.Reference}</Form.Control.Feedback>
+    </Form.Group>
+{showSousTypeField && (
+                                <Form.Group as={Col} md={4} controlId="formSousType">
+                                    <Form.Label className="w-100 mb-1 fw-medium">
+                                        {bilingualLabel("Sous-type", "النوع الفرعي", true)}
+                                    </Form.Label>
+                                    <Select
+                                        name="sous_type"
+                                        options={availableSousTypes}
+                                        value={availableSousTypes.find(opt => opt.value === formData.sous_type) || null}
+                                        onChange={(option) => setFormData(prev => ({...prev, sous_type: option ? option.value : ''}))}
+                                        styles={selectStyles}
+                                        placeholder="- Selectionner -"
+                                        isClearable
+                                        className={formErrors.sous_type ? 'is-invalid' : ''}
+                                    />
+                                    <Form.Control.Feedback type="invalid" style={{ display: formErrors.sous_type ? 'block' : 'none' }}>
+                                        {formErrors.sous_type}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+                            )}
+<Form.Group as={Col}   md={showSousTypeField ? 4 : 6} controlId="formSecteur">
+        <Form.Label className="w-100 mb-1 fw-medium">
+            {bilingualLabel("Secteur", "القطاع")}
+        </Form.Label>
+        <Select
+            inputId='secteur-select-input'
+            name="secteurId"
+            options={secteursOptions}
+            value={formData.secteurId}
+            onChange={handleSecteurChange}
+            styles={selectStyles}
+            placeholder="- Selectionner -"
+            isClearable
+            isLoading={loadingOptions}
+            /* options are normalized to { value, label } so no need for custom getters */
+            className={formErrors.secteur_id ? 'is-invalid' : ''}
+        />
+        <Form.Control.Feedback type="invalid" style={{ display: formErrors.secteur_id ? 'block' : 'none' }}>
+            {formErrors.secteur_id}
+        </Form.Control.Feedback>
+    </Form.Group>
+</Row>
+                        <Row className="mb-3 g-3">
+                            <Form.Group as={Col} controlId="formObjet"><Form.Label className=" w-100  mb-1 fw-medium">
+                                {bilingualLabel("Objet", "الموضوع")}
+                            </Form.Label><Form.Control className={textareaClass} isInvalid={!!formErrors.Objet} as="textarea" rows={1} name="Objet" value={formData.Objet} onChange={handleChange} size="sm" /><Form.Control.Feedback type="invalid">{formErrors.Objet}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col} controlId="formObjectifs"><Form.Label className=" w-100  mb-1 fw-medium">
+                                {bilingualLabel("Objectifs", "الأهداف")}
+                            </Form.Label><Form.Control className={textareaClass} isInvalid={!!formErrors.Objectifs} as="textarea" rows={1} name="Objectifs" value={formData.Objectifs} onChange={handleChange} size="sm" /><Form.Control.Feedback type="invalid">{formErrors.Objectifs}</Form.Control.Feedback></Form.Group>
                         </Row>
                         <Row className="mb-3 g-3">
-                            <Form.Group as={Col} controlId="formObservations"><Form.Label className=" mb-1 fw-medium">Observations</Form.Label><Form.Control className={textareaClass} style={{borderRadius: '1rem'}} isInvalid={!!formErrors.observations} as="textarea" rows={3} name="observations" value={formData.observations} onChange={handleChange} size="sm" placeholder="Ajouter des observations ou remarques..."/><Form.Control.Feedback type="invalid">{formErrors.observations}</Form.Control.Feedback></Form.Group>
+                            <Form.Group as={Col} controlId="formObservations"><Form.Label className=" w-100  mb-1 fw-medium">
+                                {bilingualLabel("Observations", "ملاحظات")}
+                            </Form.Label><Form.Control className={textareaClass} style={{ borderRadius: '1rem' }} isInvalid={!!formErrors.observations} as="textarea" rows={3} name="observations" value={formData.observations} onChange={handleChange} size="sm" placeholder="Ajouter des observations..." /><Form.Control.Feedback type="invalid">{formErrors.observations}</Form.Control.Feedback></Form.Group>
                         </Row>
+
                         <Row className="mt-4 pt-2 justify-content-center flex-shrink-0">
-                            <Col xs="auto"> <Button variant="danger" onClick={onClose} className="btn px-5 rounded-5 py-2 shadow-sm" disabled={submissionStatus.loading}> Annuler </Button> </Col>
-                            <Col xs="auto"> <Button type="submit" className="btn rounded-5 px-5 py-2 align-items-center d-flex justify-content-evenly bg-primary border-0 shadow-sm" style={{ backgroundColor: '#5cacee', borderColor: '#5cacee'}} disabled={isSubmitDisabled}> {submissionStatus.loading ? ( <><Spinner as="span" animation="border" size="sm" className="me-2"/> {isEditing ? 'Modification...' : 'Validation...'}</> ) : ( isEditing ? 'Enregistrer Modifications' : 'Valider et Créer' )} </Button> </Col>
+                            <Col xs="auto"> <Button variant="secondary" onClick={onClose} className="btn px-5 rounded-5 py-2 shadow-sm" disabled={submissionStatus.loading}> Annuler </Button> </Col>
+                            <Col xs="auto"> <Button  form="convention-main-form"  type="submit" className="btn rounded-5 px-5 py-2 bg-primary border-0 shadow-sm" disabled={submissionStatus.loading || loadingData || loadingOptions}> {submissionStatus.loading ? (<><Spinner as="span" animation="border" size="sm" className="me-2" /> Enregistrement...</>) : (isEditing ? 'Enregistrer Modifications' : 'Valider et Créer')} </Button> </Col>
                         </Row>
                     </Form>
+                    </div>
                 </div>
             </div>
+
             <Modal show={showConfirmModal} onHide={handleModalCancel} centered backdrop="static" keyboard={false}>
                 <Modal.Header closeButton><Modal.Title><FontAwesomeIcon icon={faExclamationTriangle} className="text-warning me-2" /> Confirmation Requise</Modal.Title></Modal.Header>
-                <Modal.Body>
+                <Modal.Body style={{boxShadow:'none'}}>
                     <p>{confirmModalData.message || "Confirmer la suppression des engagements partenaires (et versements associés) ?"}</p>
-                    {confirmModalData.details && confirmModalData.details.length > 0 && ( <div className='mb-3'> <p className="mb-1  text-muted">Engagements concernés :</p> <ListGroup variant="flush" style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.8rem' }}> {confirmModalData.details.map((detail, index) => ( <ListGroup.Item key={index} className="px-2 py-1">{detail}</ListGroup.Item> ))} </ListGroup> </div> )}
+                    {confirmModalData.details?.length > 0 && (<div className='mb-3'><p className="mb-1 text-muted">Engagements concernés :</p><ListGroup variant="flush" style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.8rem' }}>{confirmModalData.details.map((detail, index) => (<ListGroup.Item key={index} className="px-2 py-1">{detail}</ListGroup.Item>))}</ListGroup></div>)}
                     <p className="fw-bold text-danger mt-3">Cette action est irréversible.</p>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleModalCancel} disabled={submissionStatus.loading}> Annuler </Button>
-                    <Button variant="danger" onClick={handleModalConfirm} disabled={submissionStatus.loading}> {submissionStatus.loading ? <Spinner as="span" size="sm" animation="border" className="me-2" /> : null} Confirmer </Button>
+                    <Button variant="secondary" onClick={handleModalCancel} disabled={submissionStatus.loading}>Annuler</Button>
+                    <Button variant="danger" onClick={handleModalConfirm} disabled={submissionStatus.loading}>{submissionStatus.loading ? <Spinner as="span" size="sm" animation="border" className="me-2" /> : null} Confirmer</Button>
                 </Modal.Footer>
             </Modal>
         </>

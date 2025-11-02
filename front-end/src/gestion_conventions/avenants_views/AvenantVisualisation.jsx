@@ -1,30 +1,28 @@
-// src/pages/conventions_views/AvenantVisualisation.jsx (Merged)
-
-import React, { useState, useEffect, useCallback, useMemo } from 'react'; // Keep useMemo from V1
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    // Combined Icons from both versions
     faSpinner, faExclamationTriangle, faTimes, faFilePdf, faFileWord,
     faFileExcel, faFileImage, faFileAlt, faCalendarAlt, faInfoCircle,
     faEdit, faTags, faMoneyBillWave, faClock, faFileSignature, faListAlt,
-    faAlignLeft, faComments, faPaperclip, faDownload, faBuilding, // Keep faBuilding
+    faAlignLeft, faComments, faPaperclip, faDownload, faBuilding,
     faCheckCircle, faTimesCircle,
-    faUserTie, faUsers, faChevronUp, faChevronDown, faGift // <<< ADD ICONS
+    faUserTie, faUsers, faChevronUp, faChevronDown, faGift,
+    faCalculator // ADDED ICON
 } from '@fortawesome/free-solid-svg-icons';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Collapse from 'react-bootstrap/Collapse'; // <<< ADD THIS IMPORT
+import Collapse from 'react-bootstrap/Collapse';
 import Alert from 'react-bootstrap/Alert';
 import PropTypes from 'prop-types';
 import Spinner from 'react-bootstrap/Spinner';
 import Badge from 'react-bootstrap/Badge';
 import ListGroup from 'react-bootstrap/ListGroup';
-import Stack from 'react-bootstrap/Stack'; // Keep Stack from V1 for fonctionnaire badges
+import Stack from 'react-bootstrap/Stack';
 
-// --- Helper Functions --- (Using V1 versions, adding Desc_Arr fallback where needed)
+// --- Helper Functions ---
 const formatDate = (dateString) => {
     if (!dateString) return '-';
     try {
@@ -36,71 +34,45 @@ const formatDate = (dateString) => {
         return dateString;
     }
 };
-const formatCurrency = (amount) => {
+const formatCurrency = (amount, showSign = false) => {
     if (amount === null || amount === undefined || isNaN(Number(amount))) return '-';
     const number = parseFloat(amount);
-    return number.toLocaleString('fr-MA', { style: 'currency', currency: 'MAD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const options = { style: 'currency', currency: 'MAD', minimumFractionDigits: 2, maximumFractionDigits: 2 };
+    // MODIFIED: Logic to show a plus sign for positive numbers if requested
+    if (showSign && number > 0) {
+        return `+${number.toLocaleString('fr-MA', options)}`;
+    }
+    return number.toLocaleString('fr-MA', options);
 };
-// Use V1's displayData with trim check
+
 const displayData = (data, fallback = '-') => (data !== null && data !== undefined && String(data).trim() !== '') ? data : fallback;
 const getStatusColor = (statusValue) => {
-    // This can be a shared helper file
     const statuses = {
-        "en cours d'approbation": "warning", "approuvé": "success", "non visé": "danger",
+         "approuvé": "success", "non visé": "danger",
         "en cours de visa": "warning", "visé": "info", "signé": "primary"
     };
     return statuses[statusValue] || "light";
 };
 const STATUT_OPTIONS = [
-    { value: "en cours d'approbation", label: "En Cours d'Approbation" },
     { value: "approuvé", label: "Approuvé" },
     { value: "non visé", label: "Non Visé" },
     { value: "en cours de visa", label: "En Cours de Visa" },
     { value: "visé", label: "Visé" },
     { value: "signé", label: "Signé" },
 ];
-// Define Type Modification Options (needed for label lookup)
 const typeModificationOptions = [
     { value: 'montant', label: 'Modification Montant' },
     { value: 'durée', label: 'Modification Durée' },
     { value: 'partenaire', label: 'Modification Partenaire(s)' },
-             { value: 'technique_administratif', label: 'Technique Administratif' },
-
+    { value: 'technique_administratif', label: 'Technique Administratif' },
     { value: 'autre', label: 'Autre Modification' },
 ];
-const getTypeModificationInfo = (typeValue) => {
-    // Handle both single values (legacy) and arrays (new)
-    const typeArray = Array.isArray(typeValue) ? typeValue : [typeValue];
-    
-    if (typeArray.length === 0) {
-        return { label: 'Non défini', color: 'light', textColor: 'dark' };
-    }
-    
-    // For multiple types, return the first one for backward compatibility
-    // but we'll display all types in the UI
-    const firstType = typeArray[0];
-    const option = typeModificationOptions.find(opt => opt.value === firstType);
-    const label = option ? option.label : firstType;
-    let color = 'light';
-    switch (firstType) {
-        case 'montant': color = 'success'; break;
-        case 'durée': color = 'info'; break;
-        case 'partenaire': color = 'warning'; break;
-        case 'autre': color = 'secondary'; break;
-        case 'technique_administratif': color = 'primary'; break;
-    }
-    const textColor = ['warning', 'light'].includes(color) ? 'dark' : 'white';
-    return { label: displayData(label), color, textColor };
-};
 
 const renderMultipleTypeModifications = (typeValue) => {
-    // Handle both single values (legacy) and arrays (new)
     const typeArray = Array.isArray(typeValue) ? typeValue : [typeValue];
-    
     if (!typeArray || typeArray.length === 0) {
         return <Badge bg="light" text="dark" pill>Non défini</Badge>;
     }
-    
     return (
         <div className="d-flex flex-wrap gap-1">
             {typeArray.map((type, index) => {
@@ -115,17 +87,7 @@ const renderMultipleTypeModifications = (typeValue) => {
                     case 'technique_administratif': color = 'primary'; break;
                 }
                 const textColor = ['warning', 'light'].includes(color) ? 'dark' : 'white';
-                
-                return (
-                    <Badge 
-                        key={index}
-                        bg={color} 
-                        text={textColor} 
-                        pill
-                    >
-                        {label}
-                    </Badge>
-                );
+                return ( <Badge key={index} bg={color} text={textColor} pill>{label}</Badge> );
             })}
         </div>
     );
@@ -143,79 +105,60 @@ const getFileIcon = (filename) => {
 
 
 // --- Component ---
-const AvenantVisualisation = ({
-    itemId,
-    onClose,
-    baseApiUrl = 'http://localhost:8000/api'
-}) => {
-    // --- State ---
+const AvenantVisualisation = ({ itemId, onClose, baseApiUrl = 'http://localhost:8000/api' }) => {
     const [avenantData, setAvenantData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [fonctionnairesList, setFonctionnairesList] = useState([]); // Keep from V1
-    const [openPartnerId, setOpenPartnerId] = useState(null); // <<< ADD THIS STATE
+    const [fonctionnairesList, setFonctionnairesList] = useState([]);
+    const [openPartnerId, setOpenPartnerId] = useState(null);
 
-    const handleTogglePartner = (partnerId) => { // <<< ADD THIS HANDLER
+    const handleTogglePartner = (partnerId) => {
         setOpenPartnerId(currentOpenId => (currentOpenId === partnerId ? null : partnerId));
     };
 
     const statusLabel = STATUT_OPTIONS.find(opt => opt.value === avenantData?.statut)?.label || avenantData?.statut;
-    const statusInfo = { // You can create a helper for this
+    const statusInfo = {
         label: displayData(statusLabel),
         color: getStatusColor(avenantData?.statut),
         textColor: ['warning', 'light'].includes(getStatusColor(avenantData?.statut)) ? 'dark' : 'white'
     };
-    // --- Derive App Base URL (Using V1 approach) ---
     const appBaseUrl = useMemo(() => {
         if (!baseApiUrl) { console.error("AvenantVisualisation: baseApiUrl prop is missing!"); return ''; }
         try { return baseApiUrl.replace(/\/api\/?$/, '').replace(/\/$/, ''); }
         catch (e) { console.error("AvenantVisualisation: Error processing baseApiUrl:", e); return ''; }
     }, [baseApiUrl]);
 
-    // --- Data Fetching Logic (Using V1 - includes Fonctionnaires) ---
     const fetchData = useCallback(async () => {
         if (!itemId) { setError("ID d'avenant manquant."); setLoading(false); return; }
         if (!baseApiUrl) { setError("URL d'API (baseApiUrl) manquante."); setLoading(false); return; }
 
         setLoading(true); setError(null); setAvenantData(null);
-        setFonctionnairesList([]); // Reset list
+        setFonctionnairesList([]);
 
-        console.log(`[Avenant Visu] Fetching ID ${itemId}...`);
         try {
-            // 1. Fetch Avenant Data
             const avenantRes = await axios.get(`${baseApiUrl}/avenants/${itemId}`, {
-                 params: { include: 'convention,documents,partnerCommitments.partenaire,partnerCommitments.engagementsAnnuels' }, // Use correct include
+                 params: { include: 'convention,documents,partnerCommitments.partenaire,partnerCommitments.engagementsAnnuels' },
                  withCredentials: true
             });
             const data = avenantRes.data.avenant || avenantRes.data;
-            console.log("[Avenant Visu] Raw Data Received:", data);
 
             if (data && typeof data === 'object' && data.id) {
                  data.documents = Array.isArray(data.documents) ? data.documents : [];
-                 // Ensure correct partner key is used based on API response
                  data.partnerCommitments = data.partner_commitments || [];
                  setAvenantData(data);
-                 console.log("[Avenant Visu] Processed Avenant Data Set:", data);
 
-                 // 2. Fetch Fonctionnaires (from V1)
                  try {
-                     console.log("[Avenant Visu] Fetching fonctionnaires list...");
                      const foncRes = await axios.get(`${baseApiUrl}/options/fonctionnaires`, { withCredentials: true })
                      const foncData = foncRes.data.fonctionnaires || foncRes.data || [];
-                     console.log(foncData)
-
                      setFonctionnairesList(foncData.map(f => ({ value: f.id, label: f.nom_complet || `ID: ${f.id}` })));
-                     console.log(`[Avenant Visu] Fetched ${foncData.length} fonctionnaires.`); // Log actual count fetched
                  } catch (foncError) {
                      console.warn("[Avenant Visu] Could not fetch fonctionnaires list:", foncError.message);
-                     // Don't block main display if this fails
                  }
 
             } else {
                 throw new Error(`Aucune donnée trouvée ou format invalide pour l'avenant ID ${itemId}.`);
             }
         } catch (err) {
-             console.error(`[Avenant Visu] API Error fetching ID ${itemId}:`, err.response || err);
              const errorMsg = err.response?.data?.message || err.response?.statusText || err.message || `Erreur de chargement (ID: ${itemId}).`;
              setError(errorMsg + (err.response ? ` (Status: ${err.response?.status})` : ''));
         } finally {
@@ -225,7 +168,6 @@ const AvenantVisualisation = ({
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
-    // --- Helper Function for Rendering Fonctionnaire Names (from V1) ---
     const getFonctionnaireNames = useCallback((fonctionnaireIdString) => {
         if (!fonctionnaireIdString || typeof fonctionnaireIdString !== 'string' || !Array.isArray(fonctionnairesList) || fonctionnairesList.length === 0) {
             return displayData(null);
@@ -234,7 +176,6 @@ const AvenantVisualisation = ({
         if (ids.length === 0) { return displayData(null); }
 
         return (
-            // Use Stack for inline badges (from V1)
             <Stack direction="horizontal" gap={1} wrap="wrap">
                 {ids.map(id => {
                     const fonctionnaire = fonctionnairesList.find(f => String(f.value).toLowerCase() === String(id).toLowerCase());
@@ -246,17 +187,12 @@ const AvenantVisualisation = ({
                 })}
              </Stack>
         );
-    }, [fonctionnairesList]); // Dependency
+    }, [fonctionnairesList]);
 
 
-    // --- Render Helpers (Using V1 versions) ---
-    const renderYearlyBreakdown = (engagements) => { // <<< ADD THIS FUNCTION
+    const renderYearlyBreakdown = (engagements) => {
         if (!engagements || engagements.length === 0) {
-            return (
-                <div className="text-center text-muted fst-italic small py-2">
-                    Aucune répartition annuelle prévisionnelle n'a été fournie.
-                </div>
-            );
+            return ( <div className="text-center text-muted fst-italic small py-2"> Aucune répartition annuelle prévisionnelle n'a été fournie.</div> );
         }
         const sortedEngagements = [...engagements].sort((a, b) => a.annee - b.annee);
         return (
@@ -281,8 +217,10 @@ const AvenantVisualisation = ({
     };
 
     const renderDetail = (label, value, icon = faInfoCircle, options = {}) => {
-        const { formatFunc, conditionalCheck = () => true, highlight = false, isRawHtml = false } = options;
-        if (!conditionalCheck(value)) return null; // Use value in check
+        const { formatFunc, conditionalCheck = () => true, highlight = false, isRawHtml = false, rawValue = null } = options;
+        const valueToCheck = rawValue !== null ? rawValue : value;
+        if (!conditionalCheck(valueToCheck)) return null;
+
         const displayValueRaw = formatFunc ? formatFunc(value) : displayData(value);
         const valueElement = React.isValidElement(displayValueRaw) ? displayValueRaw : (
             isRawHtml ? (
@@ -307,7 +245,7 @@ const AvenantVisualisation = ({
          if (!value) return null;
          return (
              <Col xs={12} className="mb-3">
-                 <Card className="border-light shadow-sm"> {/* V1 Card Style */}
+                 <Card className="border-light shadow-sm">
                      <Card.Header className="bg-light py-2 border-bottom-0">
                         <Card.Title as="h6" className="mb-0 fw-semibold text-secondary small text-uppercase">
                              <FontAwesomeIcon icon={icon} className="me-2"/> {label}
@@ -321,36 +259,14 @@ const AvenantVisualisation = ({
          );
      };
 
-    // --- Render Logic ---
-    if (loading) {
-        return ( <div className="text-center p-5"><Spinner animation="border" variant="primary" /> <span className="ms-3 text-muted">Chargement...</span></div> );
-    }
-    if (error) {
-         return ( <Alert variant="danger" className="m-3 m-md-4"><Alert.Heading><FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/> Erreur</Alert.Heading><p>{error}</p><hr /><div className="d-flex justify-content-end"><Button onClick={onClose} variant="outline-danger" size="sm">Fermer</Button></div></Alert> );
-    }
-    if (!avenantData) {
-         return ( <Alert variant="secondary" className="m-3 m-md-4">Aucune donnée disponible pour cet avenant.<Button variant="link" size="sm" onClick={onClose} className="float-end">Fermer</Button></Alert> );
-    }
-
-    const typeModifInfo = getTypeModificationInfo(avenantData.type_modification);
-    
-    // Debug logging to help troubleshoot
-    console.log('[AvenantVisualisation] Debug Info:', {
-        type_modification: avenantData.type_modification,
-        type_modification_type: typeof avenantData.type_modification,
-        isArray: Array.isArray(avenantData.type_modification),
-        includes_duree: Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('durée') : avenantData.type_modification === 'durée',
-        nouvelle_date_fin: avenantData.nouvelle_date_fin,
-        montant_modifie: avenantData.montant_modifie,
-        full_data: avenantData
-    });
+    if (loading) { return ( <div className="text-center p-5"><Spinner animation="border" variant="primary" /> <span className="ms-3 text-muted">Chargement...</span></div> ); }
+    if (error) { return ( <Alert variant="danger" className="m-3 m-md-4"><Alert.Heading><FontAwesomeIcon icon={faExclamationTriangle} className="me-2"/> Erreur</Alert.Heading><p>{error}</p><hr /><div className="d-flex justify-content-end"><Button onClick={onClose} variant="outline-danger" size="sm">Fermer</Button></div></Alert> ); }
+    if (!avenantData) { return ( <Alert variant="secondary" className="m-3 m-md-4">Aucune donnée disponible pour cet avenant.<Button variant="link" size="sm" onClick={onClose} className="float-end">Fermer</Button></Alert> ); }
 
     // --- Main Content Render ---
     return (
-        // V1 Container Style
         <div className="p-3 p-md-4 avenant-visualisation-container bg-light" style={{ borderRadius: '15px', maxHeight: 'calc(90vh - 80px)', overflowY: 'auto' }}>
 
-            {/* Header Section (V1 Style) */}
             <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-2">
                 <h2 className="mb-0 fw-bold text-dark">
                      Détails Avenant: {displayData(avenantData.numero_avenant)}
@@ -360,12 +276,9 @@ const AvenantVisualisation = ({
                      Revenir a la liste
                 </Button>
             </div>
-
             
-
-            {/* Main Info Row (Using V1 conditional column sizing) */}
             <Row className="g-3 mb-4">
-                <Col md={Array.isArray(avenantData.type_modification) ? ((avenantData.type_modification.includes('partenaire') && (avenantData.type_modification.includes('montant') || avenantData.type_modification.includes('durée'))) ? 6 : (avenantData.type_modification.includes('partenaire') ? 12 : 6)) : (avenantData.type_modification === 'partenaire' ? 12 : 6)} lg={Array.isArray(avenantData.type_modification) ? ((avenantData.type_modification.includes('partenaire') && (avenantData.type_modification.includes('montant') || avenantData.type_modification.includes('durée'))) ? 7 : (avenantData.type_modification.includes('partenaire') ? 12 : 7)) : (avenantData.type_modification === 'partenaire' ? 12 : 7)}>
+                <Col>
                     <Card className="h-100 border-light shadow-sm">
                         <Card.Header className="bg-light py-2 border-bottom-0">
                             <Card.Title as="h6" className="mb-0 fw-semibold text-secondary small text-uppercase">
@@ -375,27 +288,27 @@ const AvenantVisualisation = ({
                         <Card.Body className="pt-2">
                             <ListGroup variant="flush">
                                 {renderDetail("Code Avenant", avenantData.code, faInfoCircle)}
-                            {renderDetail("N° Approbation", avenantData.numero_approbation, faInfoCircle)}
-                            {renderDetail("Session", new Date(0, avenantData.session - 1).toLocaleString('fr', { month: 'long' }), faCalendarAlt)}
-                            {renderDetail("Année", avenantData.annee_avenant, faCalendarAlt)}
-                            {renderDetail("Statut", <Badge bg={statusInfo.color} text={statusInfo.textColor} pill>{statusInfo.label}</Badge>, faCheckCircle)}
-                            {/* Conditionally render date_visa */}
-                            {renderDetail("Date Visa", avenantData.date_visa, faCalendarAlt, { formatFunc: formatDate, conditionalCheck: () => avenantData?.statut === 'visé', highlight: true })}
-                            <hr className="my-2"/>
+                                {renderDetail("N° Approbation", avenantData.numero_approbation, faInfoCircle)}
+                                {renderDetail("Session", avenantData.session ? new Date(0, avenantData.session - 1).toLocaleString('fr', { month: 'long' }) : '-', faCalendarAlt)}
+                                {renderDetail("Année", avenantData.annee_avenant, faCalendarAlt)}
+                                {renderDetail("Statut", <Badge bg={statusInfo.color} text={statusInfo.textColor} pill>{statusInfo.label}</Badge>, faCheckCircle)}
+                                {renderDetail("Date Visa", avenantData.date_visa, faCalendarAlt, { formatFunc: formatDate, conditionalCheck: (val) => val && avenantData?.statut === 'visé', highlight: true, rawValue: avenantData.date_visa })}
+                                <hr className="my-2"/>
                                 {renderDetail("Convention Parent", avenantData.convention ? `${avenantData.convention?.Code} - ${avenantData.convention?.Intitule}` : '-', faFileSignature)}
                                 {renderDetail("N° Avenant", avenantData.numero_avenant, faListAlt)}
                                 {renderDetail("Date Signature", avenantData.date_signature, faCalendarAlt, { formatFunc: formatDate })}
                                 {renderDetail("Type Modification", renderMultipleTypeModifications(avenantData.type_modification), faEdit)}
-                                {/* --- ADDED: Fonctionnaire Display (from V1) --- */}
-                                {renderDetail("Points Focaux", getFonctionnaireNames(avenantData.id_fonctionnaire), faUserTie)}
+                                {renderDetail("Points Focaux", getFonctionnaireNames(avenantData.id_fonctionnaire), faUserTie, { conditionalCheck: (val) => val && val.length > 0, rawValue: avenantData.id_fonctionnaire })}
                             </ListGroup>
                         </Card.Body>
                     </Card>
                 </Col>
+            </Row>
 
-                {/* Conditional "Specific Modifications" Column - Show if there are montant or durée modifications */}
-                {((Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('montant') || avenantData.type_modification.includes('durée') : avenantData.type_modification === 'montant' || avenantData.type_modification === 'durée')) && (
-                    <Col md={6} lg={5}>
+            {/* --- MODIFIED: Specific Modifications Section with Financial Breakdown --- */}
+            <Row className="g-3 mb-4">
+                {((Array.isArray(avenantData.type_modification) && (avenantData.type_modification.includes('montant') || avenantData.type_modification.includes('durée')))) && (
+                    <Col>
                         <Card className="h-100 border-light shadow-sm">
                              <Card.Header className="bg-light py-2 border-bottom-0">
                                  <Card.Title as="h6" className="mb-0 fw-semibold text-secondary small text-uppercase">
@@ -404,13 +317,16 @@ const AvenantVisualisation = ({
                              </Card.Header>
                             <Card.Body className="pt-2">
                                 <ListGroup variant="flush">
-                                    {renderDetail("Montant Modifié", avenantData.montant_modifie, faMoneyBillWave, { formatFunc: formatCurrency, conditionalCheck: () => Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('montant') : avenantData.type_modification === 'montant', highlight: true })}
-                                    {renderDetail("Nouvelle Date Fin", avenantData.nouvelle_date_fin, faClock, { formatFunc: formatDate, conditionalCheck: () => Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('durée') : avenantData.type_modification === 'durée', highlight: true })}
-                                    {!((Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('montant') : avenantData.type_modification === 'montant') || (Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('durée') : avenantData.type_modification === 'durée')) && (
-                                        <ListGroup.Item className="px-0 py-2 border-0">
-                                            <span className="text-muted fst-italic small">Aucune modification spécifique de montant ou durée pour ce type.</span>
-                                        </ListGroup.Item>
-                                    )}
+                                    {/* Montant Breakdown */}
+                                    {renderDetail("Montant Initial Convention", formatCurrency(avenantData.convention?.Cout_Global), faMoneyBillWave, { conditionalCheck: () => Array.isArray(avenantData.type_modification) && avenantData.type_modification.includes('montant') })}
+                                    {renderDetail("Variation de l'Avenant", formatCurrency(avenantData.montant_avenant, true), faCalculator, { conditionalCheck: () => Array.isArray(avenantData.type_modification) && avenantData.type_modification.includes('montant'), highlight: true })}
+                                    {renderDetail(<b>Nouveau Montant Global</b>, <b>{formatCurrency(avenantData.montant_modifie)}</b>, faMoneyBillWave, { conditionalCheck: () => Array.isArray(avenantData.type_modification) && avenantData.type_modification.includes('montant') })}
+                                    
+                                    {/* Separator if both types exist */}
+                                    {(avenantData.type_modification.includes('montant') && avenantData.type_modification.includes('durée')) && <hr className="my-2"/>}
+
+                                    {/* Duration Modification */}
+                                    {renderDetail("Nouvelle Date Fin", avenantData.nouvelle_date_fin, faClock, { formatFunc: formatDate, conditionalCheck: () => Array.isArray(avenantData.type_modification) && avenantData.type_modification.includes('durée'), highlight: true })}
                                 </ListGroup>
                             </Card.Body>
                         </Card>
@@ -418,34 +334,29 @@ const AvenantVisualisation = ({
                 )}
             </Row>
 
-             {/* Row 2: Objet & Remarques (Using V1 renderTextBlock) */}
             <Row className="g-3 mb-4">
                  {renderTextBlock("Objet de l'Avenant", avenantData.objet, faAlignLeft)}
                  {renderTextBlock("Remarques", avenantData.remarques, faComments)}
             </Row>
 
-            {/* Row 3: Partenaires Section (Merged Logic & Style) */}
-             {(avenantData.partnerCommitments && avenantData.partnerCommitments.length > 0) && (
+            {(avenantData.partnerCommitments && avenantData.partnerCommitments.length > 0) && (
                  <Row className="mt-4 pt-3 border-top mx-md-3">
                     <Col xs={12}>
                         <h5 className="text-uppercase text-secondary fs-6 fw-semibold mb-3 ">
                             <FontAwesomeIcon icon={faUsers} className='me-2 text-secondary'/>
-                            {/* V1 Title Logic */}
-                            {(Array.isArray(avenantData.type_modification) ? avenantData.type_modification.includes('partenaire') : avenantData.type_modification === 'partenaire')
+                            { (Array.isArray(avenantData.type_modification) && avenantData.type_modification.includes('partenaire'))
                                 ? `Partenaires Concernés par la Modification (${avenantData.partnerCommitments.length})`
                                 : `Détails Partenaires Associés (${avenantData.partnerCommitments.length})`
                             }
                         </h5>
                         <ListGroup variant="flush" className=' p-2 d-flex flex-column align-items-between'>
                             {avenantData.partnerCommitments.map((commit, index) => (
-                                <ListGroup.Item key={commit.Id_CP || `commit-${index}`} className="px-2 py-3 m-2  border border-1 rounded-3"> {/* V1 dashed border */}
+                                <ListGroup.Item key={commit.Id_CP || `commit-${index}`} className="px-2 py-3 m-2  border border-1 rounded-3">
                                      <Row className="g-2 align-items-center p-2">
-                                         {/* Partner Name (Added faBuilding from V2, added Desc_Arr fallback from V2) */}
                                          <Col xs={12} md={5} className="fw-bold text-dark">
                                              <FontAwesomeIcon icon={faBuilding} className="me-2 text-warning"/>
                                              {commit.partenaire?.Description || commit.partenaire?.Description_Arr || `ID Partenaire: ${commit.Id_Partenaire}`}
                                          </Col>
-                                         {/* Montant Convenu / Autre Engagement */}
                                          <Col xs={12} md={7}>
                                             {commit.autre_engagement ? (
                                                 <div className="p-2 rounded-3 bg-light shadow-sm">
@@ -476,8 +387,6 @@ const AvenantVisualisation = ({
                                             )}
                                          </Col>
                                          
-
-                                         {/* Signature Details */}
                                          {commit.is_signatory && commit.details_signature && (
                                              <Col xs={12} className='mt-2'>
                                                 <p className='mb-0 text-muted small fst-italic bg-light p-2 rounded'>
@@ -486,7 +395,6 @@ const AvenantVisualisation = ({
                                              </Col>
                                          )}
 
-                                        {/* Yearly Breakdown Section */}
                                         {commit.engagements_annuels && commit.engagements_annuels.length > 0 && (
                                             <Col xs={12} className="mt-3 border-top pt-2">
                                                 <Button
@@ -519,7 +427,6 @@ const AvenantVisualisation = ({
                 </Row>
              )}
 
-            {/* Row 4: Fichiers Section (Using V1 structure & styling) */}
             <Row className="mt-4 pt-3 border-top mx-md-3">
                 <Col xs={12}>
                     <h5 className="text-uppercase text-secondary fs-6 fw-semibold mb-3">
@@ -529,12 +436,11 @@ const AvenantVisualisation = ({
                     {avenantData.documents.length > 0 ? (
                         <ListGroup variant="" className=" d-flex flex-row flex-wrap justify-content-center">
                             {avenantData.documents.map(doc => {
-                                // Use V1's appBaseUrl logic
-                                const fileUrl = appBaseUrl && doc.file_path ? `${appBaseUrl}/${doc.file_path.replace(/^\//, '')}` : doc.fichier_url;
+                                const fileUrl = appBaseUrl && doc.file_path ? `${appBaseUrl}/storage/${doc.file_path.replace(/^\//, '')}` : doc.fichier_url;
                                 const filename =doc.Intitule || doc.file_name ||  'Fichier sans nom';
                                 const fileIcon = getFileIcon(filename);
                                 return (
-                                     <ListGroup.Item key={doc.Id_Doc} className="px-3 rounded-4 m-2 py-2 d-flex justify-content-between align-items-center bg-dark text-white"> {/* V1 Style */}
+                                     <ListGroup.Item key={doc.Id_Doc} className="px-3 rounded-4 m-2 py-2 d-flex justify-content-between align-items-center bg-dark text-white">
                                          <div>
                                              <FontAwesomeIcon icon={fileIcon} className='me-2 text-warning'/>
                                              <span className="text-truncate" title={filename} style={{maxWidth: 'calc(100% - 50px)'}}>{filename}</span>
@@ -554,18 +460,16 @@ const AvenantVisualisation = ({
                 </Col>
             </Row>
 
-        </div> // End Main Container
+        </div>
     );
 };
 
-// --- PropTypes (Add baseApiUrl) ---
 AvenantVisualisation.propTypes = {
     itemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     onClose: PropTypes.func.isRequired,
-    baseApiUrl: PropTypes.string, // Add prop type
+    baseApiUrl: PropTypes.string,
 };
 
-// Default Props (Add baseApiUrl)
 AvenantVisualisation.defaultProps = {
      baseApiUrl: 'http://localhost:8000/api',
 };

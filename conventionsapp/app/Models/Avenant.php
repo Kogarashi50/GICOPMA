@@ -28,25 +28,25 @@ class Avenant extends Model
         'objet',
         'type_modification',
         'montant_modifie',
+        'montant_avenant', // ADDED
         'nouvelle_date_fin',
         'id_fonctionnaire',
-        'code', // ADDED
-        'annee_avenant', // ADDED
-        'session', // ADDED
-        'numero_approbation', // ADDED
-        'statut', // ADDED
+        'code',
+        'annee_avenant',
+        'session',
+        'numero_approbation',
+        'statut',
         'date_visa', 
-        // 'fichier_avenant', // <<< REMOVED
         'remarques',
-        // Note: partenaire_ids is NOT directly fillable if using pivot table
     ];
 
     protected $casts = [
         'date_signature' => 'date:Y-m-d',
         'nouvelle_date_fin' => 'date:Y-m-d',
         'montant_modifie' => 'decimal:2',
-        'date_visa' => 'date:Y-m-d', // ADDED
-        'type_modification' => 'array', // ADDED - Cast to array for multiple values
+        'montant_avenant' => 'decimal:2', // ADDED
+        'date_visa' => 'date:Y-m-d',
+        'type_modification' => 'array',
     ];
 
     public function convention(): BelongsTo
@@ -63,7 +63,7 @@ class Avenant extends Model
      * Get the partner commitments specifically associated with this avenant.
      * Uses the 'convention_partenaire' table via the ConvPart model.
      */
-    public function partnerCommitments(): HasMany // <<< CHANGED/ADDED Relationship
+    public function partnerCommitments(): HasMany
     {
         // An Avenant has many entries in convention_partenaire where avenant_id matches
         return $this->hasMany(ConvPart::class, 'avenant_id', 'id');
@@ -82,6 +82,4 @@ class Avenant extends Model
             ->useLogName('avenant');
     }
 
-    // REMOVED getFichierUrlAttribute()
-    // REMOVED deleting boot method for single file
 }

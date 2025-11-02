@@ -10,6 +10,8 @@ use App\Models\Document;
 use App\Models\ConvPart;
 use App\Models\VersementCP; // Included for update logic
 use App\Models\Partenaire;
+use App\Models\MaitreOuvrage;
+use App\Models\MaitreOuvrageDelegue;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException; // Included for findOrFail catch
 
@@ -27,50 +29,69 @@ use Illuminate\Validation\Rule;
 
 class ConventionController extends Controller
 {
-    /**
-     * Display a listing of the conventions.
-     * GET /api/conventions
-     */
-    public function index()
-    {
-        Log::info('Récupération de toutes les conventions...');
-        try {
-            $conventions = Convention::with([
-                    'programme',
-                    'projet',
-                    'documents',
-                    'convParts.partenaire',
-                    'conventionCadre:id,code,intitule' // ADDED: Eager load the parent convention
-                ])
-                ->latest()
-                ->get();
+    
 
-            Log::info('Récupération réussie de ' . $conventions->count() . ' conventions.');
-            $appBaseUrl = rtrim(config('app.url', 'http://localhost'), '/');
-            $conventions->each(function ($convention) use ($appBaseUrl) {
-                if ($convention->relationLoaded('documents')) {
-                    $convention->documents->each(function ($doc) use ($appBaseUrl) {
-                        $doc->url = $doc->file_path ? "{$appBaseUrl}/" . ltrim($doc->file_path, '/') : null;
-                    });
-                }
-                 if ($convention->relationLoaded('convParts')) {
-                     $convention->formatted_partners = $convention->convParts->map(function($cp){
-                         $label = optional($cp->partenaire)->Description_Arr ?? optional($cp->partenaire)->Description ?? "ID:{$cp->Id_Partenaire}";
-                         if(optional($cp->partenaire)->Code) {
-                             $label = $cp->partenaire->Code . ' - ' . $label;
-                         }
-                         return $label;
-                     })->implode(', ');
-                 }
-            });
+// app/Http/Controllers/ConventionController.php
 
-            return response()->json(['conventions' => $conventions]);
-        } catch (\Exception $e) {
-            Log::error('Erreur lors de la récupération des conventions:', ['message' => $e->getMessage()]);
-            return response()->json(['message' => 'Erreur serveur lors de la récupération des conventions.'], 500);
-        }
+public function index()
+{
+    Log::info('Récupération de toutes les conventions...');
+    try {
+        $conventions = Convention::with([
+                'programme',
+                'projet',
+                 'secteur', // <-- ADD THIS
+                'documents',
+                'convParts.partenaire',
+                'convParts.engagementType', // Eager-load the necessary relationships
+                'conventionCadre:id,code,intitule',
+                'maitresOuvrage:id,nom,description',
+                'maitresOuvrageDelegues:id,nom,description'
+            ])
+            ->latest()
+            ->get();
+
+        Log::info('Récupération réussie de ' . $conventions->count() . ' conventions.');
+        $appBaseUrl = rtrim(config('app.url', 'http://localhost'), '/');
+        
+        $conventions->each(function ($convention) use ($appBaseUrl) {
+            // Handle documents URL (existing logic)
+            if ($convention->relationLoaded('documents')) {
+                $convention->documents->each(function ($doc) use ($appBaseUrl) {
+                    $doc->url = $doc->file_path ? "{$appBaseUrl}/" . ltrim($doc->file_path, '/') : null;
+                });
+            }
+
+            // START: FIX FOR ENGAGEMENT TYPE FILTER
+            // Manually create the `partner_commitments` array that the frontend expects.
+            if ($convention->relationLoaded('convParts')) {
+                $convention->partner_commitments = $convention->convParts->map(function($cp) {
+                    return [
+                        // The filter specifically needs these two keys:
+                        'engagement_type_id'    => $cp->engagement_type_id,
+                        'engagement_type_label' => optional($cp->engagementType)->nom,
+
+                        // Include other fields needed for display or other logic
+                        'Id_Partenaire'         => $cp->Id_Partenaire,
+                        'Montant_Convenu'       => $cp->Montant_Convenu,
+                    ];
+                })->values()->all();
+            } else {
+                // Ensure the key exists even if there are no commitments
+                $convention->partner_commitments = [];
+            }
+            // END: FIX FOR ENGAGEMENT TYPE FILTER
+
+            // It's good practice to remove the raw relationship data to avoid confusion
+            unset($convention->convParts); 
+        });
+
+        return response()->json(['conventions' => $conventions]);
+    } catch (\Exception $e) {
+        Log::error('Erreur lors de la récupération des conventions:', ['message' => $e->getMessage()]);
+        return response()->json(['message' => 'Erreur serveur lors de la récupération des conventions.'], 500);
     }
-
+}
     /**
      * Get conventions formatted for dropdowns.
      * GET /api/conventions/options
@@ -168,6 +189,12 @@ class ConventionController extends Controller
      */
     public function store(Request $request)
     {
+        if ($request->has('maitres_ouvrage_ids') && is_string($request->input('maitres_ouvrage_ids'))) {
+            $request->merge(['maitres_ouvrage_ids' => json_decode($request->input('maitres_ouvrage_ids'), true)]);
+        }
+        if ($request->has('maitres_ouvrage_delegues_ids') && is_string($request->input('maitres_ouvrage_delegues_ids'))) {
+            $request->merge(['maitres_ouvrage_delegues_ids' => json_decode($request->input('maitres_ouvrage_delegues_ids'), true)]);
+        }
         Log::info('Requête de création de convention reçue...');
         Log::debug('Données brutes:', $request->all());
         if ($request->hasFile('fichiers')) { Log::info(count($request->file('fichiers')) . ' fichier(s) reçu(s).'); }
@@ -185,17 +212,51 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
         // --- Validation Adjusted Based on Frontend Requirements ---
         try {
             $validatedData = $request->validate([
-                'numero_approbation' => 'required|string|max:100',
-                'session' => 'required|integer|between:1,12',
+                'numero_approbation' => [
+        Rule::requiredIf(fn () => $request->boolean('requires_council_approval')),
+        'nullable',
+        'string',
+        'max:100'
+    ],
+    'session' => [
+        Rule::requiredIf(fn () => $request->boolean('requires_council_approval')),
+        'nullable',
+        'integer',
+        'between:1,12'
+    ],
+    
+    // VALIDATE 'code' only when it's manually entered
+    'code' => [
+        Rule::requiredIf(fn () => !$request->boolean('requires_council_approval')),
+        'nullable',
+        'string',
+        'max:255',
+        // Ensure the code is unique, ignoring the current convention on update
+        Rule::unique('convention')->ignore($convention->id ?? null),
+    ],
+
                 'code_provisoire' => 'nullable|string|max:255', // ADDED
                 'classification_prov' => 'nullable|string',          // Required (*)
-                'categorie' => 'nullable|string',                    // Required (*)
+                'secteur_id' => 'nullable|integer|exists:secteurs,id',
                 'intitule' => 'required|string',                     // Required (*)
-                'reference' => 'nullable|string',                    // Required (*)
-                'annee_convention' => 'required|integer|digits:4',   // Required (*)
+                'reference' => 'nullable|string',  
+                 'date_envoi_visa_mi' => [
+            'nullable',
+            'date',
+            Rule::requiredIf($request->input('statut') === 'en cours de visa'),
+        ], 
+                'annee_convention' => [
+        Rule::requiredIf(fn () => $request->boolean('requires_council_approval')),
+        'nullable',
+        'integer',
+        'digits:4'
+    ],
+
                 'objet' => 'nullable|string',   
-                 'type' => ['required', Rule::in(['cadre', 'specifique'])],
-                'objectifs' => 'nullable|string',                    // Required (*)
+                'type' => ['required', Rule::in(['cadre', 'specifique', 'convention', 'maitrise d\'ouvrage delegue'])],
+                'objectifs' => 'nullable|string',   
+                'sous_type' => 'nullable|string|max:255',
+                'requires_council_approval' => 'required|boolean',                 // Required (*)
                 'localisation' => 'nullable|string',                 // Required (*) (semicolon separated string)
                 'maitre_ouvrage' => 'nullable|string',               // Required (*)
                 'partenaire' => 'nullable|string',                   // Not Required (simple list)
@@ -232,6 +293,10 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
                 'membres_comite_technique.*' => 'string|max:255', // Validates each item in the array
                 'membres_comite_pilotage' => 'nullable|array',
                 'membres_comite_pilotage.*' => 'string|max:255',
+                'maitres_ouvrage_ids' => 'nullable|array',
+                'maitres_ouvrage_ids.*' => 'integer|exists:maitre_ouvrage,id',
+                'maitres_ouvrage_delegues_ids' => 'nullable|array',
+                'maitres_ouvrage_delegues_ids.*' => 'integer|exists:maitre_ouvrage_delegue,id',
                 'fichiers' => 'nullable|array',                      // Not Required
                 'fichiers.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,xls,xlsx|max:5120', // Max 5MB
                 'partner_commitments' => ['nullable', 'string'],     // Required on store (*) (JSON string)
@@ -264,7 +329,9 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
             Log::error('Échec validation principale (store):', ['errors' => $e->errors()]);
             return response()->json(['message' => 'Données invalides.', 'errors' => $e->errors()], 422);
         }
-               $sessionValue = $validatedData['session'] ?? 'NS';
+               if ($validatedData['requires_council_approval']) {
+    // Logic for GENERATED code (existing behavior)
+    $sessionValue = $validatedData['session'] ?? 'NS';
     $sessionFormatted = is_numeric($sessionValue) ? str_pad($sessionValue, 2, '0', STR_PAD_LEFT) : 'NS';
 
     $validatedData['code'] = sprintf(
@@ -273,6 +340,13 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
         $sessionFormatted,
         $validatedData['annee_convention']
     );
+    Log::info('Code généré automatiquement.', ['code' => $validatedData['code']]);
+
+} else {
+    // Logic for MANUALLY entered code
+    // The 'code' is already in $validatedData from the form input, no action needed here.
+    Log::info('Code fourni manuellement.', ['code' => $validatedData['code']]);
+}
 
         // --- Partner Commitment Detail Validation ---
         if (!is_array($partnerCommitmentsInput)) { return response()->json(['message' => 'Format invalide pour les engagements (doit être une liste).'], 422); }
@@ -286,12 +360,14 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
     }
            $commitmentValidator = Validator::make($commitment, [
         'Id_Partenaire' => 'required|integer|exists:partenaire,Id',
+        'engagement_type_id' => 'required|integer|exists:engagement_types,id',
         
         // If Montant is provided, it must be numeric. It's only required if autre_engagement is missing.
         'Montant_Convenu' => 'required_if:autre_engagement,null|nullable|numeric|min:0',
 
     // This says: Autre Engagement is required IF Montant_Convenu is NULL or empty. It must also be a string.
     'autre_engagement' => 'required_if:Montant_Convenu,null|nullable|string|max:5000',
+    'engagement_description' => 'nullable|string|max:5000',
 
         'is_signatory' => 'required|boolean',
         'date_signature' => ['required_if:is_signatory,true', 'nullable', 'date_format:Y-m-d'],
@@ -300,6 +376,8 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
         // Add custom messages for the new rules
         'Montant_Convenu.required_without' => 'Un montant ou une description de l\'engagement est requis.',
         'autre_engagement.required_without' => 'Une description ou un montant de l\'engagement est requis.',
+        'engagement_type_id.required' => 'Le type d\'engagement est requis.',
+        'engagement_type_id.exists' => 'Le type d\'engagement sélectionné n\'existe pas.',
     ]);
             if ($commitmentValidator->fails()) { return response()->json(['message' => "Erreur validation engagement #" . ($index + 1) . ".", 'errors' => $commitmentValidator->errors()], 422); }
         }
@@ -316,12 +394,23 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
              if (!File::isWritable($targetDirAbsolute)) { throw new \Exception("Permissions écriture manquantes pour: {$targetDirAbsolute}"); }
 
             // --- Create Convention ---
-            $conventionDataForCreate = Arr::except($validatedData, ['fichiers', 'partner_commitments']);
+            $conventionDataForCreate = Arr::except($validatedData, ['fichiers', 'partner_commitments', 'maitres_ouvrage_ids', 'maitres_ouvrage_delegues_ids']);
             
             // Ensure foreign keys are passed correctly (already handled by validation mapping)
             Log::info('Création enregistrement Convention...', $conventionDataForCreate);
             $convention = Convention::create($conventionDataForCreate);
             Log::info("Convention créée: ID {$convention->id}");
+
+            // --- Handle Maîtres d'Ouvrage Relationships ---
+            if (!empty($validatedData['maitres_ouvrage_ids'])) {
+                $convention->maitresOuvrage()->attach($validatedData['maitres_ouvrage_ids']);
+                Log::info("Attaché " . count($validatedData['maitres_ouvrage_ids']) . " maître(s) d'ouvrage à la convention.");
+            }
+
+            if (!empty($validatedData['maitres_ouvrage_delegues_ids'])) {
+                $convention->maitresOuvrageDelegues()->attach($validatedData['maitres_ouvrage_delegues_ids']);
+                Log::info("Attaché " . count($validatedData['maitres_ouvrage_delegues_ids']) . " maître(s) d'ouvrage délégué(s) à la convention.");
+            }
 
             // --- Handle File Uploads ---
             if (!empty($validatedData['fichiers']) && is_array($validatedData['fichiers'])) {
@@ -352,8 +441,10 @@ if (!empty($partnerCommitmentsInput)) {
         $convPart = ConvPart::create([
             'Id_Convention' => $convention->id,
             'Id_Partenaire' => $commitment['Id_Partenaire'],
+            'engagement_type_id' => $commitment['engagement_type_id'],
             'Montant_Convenu' => $commitment['Montant_Convenu'],
             'autre_engagement' => $commitment['autre_engagement'] ?? null,
+            'engagement_description' => $commitment['engagement_description'] ?? null,
             'is_signatory' => $commitment['is_signatory'],
             'date_signature' => ($commitment['is_signatory'] && !empty($commitment['date_signature'])) ? $commitment['date_signature'] : null,
             'details_signature' => ($commitment['is_signatory'] && !empty($commitment['details_signature'])) ? $commitment['details_signature'] : null,
@@ -380,11 +471,28 @@ if (!empty($partnerCommitmentsInput)) {
             Log::info('Transaction DB validée (store).');
 
             // --- Return Success Response ---
-            $convention->load(['programme', 'projet', 'documents', 'convParts.partenaire']);
+            $convention->load(['programme', 'projet', 'documents', 'secteur','convParts.partenaire', 'convParts.engagementType', 'maitresOuvrage', 'maitresOuvrageDelegues']);
             $appBaseUrl = rtrim(config('app.url', 'http://localhost'), '/');
             $responseData = $convention->toArray();
             $responseData['documents'] = $convention->documents->map(function ($doc) use ($appBaseUrl) { $d = $doc->toArray(); $d['url'] = $doc->file_path ? "{$appBaseUrl}/" . ltrim($doc->file_path, '/') : null; return $d; })->all();
-            $responseData['partner_commitments'] = $convention->convParts->map(function (ConvPart $cp) { $sDate = optional($cp->date_signature)->format('Y-m-d'); $p = $cp->partenaire; $l = optional($p)->Description_Arr ?: (optional($p)->Description ?: "ID:{$cp->Id_Partenaire}"); if (optional($p)->Code) { $l = "{$p->Code} - {$l}"; } return ['Id_Partenaire' => $cp->Id_Partenaire, 'label' => $l, 'Montant_Convenu' => $cp->Montant_Convenu, 'is_signatory' => (bool)$cp->is_signatory, 'date_signature' => $sDate, 'details_signature' => $cp->details_signature]; })->values()->all();
+            $responseData['partner_commitments'] = $convention->convParts->map(function (ConvPart $cp) { 
+                $sDate = optional($cp->date_signature)->format('Y-m-d'); 
+                $p = $cp->partenaire; 
+                $l = optional($p)->Description_Arr ?: (optional($p)->Description ?: "ID:{$cp->Id_Partenaire}"); 
+                if (optional($p)->Code) { $l = "{$p->Code} - {$l}"; } 
+                return [
+                    'Id_Partenaire' => $cp->Id_Partenaire, 
+                    'label' => $l, 
+                    'engagement_type_id' => $cp->engagement_type_id,
+                    'engagement_type_label' => optional($cp->engagementType)->nom,
+                    'Montant_Convenu' => $cp->Montant_Convenu, 
+                    'autre_engagement' => $cp->autre_engagement,
+                    'engagement_description' => $cp->engagement_description,
+                    'is_signatory' => (bool)$cp->is_signatory, 
+                    'date_signature' => $sDate, 
+                    'details_signature' => $cp->details_signature
+                ]; 
+            })->values()->all();
             Log::info('loubna - Convention Stored', $responseData);
             return response()->json([ "success" => "Convention ajoutée!", "message" => "Convention ajoutée!", "convention" => $responseData ], 201);
 
@@ -411,19 +519,26 @@ if (!empty($partnerCommitmentsInput)) {
         Log::info("API: Requête pour détails Convention ID: {$conventionId}");
         try {
             $convention->load([
-                'documents', 'programme', 'projet', 'avenants',
+                'documents', 'programme', 'projet', 'avenants','secteur',
                 'conventionCadre:id,code,intitule', // ADDED for specifique
                 // ADDED for cadre: Load specifics with their projects
                 'conventionsSpecifiques:id,code,intitule,statut,id_projet,convention_cadre_id',
                 'conventionsSpecifiques.projet:ID_Projet,Nom_Projet',
+                'maitresOuvrage:id,nom,description,contact,email,telephone,adresse',
+                'maitresOuvrageDelegues:id,nom,description,contact,email,telephone,adresse',
                'convParts' => function ($query) {
     // We add `autre_engagement` to the select list
     $query->with('partenaire:Id,Description,Description_Arr,Code')
           ->with('engagementsAnnuels')
-
+          ->with('engagementType:id,nom') 
           ->select([
               'Id_CP', 'Id_Convention', 'Id_Partenaire', 'Montant_Convenu', 
               'autre_engagement', // <-- ADD THIS
+              
+              'engagement_description', // Es buena idea incluirlo si existe
+              // Añadimos el campo clave para la relación
+              'engagement_type_id', // <--- PASO 1.2: AÑADIR ESTA LÍNEA (¡MUY IMPORTANTE!)
+
               'is_signatory', 'date_signature', 'details_signature'
           ])
           ->withSum('versements as Montant_Verse', 'montant_verse');
@@ -504,6 +619,9 @@ if (!empty($partnerCommitmentsInput)) {
                         'label'           => $partnerLabel, // Use the calculated label
                         'Montant_Convenu' => $c['Montant_Convenu'] ?? null,
                         'autre_engagement' => $c['autre_engagement'] ?? null,
+                        'engagement_type_id' => $c['engagement_type_id'] ?? null,
+                        'engagement_type_label' => $c['engagement_type']['nom'] ?? null, // Usamos la relación cargada
+                        'engagement_description' => $c['engagement_description'] ?? null,
                         'engagements_annuels' => $c['engagements_annuels'] ?? [], 
                         'Montant_Verse'   => $c['Montant_Verse'] ?? '0.00',
                         'is_signatory'    => (bool)($c['is_signatory'] ?? false),
@@ -542,6 +660,12 @@ if (!empty($partnerCommitmentsInput)) {
      */
     public function update(Request $request, string $id): JsonResponse
     {
+        if ($request->has('maitres_ouvrage_ids') && is_string($request->input('maitres_ouvrage_ids'))) {
+            $request->merge(['maitres_ouvrage_ids' => json_decode($request->input('maitres_ouvrage_ids'), true)]);
+        }
+        if ($request->has('maitres_ouvrage_delegues_ids') && is_string($request->input('maitres_ouvrage_delegues_ids'))) {
+            $request->merge(['maitres_ouvrage_delegues_ids' => json_decode($request->input('maitres_ouvrage_delegues_ids'), true)]);
+        }
         Log::info("Requête MAJ reçue pour Convention ID {$id}...");
         Log::debug('Données brutes MAJ (convention):', $request->all());
 
@@ -562,23 +686,55 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
 
         // --- Validation Rules Adjusted ---
         $validationRules = [
+'numero_approbation' => [
+        Rule::requiredIf(fn () => $request->boolean('requires_council_approval')),
+        'nullable',
+        'string',
+        'max:100'
+    ],
+    'session' => [
+        Rule::requiredIf(fn () => $request->boolean('requires_council_approval')),
+        'nullable',
+        'integer',
+        'between:1,12'
+    ],
+    
+    // VALIDATE 'code' only when it's manually entered
+    'code' => [
+        Rule::requiredIf(fn () => !$request->boolean('requires_council_approval')),
+        'nullable',
+        'string',
+        'max:255',
+        // Ensure the code is unique, ignoring the current convention on update
+        Rule::unique('convention')->ignore($convention->id ?? null),
+    ],
+'annee_convention' => [
+        Rule::requiredIf(fn () => $request->boolean('requires_council_approval')),
+        'nullable',
+        'integer',
+        'digits:4'
+    ],
 
-            'numero_approbation' => 'required|string|max:100',
-            'session' => 'required|integer|between:1,12',
             'code_provisoire' => 'nullable|string|max:255', // ADDED
             'classification_prov' => 'nullable|string',          // Required (*)
-            'categorie' => 'nullable|string',                    // Required (*)
+            'secteur_id' => 'nullable|integer|exists:secteurs,id',
             'intitule' => 'required|string',                     // Required (*)
             'reference' => 'nullable|string',                    // Required (*)
-            'annee_convention' => 'required|integer|digits:4',   // Required (*)
             'objet' => 'nullable|string',
-            'type' => ['required', Rule::in(['cadre', 'specifique'])],
+            'sous_type' => 'nullable|string|max:255',
+        'requires_council_approval' => 'required|boolean',
+            'type' => ['required', Rule::in(['cadre', 'specifique', 'convention', 'maitrise d\'ouvrage delegue'])],
             'objectifs' => 'nullable|string',                    // Required (*)
             'localisation' => 'nullable|string',                 // Required (*)
             'maitre_ouvrage' => 'nullable|string',               // Required (*)
             'partenaire' => 'nullable|string',                   // Not Required (simple list)
             'id_fonctionnaire' => 'nullable|string',             // Not Required
-            'cout_global' => 'nullable|numeric|min:0',           // Required (*)
+            'cout_global' => 'nullable|numeric|min:0', 
+            'date_envoi_visa_mi' => [
+            'nullable',
+            'date',
+            Rule::requiredIf($request->input('statut') === 'en cours de visa'),
+        ],
             'statut' => 'required|string',      
             'date_visa' => 'nullable|date', 
              'operationalisation' => ['nullable', Rule::in(['Oui', 'Non'])],
@@ -609,6 +765,10 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
             'membres_comite_technique.*' => 'string|max:255', // Validates each item in the array
             'membres_comite_pilotage' => 'nullable|array',
             'membres_comite_pilotage.*' => 'string|max:255',
+            'maitres_ouvrage_ids' => 'nullable|array',
+            'maitres_ouvrage_ids.*' => 'integer|exists:maitre_ouvrage,id',
+            'maitres_ouvrage_delegues_ids' => 'nullable|array',
+            'maitres_ouvrage_delegues_ids.*' => 'integer|exists:maitre_ouvrage_delegue,id',
             'fichiers' => 'nullable|array',                      // Not Required
             'fichiers.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,xls,xlsx|max:5120',
             'partner_commitments' => ['nullable', 'string'],     // *** CHANGED TO NULLABLE *** (JSON string)
@@ -623,16 +783,24 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
         if ($validator->fails()) { Log::error('Échec validation principale (Convention update):', ['errors' => $validator->errors()]); return response()->json(['message' => 'Données invalides.', 'errors' => $validator->errors()], 422); }
         $validatedData = $validator->validated();
 
-    
-      $sessionValue = $validatedData['session'] ?? 'NS';
-        $sessionFormatted = is_numeric($sessionValue) ? str_pad($sessionValue, 2, '0', STR_PAD_LEFT) : 'NS';
+    if ($validatedData['requires_council_approval']) {
+    // Logic for GENERATED code (existing behavior)
+    $sessionValue = $validatedData['session'] ?? 'NS';
+    $sessionFormatted = is_numeric($sessionValue) ? str_pad($sessionValue, 2, '0', STR_PAD_LEFT) : 'NS';
 
-        $validatedData['code'] = sprintf(
-            '%s/%s/%s',
-            $validatedData['numero_approbation'] ?? 'NA',
-            $sessionFormatted,
-            $validatedData['annee_convention']
-        );
+    $validatedData['code'] = sprintf(
+        '%s/%s/%s',
+        $validatedData['numero_approbation'] ?? 'NA',
+        $sessionFormatted,
+        $validatedData['annee_convention']
+    );
+    Log::info('Code généré automatiquement.', ['code' => $validatedData['code']]);
+
+} else {
+    // Logic for MANUALLY entered code
+    // The 'code' is already in $validatedData from the form input, no action needed here.
+    Log::info('Code fourni manuellement.', ['code' => $validatedData['code']]);
+}
         $confirmDeleteCommitments = $validatedData['confirm_delete_commitments'] ?? false;
 
         // --- Detailed Partner Commitment Validation ---
@@ -648,12 +816,14 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
     }
             $commitmentValidator = Validator::make($commitment, [
         'Id_Partenaire' => 'required|integer|exists:partenaire,Id',
+        'engagement_type_id' => 'required|integer|exists:engagement_types,id',
         
         // If Montant is provided, it must be numeric. It's only required if autre_engagement is missing.
         'Montant_Convenu' => 'required_if:autre_engagement,null|nullable|numeric|min:0',
 
     // This says: Autre Engagement is required IF Montant_Convenu is NULL or empty. It must also be a string.
     'autre_engagement' => 'required_if:Montant_Convenu,null|nullable|string|max:5000',
+    'engagement_description' => 'nullable|string|max:5000',
 
         'is_signatory' => 'required|boolean',
         'date_signature' => ['required_if:is_signatory,true', 'nullable', 'date_format:Y-m-d'],
@@ -662,6 +832,8 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
         // Add custom messages for the new rules
         'Montant_Convenu.required_without' => 'Un montant ou une description de l\'engagement est requis.',
         'autre_engagement.required_without' => 'Une description ou un montant de l\'engagement est requis.',
+        'engagement_type_id.required' => 'Le type d\'engagement est requis.',
+        'engagement_type_id.exists' => 'Le type d\'engagement sélectionné n\'existe pas.',
     ]);
             if ($commitmentValidator->fails()) { Log::error("Update: Échec validation engagement #".($index + 1).".", ['errors' => $commitmentValidator->errors()]); return response()->json(['message' => "Erreur validation engagement #" . ($index + 1) . ".", 'errors' => $commitmentValidator->errors()], 422); }
         }
@@ -675,7 +847,7 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
         }
 
         // --- Prepare Data & Paths ---
-        $conventionUpdateData = Arr::except($validatedData, ['fichiers', 'deleted_document_ids', 'partner_commitments', 'confirm_delete_commitments']);
+        $conventionUpdateData = Arr::except($validatedData, ['fichiers', 'deleted_document_ids', 'partner_commitments', 'confirm_delete_commitments', 'maitres_ouvrage_ids', 'maitres_ouvrage_delegues_ids']);
         $filesToDeletePhysicallyAbsolute = []; $newlyAddedDocumentInfo = [];
         $targetDirRelative = 'uploads/conventions'; $targetDirAbsolute = public_path($targetDirRelative);
 
@@ -735,6 +907,17 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
             $convention->update($conventionUpdateData);
             Log::info("Convention MAJ: ID {$convention->id}");
 
+            // --- Handle Maîtres d'Ouvrage Relationships ---
+            if (isset($validatedData['maitres_ouvrage_ids'])) {
+                $convention->maitresOuvrage()->sync($validatedData['maitres_ouvrage_ids']);
+                Log::info("Synchronisé " . count($validatedData['maitres_ouvrage_ids']) . " maître(s) d'ouvrage avec la convention.");
+            }
+
+            if (isset($validatedData['maitres_ouvrage_delegues_ids'])) {
+                $convention->maitresOuvrageDelegues()->sync($validatedData['maitres_ouvrage_delegues_ids']);
+                Log::info("Synchronisé " . count($validatedData['maitres_ouvrage_delegues_ids']) . " maître(s) d'ouvrage délégué(s) avec la convention.");
+            }
+
             // --- START: Smart Sync Partner Commitments (ConvPart) ---
             Log::info("Synchronisation engagements partenaires (ConvPart) pour Convention ID: {$id}");
             $existingConvPartIds = $convention->convParts()->pluck('Id_CP')->toArray();
@@ -767,13 +950,20 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
             Log::info("Traitement MAJ/Création pour " . $submittedCommitmentsData->count() . " engagements soumis.");
             foreach ($submittedCommitmentsData as $commitmentData) {
                 $dataToSync = [
-                    'Montant_Convenu'   => $commitmentData['Montant_Convenu'], 'is_signatory' => $commitmentData['is_signatory'],
+                    'engagement_type_id' => $commitmentData['engagement_type_id'],
+                    'Montant_Convenu'   => $commitmentData['Montant_Convenu'], 
+                    'is_signatory' => $commitmentData['is_signatory'],
                     'date_signature'    => ($commitmentData['is_signatory'] && !empty($commitmentData['date_signature'])) ? $commitmentData['date_signature'] : null,
                     'autre_engagement' => $commitmentData['autre_engagement'] ?? null,
+                    'engagement_description' => $commitmentData['engagement_description'] ?? null,
                     'details_signature' => ($commitmentData['is_signatory'] && !empty($commitmentData['details_signature'])) ? $commitmentData['details_signature'] : null,
                 ];
                 $convPart = ConvPart::updateOrCreate(
-                    ['Id_Convention' => $convention->id, 'Id_Partenaire' => $commitmentData['Id_Partenaire']],
+                    [
+                        'Id_Convention' => $convention->id, 
+                        'Id_Partenaire' => $commitmentData['Id_Partenaire'],
+                        'engagement_type_id' => $commitmentData['engagement_type_id'] // <-- ADD THIS KEY
+                    ],
                     $dataToSync
                 );
                 if (isset($commitmentData['engagements_annuels']) && is_array($commitmentData['engagements_annuels']) && !empty($commitmentData['engagements_annuels'])) {
@@ -810,14 +1000,32 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
             }
 
             // --- Return Success Response ---
-            $updatedConvention = $convention->fresh()->load(['programme', 'projet', 'documents', 'avenants', 'convParts' => function ($q) { $q->with('partenaire:Id,Description,Description_Arr,Code')->withSum('versements as Montant_Verse', 'montant_verse'); }]);
+            $updatedConvention = $convention->fresh()->load(['secteur','programme', 'projet', 'documents', 'avenants', 'maitresOuvrage', 'maitresOuvrageDelegues', 'convParts' => function ($q) { $q->with('partenaire:Id,Description,Description_Arr,Code')->with('engagementType:id,nom,description')->withSum('versements as Montant_Verse', 'montant_verse'); }]);
             $appBaseUrl = rtrim(config('app.url', 'http://localhost'), '/');
             $updatedConventionData = $updatedConvention->toArray();
             // Format documents
             $updatedConventionData['documents'] = $updatedConvention->documents->map(function ($d) use ($appBaseUrl) { $da=$d->toArray(); $da['url'] = $d->file_path ? "{$appBaseUrl}/" . ltrim($d->file_path, '/') : null; return $da; })->all();
             // Format partners
             if (isset($updatedConventionData['conv_parts']) && is_array($updatedConventionData['conv_parts'])) {
-                $updatedConventionData['partner_commitments'] = array_map(function ($c) { $p=$c['partenaire']??null; $l=$p['Description_Arr']??($p['Description']?? "ID:{$c['Id_Partenaire']}"); if($p&&$p['Code']){$l="{$p['Code']} - {$l}";} return ['Id_CP'=>$c['Id_CP']??null, 'Id_Partenaire'=>$c['Id_Partenaire']??null, 'label'=>$l, 'Montant_Convenu'=>$c['Montant_Convenu']??null, 'Montant_Verse'=>$c['Montant_Verse']??'0.00', 'is_signatory'=>(bool)($c['is_signatory']??false), 'date_signature'=>$c['date_signature']??null, 'details_signature'=>$c['details_signature']??null]; }, $updatedConventionData['conv_parts']);
+                $updatedConventionData['partner_commitments'] = array_map(function ($c) { 
+                    $p=$c['partenaire']??null; 
+                    $l=$p['Description_Arr']??($p['Description']?? "ID:{$c['Id_Partenaire']}"); 
+                    if($p&&$p['Code']){$l="{$p['Code']} - {$l}";} 
+                    return [
+                        'Id_CP'=>$c['Id_CP']??null, 
+                        'Id_Partenaire'=>$c['Id_Partenaire']??null, 
+                        'label'=>$l, 
+                        'engagement_type_id'=>$c['engagement_type_id']??null,
+                        'engagement_type_label'=>$c['engagement_type']['nom']??null,
+                        'Montant_Convenu'=>$c['Montant_Convenu']??null, 
+                        'autre_engagement'=>$c['autre_engagement']??null,
+                        'engagement_description'=>$c['engagement_description']??null,
+                        'Montant_Verse'=>$c['Montant_Verse']??'0.00', 
+                        'is_signatory'=>(bool)($c['is_signatory']??false), 
+                        'date_signature'=>$c['date_signature']??null, 
+                        'details_signature'=>$c['details_signature']??null
+                    ]; 
+                }, $updatedConventionData['conv_parts']);
                  unset($updatedConventionData['conv_parts']);
              } else { $updatedConventionData['partner_commitments'] = []; }
             Log::info('loubna - Convention Updated', $updatedConventionData);
@@ -852,7 +1060,7 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
      public function destroy(string $id): JsonResponse
     {
         Log::info("Tentative suppression Convention ID: {$id}...");
-        $conventionToDelete = Convention::with(['documents', 'convParts'])->find($id);
+        $conventionToDelete = Convention::with(['documents', 'convParts','secteur',])->find($id);
         if (!$conventionToDelete) { Log::error("Convention ID: {$id} non trouvée pour suppression."); return response()->json(['message' => 'Convention non trouvée.'], 404); }
 
         $filesToDeletePhysicallyAbsolute = [];

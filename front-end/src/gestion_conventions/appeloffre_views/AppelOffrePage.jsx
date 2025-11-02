@@ -131,14 +131,14 @@ const AppelOffrePage = () => {
             meta: { align: 'center', enableGlobalFilter: true },
         },
         // --- Hidden file-based filters ---
-        { id: 'files_title', header: 'Titre Fichier (filtre)', size: 0, accessorFn: row => row, meta: { align: 'left', enableGlobalFilter: false }, enableHiding: true, filterFn: 'fileTitleIncludes' },
-        { id: 'files_type', header: 'Catégorie Fichier (filtre)', size: 0, accessorFn: row => row, meta: { align: 'left', enableGlobalFilter: false }, enableHiding: true, filterFn: 'fileTypeIncludes' },
+        { id: 'files_title', header: 'Titre Fichier (filtre)', size: 0, accessorFn: row => row, meta: { align: 'left', enableGlobalFilter: false }, enableHiding: false, filterFn: 'fileTitleIncludes' },
+        { id: 'files_type', header: 'Catégorie Fichier (filtre)', size: 0, accessorFn: row => row, meta: { align: 'left', enableGlobalFilter: false }, enableHiding: false, filterFn: 'fileTypeIncludes' },
         { id: 'files_search', header: 'Recherche Fichiers', size: 0, accessorFn: row => {
             const files = Array.isArray(row.fichiers) ? row.fichiers : [];
             if (files.length === 0) return '';
             return files.map(f => [f.intitule, f.nom_fichier, f.categorie, f.type_fichier].filter(Boolean).join(' ')).join(' | ');
-        }, meta: { align: 'left', enableGlobalFilter: true }, enableHiding: true },
-        { id: 'has_files', header: 'A des fichiers', size: 0, accessorFn: row => row, meta: { align: 'left', enableGlobalFilter: false }, enableHiding: true, filterFn: 'hasFiles' },
+        }, meta: { align: 'left', enableGlobalFilter: true }, enableHiding: false },
+        { id: 'has_files', header: 'A des fichiers', size: 0, accessorFn: row => row, meta: { align: 'left', enableGlobalFilter: false }, enableHiding: false, filterFn: 'hasFiles' },
     ], []); // Dependency array is empty
     const dynamicFetchUrl = useMemo(() => {
         let url = '/appel-offres'; // Base URL segment

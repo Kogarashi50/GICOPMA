@@ -1,31 +1,14 @@
+// src/pages/visualisationConventions.jsx (Full Merged & Final Version)
+
 import { useState, useEffect, useCallback, useMemo } from "react"
 import axios from "axios"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
-  faExclamationTriangle,
-  faExternalLinkAlt,
-  faCheckCircle,
-  faTimesCircle,
-  faUsers,
-  faFilePdf,
-  faFileWord,
-  faFileImage,
-  faFileExcel,
-  faFileAlt,
-  faCommentDots,
-  faPiggyBank,
-  faHandHoldingUsd,
-  faTasks,
-  faUserTie,
-  faBuilding,
-   faChevronDown, 
-    faChevronUp,
-  faMapMarkerAlt,
-  faProjectDiagram,
-  faClipboardList,
-  faInfoCircle,
-  faGift,
-  faSitemap, // ADDED ICON
+  faExclamationTriangle, faExternalLinkAlt, faCheckCircle, faTimesCircle, faUsers,
+  faFilePdf, faFileWord, faFileImage, faFileExcel, faFileAlt, faCommentDots,
+  faPiggyBank, faHandHoldingUsd, faTasks, faUserTie, faBuilding, faChevronDown, faChevronUp,
+  faMapMarkerAlt, faProjectDiagram, faClipboardList, faInfoCircle, faGift, faSitemap,
+  faHandshake, faTools,faGavel
 } from "@fortawesome/free-solid-svg-icons"
 import Button from "react-bootstrap/Button"
 import Card from "react-bootstrap/Card"
@@ -38,7 +21,7 @@ import Spinner from "react-bootstrap/Spinner"
 import Badge from "react-bootstrap/Badge"
 import Stack from "react-bootstrap/Stack"
 import ProgressBar from "react-bootstrap/ProgressBar"
-import ListGroup from "react-bootstrap/ListGroup"; // ADDED
+import ListGroup from "react-bootstrap/ListGroup";
 import "./visualisation.css" // Ensure this path is correct
 
 // --- Helper Functions ---
@@ -55,8 +38,6 @@ const formatCurrency = (cost) => {
 const displayData = (data, fallback = "-") =>
   data !== null && data !== undefined && String(data).trim() !== "" ? data : fallback
 const STATUT_OPTIONS = [
-  { value: "non approuvé", label: "Non Approuvé", color: "danger" },
-  { value: "en cours d'approbation", label: "En Cours d'Approbation", color: "warning" },
   { value: "approuvé", label: "Approuvé", color: "success" },
   { value: "non visé", label: "Non Visé", color: "danger" },
   { value: "en cours de visa", label: "En Cours de Visa", color: "warning" },
@@ -92,10 +73,14 @@ const ConventionVisualisation = ({ itemId, onClose, baseApiUrl = "http://localho
   const [error, setError] = useState(null)
   const [provincesList, setProvincesList] = useState([])
   const [fonctionnairesList, setFonctionnairesList] = useState([])
-  const [openPartnerId, setOpenPartnerId] = useState(null); 
- const handleTogglePartner = (partnerId) => {
+  const [openPartnerId, setOpenPartnerId] = useState(null);
+    const [maitresOuvrageList, setMaitresOuvrageList] = useState([]); // <-- ADD THIS
+  const [maitresOuvrageDeleguesList, setMaitresOuvrageDeleguesList] = useState([]); 
+
+  const handleTogglePartner = (partnerId) => {
     setOpenPartnerId(currentOpenId => (currentOpenId === partnerId ? null : partnerId));
   };
+  
   const getMonthName = (monthNumber) => {
     const monthMap = {
       1: "Janvier", 2: "Février", 3: "Mars", 4: "Avril", 5: "Mai", 6: "Juin",
@@ -134,6 +119,8 @@ const ConventionVisualisation = ({ itemId, onClose, baseApiUrl = "http://localho
     setConventionData(null)
     setProvincesList([])
     setFonctionnairesList([])
+    setMaitresOuvrageList([]); // <-- ADD THIS
+    setMaitresOuvrageDeleguesList([]);
 
     console.log(`VISU CONV: Fetching convention ${itemId}`)
     try {
@@ -149,8 +136,10 @@ const ConventionVisualisation = ({ itemId, onClose, baseApiUrl = "http://localho
         const auxiliaryFetches = await Promise.allSettled([
           axios.get(`${baseApiUrl}/options/provinces`, { withCredentials: true }),
           axios.get(`${baseApiUrl}/options/fonctionnaires`, { withCredentials: true }),
+          axios.get(`${baseApiUrl}/options/maitre-ouvrage`, { withCredentials: true }),
+          axios.get(`${baseApiUrl}/options/maitre-ouvrage-delegue`, { withCredentials: true }),
         ])
-
+const getArray = (res) => (Array.isArray(res?.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []));
         if (auxiliaryFetches[0].status === "fulfilled") {
           const provincesRes = auxiliaryFetches[0].value
           const provDataPayload = provincesRes.data.provinces || provincesRes.data.data || provincesRes.data
@@ -161,22 +150,20 @@ const ConventionVisualisation = ({ itemId, onClose, baseApiUrl = "http://localho
               label: p.Description || p.Nom || p.Code || p.label || `ID: ${p.Id || p.id}`,
             })),
           )
-          console.log(`VISU CONV: Processed ${provDataArray.length} provinces.`)
+          console.log(provincesList)
         } else {
           console.warn("VISU CONV: Could not fetch provinces list:", auxiliaryFetches[0].reason?.message)
         }
-
         if (auxiliaryFetches[1].status === "fulfilled") {
           const foncRes = auxiliaryFetches[1].value
-          const foncDataPayload = foncRes.data.fonctionnaires || foncRes.data.data || foncRes.data
+          const foncDataPayload = foncRes.data.fonctionnaires
+          console.log(foncDataPayload)
 
           if (Array.isArray(foncDataPayload)) {
-            setFonctionnairesList(
-              foncDataPayload.map((f) => ({
-                value: f.id,
-                label: f.nom_complet || f.Nom_Fonctionnaire || f.nom || f.name || `ID: ${f.id}`,
-              })),
-            )
+            setFonctionnairesList(foncDataPayload.map(fc=>({
+              value:fc.id,
+              label:fc.nom_complet
+            })))
             console.log(`VISU CONV: Processed ${foncDataPayload.length} fonctionnaires.`)
           } else {
             console.error("VISU CONV: Data for /options/fonctionnaires was NOT an array.", foncDataPayload)
@@ -184,7 +171,20 @@ const ConventionVisualisation = ({ itemId, onClose, baseApiUrl = "http://localho
           }
         } else {
           console.warn("VISU CONV: Could not fetch fonctionnaires list:", auxiliaryFetches[1].reason?.message)
+
           setError((prev) => (prev ? prev + "\n" : "") + "Erreur de chargement des fonctionnaires.")
+
+        }
+                   if (auxiliaryFetches[2].status === 'fulfilled') {
+            setMaitresOuvrageList(getArray(auxiliaryFetches[2].value));
+        } else {
+            console.warn("VISU CONV: Could not fetch maitres ouvrage list:", auxiliaryFetches[2].reason?.message);
+        }
+
+        if (auxiliaryFetches[3].status === 'fulfilled') {
+            setMaitresOuvrageDeleguesList(getArray(auxiliaryFetches[3].value));
+        } else {
+            console.warn("VISU CONV: Could not fetch maitres ouvrage delegues list:", auxiliaryFetches[3].reason?.message);
         }
       } else {
         throw new Error(`VISU CONV: Aucune donnée trouvée pour la convention ID ${itemId}.`)
@@ -201,57 +201,24 @@ const ConventionVisualisation = ({ itemId, onClose, baseApiUrl = "http://localho
   useEffect(() => {
     fetchData()
   }, [fetchData])
-const renderYearlyBreakdown = (engagements) => {
-        if (!engagements || engagements.length === 0) {
-            return (
-                <div className="text-center text-muted fst-italic small py-2">
-                    Aucune répartition annuelle prévisionnelle n'a été fournie.
-                </div>
-            );
-        }
+const getPrincipalNameById = useCallback((id, list) => {
+      if (!id || !Array.isArray(list) || list.length === 0) {
 
-        const sortedEngagements = [...engagements].sort((a, b) => a.annee - b.annee);
- return (
-           <div className="mt-2 yearly-breakdown-container pt-3">
-            <div className="d-flex justify-content-between border border-warning border-1 px-3 py-2 mb-2 rounded-5 bg-white">
-                <h6 className="text-secondary small fw-bold mb-0">Année</h6>
-                <h6 className="text-secondary small fw-bold mb-0">Montant Prévisionnel</h6>
-            </div>
-            <div className=" rounded-4 border border-warning bg-white ">
-                    <hr className="py-0 my-0 mx-4 px-2  text-warning"/>
-                {sortedEngagements.map(({ annee, montant_prevu }, index) => (
-                    <><div
-                        key={annee}
-                        className={`d-flex justify-content-between m-2  align-items-center px-2 `}
-                    >
-                        <span className="fw-medium text-dark">{annee}</span>
-                        <span className="fw-bold text-dark">{formatCurrency(montant_prevu)}</span>
-
-                    </div>
-                    <hr className="py-0 my-0 mx-4 px-2  text-warning"/>
-                    </>
-                ))}
-            </div>
-        </div>
-        );
-    };
+          return displayData(id);
+      }
+      const found = list.find(item => String(item.value) === String(id));
+      console.log(found)
+      return found ? found.label : displayData(id, `ID Introuvable: ${id}`);
+  }, []);
   const getProvinceNames = useCallback(
     (localisationString) => {
-      if (
-        !localisationString ||
-        typeof localisationString !== "string" ||
-        !Array.isArray(provincesList) ||
-        provincesList.length === 0
-      )
+      if (!localisationString || typeof localisationString !== "string" || !Array.isArray(provincesList) || provincesList.length === 0)
         return displayData(null)
-      const ids = localisationString
-        .split(";")
-        .map((id) => id.trim())
-        .filter((id) => id)
-      if (ids.length === 0) return displayData(null)
+      const ids = JSON.parse(localisationString)
+      if (ids.length === 0 || !Array.isArray(ids)) return displayData(null)
       return (
         <Stack direction="horizontal" gap={1} wrap="wrap">
-          {ids.map((id) => {
+          {ids?.map((id) => {
             const province = provincesList.find((p) => String(p.value).toLowerCase() === String(id).toLowerCase())
             return (
               <Badge key={id} pill bg="light" text="dark" className="border me-1 mb-1">
@@ -274,17 +241,12 @@ const renderYearlyBreakdown = (engagements) => {
       if (fonctionnairesList.length === 0 && fonctionnaireIdString.trim() !== "") {
         return <span className="text-warning fst-italic">Chargement... (IDs: {fonctionnaireIdString})</span>
       }
-      const ids = fonctionnaireIdString
-        .split(";")
-        .map((id) => id.trim())
-        .filter((id) => id)
-      if (ids.length === 0) return displayData(null, "Non spécifié")
+      const ids = JSON.parse(fonctionnaireIdString)
+      if (ids.length === 0 || !Array.isArray(ids)) return displayData(null, "Non spécifié")
       return (
         <Stack direction="horizontal" gap={1} wrap="wrap">
-          {ids.map((id) => {
-            const fonctionnaire = fonctionnairesList.find(
-              (f) => String(f.value).toLowerCase() === String(id).toLowerCase(),
-            )
+          {ids?.map((id) => {
+            const fonctionnaire = fonctionnairesList.find((f) => String(f.value) === String(id))
             return (
               <Badge key={id} pill bg="info" text="dark" className="border me-1 mb-1">
                 {fonctionnaire?.label || `ID Point Focal: ${id}`}
@@ -296,13 +258,32 @@ const renderYearlyBreakdown = (engagements) => {
     },
     [fonctionnairesList],
   )
+    
+  const groupedPartnerEngagements = useMemo(() => {
+      if (!conventionData?.partner_commitments) return {};
+      return conventionData.partner_commitments.reduce((acc, commitment) => {
+          const partnerId = commitment.Id_Partenaire;
+          if (!acc[partnerId]) {
+              acc[partnerId] = {
+                  label: commitment.label,
+                  is_signatory: commitment.is_signatory,
+                  date_signature: commitment.date_signature,
+                  details_signature: commitment.details_signature,
+                  engagements: [],
+              };
+          }
+          acc[partnerId].engagements.push(commitment);
+          return acc;
+      }, {});
+  }, [conventionData]);
+console.log(conventionData?.maitres_ouvrage)
 
   const globalFinancialSummary = useMemo(() => {
     if (!conventionData)
       return { coutGlobal: 0, totalMontantVerse: 0, resteAFinancer: 0, progression: 0, isComplete: false }
     const coutGlobal = Number.parseFloat(conventionData.Cout_Global) || 0
     const totalMontantVerse = (conventionData.partner_commitments || [])
-      .filter((p) => !p.autre_engagement)
+      .filter((p) => p.engagement_type_label === 'Financier')
       .reduce((sum, p) => sum + (Number.parseFloat(p.Montant_Verse) || 0), 0)
     const resteAFinancer = coutGlobal - totalMontantVerse
     const progression =
@@ -310,6 +291,7 @@ const renderYearlyBreakdown = (engagements) => {
     const isComplete = totalMontantVerse >= coutGlobal
     return { coutGlobal, totalMontantVerse, resteAFinancer, progression, isComplete }
   }, [conventionData])
+
 
   if (loading) {
     return (
@@ -347,7 +329,7 @@ const renderYearlyBreakdown = (engagements) => {
   }
 
   const { coutGlobal, totalMontantVerse, resteAFinancer, progression, isComplete } = globalFinancialSummary
-
+  
   return (
     <div
       className="p-3 p-md-4 convention-visualisation-container bg-light"
@@ -368,10 +350,7 @@ const renderYearlyBreakdown = (engagements) => {
       <Row className="g-4 mb-4">
         <Col md={6} lg={7}>
           <Card className="h-100 border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
-            <Card.Header
-              className="bg-gradient"
-              style={{ background: "linear-gradient(135deg, #fff3cd 0%, #ffffff 100%)" }}
-            >
+            <Card.Header className="bg-gradient-yellow">
               <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
                 <FontAwesomeIcon icon={faInfoCircle} className="me-2 text-warning" />
                 INFORMATIONS GÉNÉRALES
@@ -380,10 +359,7 @@ const renderYearlyBreakdown = (engagements) => {
             <Card.Body className="pt-3" style={{ backgroundColor: "#fefefe" }}>
               <dl className="row mb-0 dl-compact">
                 <dt className="col-sm-4 text-muted fw-semibold">Code:</dt>
-                <dd className="col-sm-8 fw-bold text-dark" style={{ color: "#212529" }}>
-                  {displayData(conventionData.Code)}
-                </dd>
-                {/* ADDED: Display code_provisoire if it exists */}
+                <dd className="col-sm-8 fw-bold text-dark">{displayData(conventionData.Code)}</dd>
                 {conventionData.code_provisoire && (
                     <>
                         <dt className="col-sm-4 text-muted fw-semibold">Code Provisoire:</dt>
@@ -394,7 +370,17 @@ const renderYearlyBreakdown = (engagements) => {
                 <dd className="col-sm-8 text-dark">{displayData(conventionData.Intitule)}</dd>
                 <dt className="col-sm-4 text-muted fw-semibold">Référence:</dt>
                 <dd className="col-sm-8 text-dark">{displayData(conventionData.Reference)}</dd>
-                <dt className="col-sm-4 text-muted fw-semibold">Année Conv:</dt>
+                <dt className="col-sm-4 text-muted fw-semibold">Secteur:</dt>
+                <dd className="col-sm-8 text-dark">
+                  {conventionData.secteur ? (
+                    <Badge bg="info" text="dark" className="px-2 py-1">
+                      {displayData(conventionData.secteur.description_fr)}
+                    </Badge>
+                  ) : (
+                    '-'
+                  )}
+                </dd>
+                <dt className="col-sm-4 text-muted fw-semibold">Année de Session:</dt>
                 <dd className="col-sm-8 text-dark">{displayData(conventionData.Annee_Convention)}</dd>
                 <dt className="col-sm-4 text-muted fw-semibold">Durée:</dt>
                 <dd className="col-sm-8 text-dark">
@@ -402,24 +388,33 @@ const renderYearlyBreakdown = (engagements) => {
                     {displayData(conventionData.duree_convention)} mois
                   </Badge>
                 </dd>
-                <dt className="col-sm-4 text-muted fw-semibold">N° Approbation:</dt>
-                <dd className="col-sm-8 text-dark">{displayData(conventionData.numero_approbation)}</dd>
-                <dt className="col-sm-4 text-muted fw-semibold">Session:</dt>
-                <dd className="col-sm-8 text-dark">{getMonthName(conventionData.session)}</dd>
-                <dt className="col-sm-4 text-muted fw-semibold">Maitre Ouvrage:</dt>
-                <dd className="col-sm-8 text-dark fw-medium">{displayData(conventionData.Maitre_Ouvrage)}</dd>
-                <dt className="col-sm-4 text-muted fw-semibold">M.O. Délégué:</dt>
-                <dd className="col-sm-8 text-dark">{displayData(conventionData.maitre_ouvrage_delegue)}</dd>
+                <dt className="col-sm-4 text-muted fw-semibold">
+                    <FontAwesomeIcon icon={faGavel} className="me-1 text-muted"/>
+                    Approb. Conseil:
+                </dt>
+                <dd className="col-sm-8 text-dark fw-bold">
+                    {conventionData.requires_council_approval ? 
+                        <span className="text-success">Oui</span> : 
+                        <span className="text-danger">Non</span>
+                    }
+                </dd>
+                {conventionData.requires_council_approval && (
+                    <>
+                        <dt className="col-sm-4 text-muted fw-semibold">N° Approbation:</dt>
+                        <dd className="col-sm-8 text-dark">{displayData(conventionData.numero_approbation)}</dd>
+                        
+                        <dt className="col-sm-4 text-muted fw-semibold">Session:</dt>
+                        <dd className="col-sm-8 text-dark">{getMonthName(conventionData.session)}</dd>
+                    </>
+                )}
+                
               </dl>
             </Card.Body>
           </Card>
         </Col>
         <Col md={6} lg={5}>
           <Card className="h-100 border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
-            <Card.Header
-              className="bg-gradient"
-              style={{ background: "linear-gradient(135deg, #fff3cd 0%, #ffffff 100%)" }}
-            >
+            <Card.Header className="bg-gradient-yellow">
               <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
                 <FontAwesomeIcon icon={faTasks} className="me-2 text-warning" />
                 STATUT & GROUPE
@@ -429,12 +424,7 @@ const renderYearlyBreakdown = (engagements) => {
               <dl className="row mb-0 dl-compact">
                 <dt className="col-sm-5 text-muted fw-semibold">Statut:</dt>
                 <dd className="col-sm-7">
-                  <Badge
-                    bg={getStatusColor(conventionData.Statut)}
-                    text={["warning", "light"].includes(getStatusColor(conventionData.Statut)) ? "dark" : "white"}
-                    className="px-3 py-2 rounded-pill shadow-sm"
-                    style={{ fontSize: "0.85rem" }}
-                  >
+                  <Badge bg={getStatusColor(conventionData.Statut)} text={["warning", "light"].includes(getStatusColor(conventionData.Statut)) ? "dark" : "white"} className="px-3 py-2 rounded-pill shadow-sm" style={{ fontSize: "0.85rem" }}>
                     {displayData(conventionData.Statut)}
                   </Badge>
                 </dd>
@@ -449,15 +439,23 @@ const renderYearlyBreakdown = (engagements) => {
                     {conventionData.date_reception_vise && (
                       <>
                         <dt className="col-sm-5 text-muted fw-semibold">Date Réception:</dt>
-                        <dd className="col-sm-7 fw-medium text-success">
-                          {displayData(conventionData.date_reception_vise)}
-                        </dd>
+                        <dd className="col-sm-7 fw-medium text-success">{displayData(conventionData.date_reception_vise)}</dd>
                       </>
                     )}
                   </>
                 )}
                 <dt className="col-sm-5 text-muted fw-semibold">Operationnel:</dt>
                 <dd className="col-sm-7 text-dark">{displayData(conventionData.Operationalisation)}</dd>
+                {conventionData.sous_type && (
+                    <Col md={6} className="mb-3">
+                        <dt className="text-muted fw-semibold">Sous-type</dt>
+                        <dd>
+                            <Badge pill bg="light" text="dark" className="px-4 py-2 shadow-sm border" style={{ fontSize: "1rem" }}>
+                                {displayData(conventionData.sous_type)}
+                            </Badge>
+                        </dd>
+                    </Col>
+                  )}
               </dl>
             </Card.Body>
           </Card>
@@ -467,45 +465,32 @@ const renderYearlyBreakdown = (engagements) => {
       <Row className="g-4 mb-4">
         <Col>
           <Card className="h-100 border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
-            <Card.Header
-              className="bg-gradient"
-              style={{ background: "linear-gradient(135deg, #fff3cd 0%, #ffffff 100%)" }}
-            >
+            <Card.Header className="bg-gradient-yellow">
               <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
                 <FontAwesomeIcon icon={faProjectDiagram} className="me-2 text-warning" />
                 TYPE & RATTACHEMENT
               </Card.Title>
             </Card.Header>
-            <Card.Body className="pt-3" style={{ backgroundColor: "#fefefe" }}>
+            <Card.Body className="pt-3" style={{ backgroundColor: "#fefefeff" }}>
               <div className="text-center mb-4">
-                <Badge
-                  pill
-                  bg="warning"
-                  text="dark"
-                  className="px-4 py-2 shadow-sm"
-                  style={{ fontSize: "1.1rem", fontWeight: "600" }}
-                >
+                <Badge pill bg="warning" text="dark" className="px-4 py-2 shadow-sm" style={{ fontSize: "1.1rem", fontWeight: "600" }}>
                   <FontAwesomeIcon icon={faInfoCircle} className="me-2" />
                   {displayData(conventionData.type).toUpperCase()}
                 </Badge>
               </div>
 
               {conventionData.type === "cadre" && (
-                <div
-                  className="text-center p-3 rounded-3"
-                  style={{ backgroundColor: "#fff8e1", border: "1px solid #ffc107" }}
-                >
+                <div className="text-center p-3 rounded-3 bg-light-yellow border border-warning">
                   <FontAwesomeIcon icon={faClipboardList} className="text-warning fa-2x mb-2" />
                   <h6 className="fw-bold text-dark mb-1">Programme Associé</h6>
                   <p className="mb-0 fw-medium text-dark">{displayData(conventionData.programme?.Description)}</p>
                 </div>
               )}
 
-              {/* MODIFIED: Updated this block to show both parent convention and project */}
               {conventionData.type === "specifique" && (
                 <Row>
                     <Col md={6} className="mb-3 mb-md-0">
-                        <div className="h-100 text-center p-3 rounded-3" style={{ backgroundColor: "#fff8e1", border: "1px solid #ffc107" }}>
+                        <div className="h-100 text-center p-3 rounded-3 bg-light-yellow border border-warning">
                             <FontAwesomeIcon icon={faSitemap} className="text-warning fa-2x mb-2" />
                             <h6 className="fw-bold text-dark mb-1">Rattachée à la Convention Cadre</h6>
                             <p className="mb-0 fw-medium text-dark">{displayData(conventionData.convention_cadre?.code)}</p>
@@ -513,7 +498,7 @@ const renderYearlyBreakdown = (engagements) => {
                         </div>
                     </Col>
                     <Col md={6}>
-                        <div className="h-100 text-center p-3 rounded-3" style={{ backgroundColor: "#fff8e1", border: "1px solid #ffc107" }}>
+                        <div className="h-100 text-center p-3 rounded-3 bg-light-yellow border border-warning">
                             <FontAwesomeIcon icon={faProjectDiagram} className="text-warning fa-2x mb-2" />
                             <h6 className="fw-bold text-dark mb-1">Projet Associé</h6>
                             <p className="mb-0 fw-medium text-dark">{displayData(conventionData.projet?.Nom_Projet)}</p>
@@ -526,101 +511,66 @@ const renderYearlyBreakdown = (engagements) => {
         </Col>
       </Row>
 
-      {/* START: ADDED NEW SECTION FOR CHILD CONVENTIONS */}
-      {conventionData.type === 'cadre' && (
+      {conventionData.type === 'cadre' && conventionData.conventions_specifiques && conventionData.conventions_specifiques.length > 0 && (
         <Row className="g-4 mb-4">
             <Col>
                 <Card className="border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
-                    <Card.Header className="bg-gradient" style={{ background: "linear-gradient(135deg, #fff3cd 0%, #ffffff 100%)" }}>
+                    <Card.Header className="bg-gradient-yellow">
                         <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
                             <FontAwesomeIcon icon={faSitemap} className="me-2 text-warning" />
                             CONVENTIONS SPÉCIFIQUES RATTACHÉES
                         </Card.Title>
                     </Card.Header>
                     <Card.Body className="p-0" style={{ backgroundColor: "#fefefe" }}>
-                        {conventionData.conventions_specifiques && conventionData.conventions_specifiques.length > 0 ? (
-                            <ListGroup variant="flush">
-                                {conventionData.conventions_specifiques.map(specifique => (
-                                    <ListGroup.Item key={specifique.id} className="px-3 py-2">
-                                        <div className="d-flex justify-content-between align-items-center">
-                                            <div className="flex-grow-1 me-3">
-                                                <h6 className="mb-0 fw-bold text-dark">{specifique.code}</h6>
-                                                <p className="mb-1 text-muted small">{specifique.intitule}</p>
-                                                {specifique.projet && (
-                                                    <Badge bg="light" text="dark" className="border">
-                                                        <FontAwesomeIcon icon={faProjectDiagram} className="me-1"/>
-                                                        {specifique.projet.Nom_Projet}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                            <div className="flex-shrink-0">
-                                                <Badge
-                                                    bg={getStatusColor(specifique.Statut)}
-                                                    text={["warning", "light"].includes(getStatusColor(specifique.Statut)) ? "dark" : "white"}
-                                                    className="px-2 py-1"
-                                                >
-                                                    {displayData(specifique.Statut)}
+                        <ListGroup variant="flush">
+                            {conventionData.conventions_specifiques.map(specifique => (
+                                <ListGroup.Item key={specifique.id} className="px-3 py-2">
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div className="flex-grow-1 me-3">
+                                            <h6 className="mb-0 fw-bold text-dark">{specifique.code}</h6>
+                                            <p className="mb-1 text-muted small">{specifique.intitule}</p>
+                                            {specifique.projet && (
+                                                <Badge bg="light" text="dark" className="border">
+                                                    <FontAwesomeIcon icon={faProjectDiagram} className="me-1"/>
+                                                    {specifique.projet.Nom_Projet}
                                                 </Badge>
-                                            </div>
+                                            )}
                                         </div>
-                                    </ListGroup.Item>
-                                ))}
-                            </ListGroup>
-                        ) : (
-                            <div className="text-center py-4">
-                                <FontAwesomeIcon icon={faInfoCircle} className="text-muted fa-2x mb-2" />
-                                <p className="text-muted mb-0 fst-italic">Aucune convention spécifique n'est rattachée.</p>
-                            </div>
-                        )}
+                                        <div className="flex-shrink-0">
+                                            <Badge bg={getStatusColor(specifique.Statut)} text={["warning", "light"].includes(getStatusColor(specifique.Statut)) ? "dark" : "white"} className="px-2 py-1">
+                                                {displayData(specifique.Statut)}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                </ListGroup.Item>
+                            ))}
+                        </ListGroup>
                     </Card.Body>
                 </Card>
             </Col>
         </Row>
       )}
-      {/* END: ADDED NEW SECTION */}
 
       <Row className="g-4 mb-4">
         <Col lg={6}>
           <Card className="h-100 border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
-            <Card.Header
-              className="bg-gradient"
-              style={{ background: "linear-gradient(135deg, #fff3cd 0%, #ffffff 100%)" }}
-            >
+            <Card.Header className="bg-gradient-yellow">
               <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
                 <FontAwesomeIcon icon={faClipboardList} className="me-2 text-warning" />
                 OBJET & OBJECTIFS
               </Card.Title>
             </Card.Header>
             <Card.Body className="pt-3" style={{ backgroundColor: "#fefefe" }}>
-              <div className="mb-4">
-                <div className="d-flex align-items-center mb-2">
-                  <div className="bg-warning rounded-circle p-1 me-2" style={{ width: "8px", height: "8px" }}></div>
-                  <h6 className="fw-bold mb-0 text-dark">Objet</h6>
-                </div>
-                <p className="mb-0 text-muted ps-3" style={{ lineHeight: "1.6" }}>
-                  {displayData(conventionData.Objet)}
-                </p>
-              </div>
+              <h6 className="fw-bold mb-2 text-dark">Objet</h6>
+              <p className="mb-3 text-muted" style={{ lineHeight: "1.6" }}>{displayData(conventionData.Objet)}</p>
 
-              <div className="mb-4">
-                <div className="d-flex align-items-center mb-2">
-                  <div className="bg-warning rounded-circle p-1 me-2" style={{ width: "8px", height: "8px" }}></div>
-                  <h6 className="fw-bold mb-0 text-dark">Objectifs</h6>
-                </div>
-                <p className="mb-0 text-muted ps-3" style={{ lineHeight: "1.6" }}>
-                  {displayData(conventionData.Objectifs)}
-                </p>
-              </div>
+              <h6 className="fw-bold mb-2 text-dark">Objectifs</h6>
+              <p className="mb-3 text-muted" style={{ lineHeight: "1.6" }}>{displayData(conventionData.Objectifs)}</p>
 
-              <div className="border-top pt-3" style={{ borderColor: "#ffc107 !important" }}>
-                <div className="d-flex align-items-center mb-2">
-                  <FontAwesomeIcon icon={faCommentDots} className="me-2 text-warning" />
-                  <h6 className="fw-bold mb-0 text-dark">Observations</h6>
-                </div>
-                <div className="p-2 rounded-3" style={{ backgroundColor: "#fff8e1" }}>
-                  <p className="mb-0 text-muted fst-italic">
-                    {displayData(conventionData.observations, "Aucune observation.")}
-                  </p>
+              <div className="border-top pt-3">
+                <h6 className="fw-bold mb-2 text-dark">Observations</h6>
+                <div className="p-2 rounded-3 bg-light-yellow">
+                  <p className="mb-0 text-muted fst-italic">{displayData(conventionData.observations, "Aucune observation.")}</p>
                 </div>
               </div>
             </Card.Body>
@@ -628,10 +578,7 @@ const renderYearlyBreakdown = (engagements) => {
         </Col>
         <Col lg={6}>
           <Card className="h-100 border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
-            <Card.Header
-              className="bg-gradient"
-              style={{ background: "linear-gradient(135deg, #fff3cd 0%, #ffffff 100%)" }}
-            >
+            <Card.Header className="bg-gradient-yellow">
               <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
                 <FontAwesomeIcon icon={faMapMarkerAlt} className="me-2 text-warning" />
                 LOCALISATION & POINTS FOCAUX
@@ -639,20 +586,105 @@ const renderYearlyBreakdown = (engagements) => {
             </Card.Header>
             <Card.Body className="pt-3" style={{ backgroundColor: "#fefefe" }}>
               <div className="mb-4">
-                <div className="d-flex align-items-center mb-3">
-                  <FontAwesomeIcon icon={faMapMarkerAlt} className="me-2 text-warning" />
-                  <h6 className="fw-bold mb-0 text-dark">Localisation</h6>
-                </div>
-                <div className="ps-3">{getProvinceNames(conventionData.localisation)}</div>
+                <h6 className="fw-bold mb-3 text-dark">Localisation</h6>
+                <div>{getProvinceNames(conventionData.localisation)}</div>
               </div>
+              <div className="border-top pt-3">
+                <h6 className="fw-bold mb-3 text-dark">Points Focaux</h6>
+                <div>{getFonctionnaireNames(conventionData.id_fonctionnaire)}</div>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+      
+      <Row className="g-4 mb-4">
+        <Col>
+          <Card className="border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #6f42c1" }}>
+            <Card.Header className="bg-gradient-purple">
+              <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
+                <FontAwesomeIcon icon={faBuilding} className="me-2 text-purple" />
+                MAÎTRISE D'OUVRAGE
+              </Card.Title>
+            </Card.Header>
+            <Card.Body className="pt-3" style={{ backgroundColor: "#fefefe" }}>
+              <Row>
+                {/* Maître d'Ouvrage Column */}
+                <Col md={6} className="mb-4 mb-md-0">
+                  <div className="mb-4">
+                    <h6 className="fw-bold mb-3 text-dark d-flex align-items-center">
+                      <FontAwesomeIcon icon={faBuilding} className="me-2 text-muted" />
+                      Maître d'Ouvrage Principal
+                    </h6>
+                    
+                    {/* Primary Responsible - Legacy Data */}
+                    <div className="p-3 rounded-3 bg-light border-start border-4 border-success mb-3">
+                      <div className="d-flex align-items-start">
+                        <FontAwesomeIcon icon={faBuilding} className="mt-1 me-2 text-success" />
+                        <div>
+<div className="fw-bold text-dark fs-6">{getPrincipalNameById(conventionData.Maitre_Ouvrage, maitresOuvrageList)}</div>
+                          <small className="text-muted">Responsable Premier</small>
+                        </div>
+                      </div>
+                    </div>
 
-              <div className="border-top pt-3" style={{ borderColor: "#ffc107 !important" }}>
-                <div className="d-flex align-items-center mb-3">
-                  <FontAwesomeIcon icon={faUserTie} className="me-2 text-warning" />
-                  <h6 className="fw-bold mb-0 text-dark">Points Focaux</h6>
-                </div>
-                <div className="ps-3">{getFonctionnaireNames(conventionData.id_fonctionnaire)}</div>
-              </div>
+                    {/* Additional Maîtres d'Ouvrage */}
+                    {conventionData.maitres_ouvrage && conventionData.maitres_ouvrage?.length > 0 && (
+                      <div className="mt-4">
+                        <h6 className="fw-bold mb-2 text-dark d-flex align-items-center small">
+                          <FontAwesomeIcon icon={faUsers} className="me-2 text-muted" />
+                          Autres Maîtres d'Ouvrage Associés
+                        </h6>
+                        <ListGroup variant="flush">
+                          {conventionData.maitres_ouvrage.map(mo => (
+                            <ListGroup.Item key={mo.id} className="px-0 py-2 border-start bg-light-success rounded-2 mb-2">
+                              <div className="ms-2">{mo.nom}</div>
+                            </ListGroup.Item>
+                          ))}
+                        </ListGroup>
+                      </div>
+                    )}
+                  </div>
+                </Col>
+
+                {/* Maître d'Ouvrage Délégué Column */}
+                <Col md={6}>
+                  <div className="mb-4">
+                    <h6 className="fw-bold mb-3 text-dark d-flex align-items-center">
+                      <FontAwesomeIcon icon={faUserTie} className="me-2 text-muted" />
+                      Maître d'Ouvrage Délégué Principal
+                    </h6>
+
+                    {/* Primary Delegate - Legacy Data */}
+                    <div className="p-3 rounded-3  bg-light border-start border-4 border-primary mb-3">
+                      <div className="d-flex align-items-start">
+                        <FontAwesomeIcon icon={faUserTie} className="mt-1 me-2 text-primary" />
+                        <div>
+<div className="fw-bold text-dark fs-6">{getPrincipalNameById(conventionData.maitre_ouvrage_delegue, maitresOuvrageDeleguesList)}</div>
+                          <small className="text-muted">Délégué Premier</small>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Additional Délégués */}
+                    {conventionData.maitres_ouvrage_delegues && conventionData.maitres_ouvrage_delegues.length > 0 && (
+                      <div className="mt-4">
+                        <h6 className="fw-bold mb-2 text-dark d-flex align-items-center small">
+                          <FontAwesomeIcon icon={faUsers} className="me-2 text-muted" />
+                          Autres Maîtres d'Ouvrage Délégués
+                        </h6>
+                        <ListGroup variant="flush">
+                          {conventionData.maitres_ouvrage_delegues.map(mod => (
+                            <ListGroup.Item key={mod.id} className="px-0 py-2 bg-light-primary rounded-2 mb-2">
+                              <div className="ms-2">{mod.nom}</div>
+                            </ListGroup.Item>
+                          ))}
+                        </ListGroup>
+                      </div>
+                    )}
+                  </div>
+                </Col>
+              </Row>
             </Card.Body>
           </Card>
         </Col>
@@ -661,10 +693,178 @@ const renderYearlyBreakdown = (engagements) => {
       <Row className="g-4 mb-4">
         <Col>
           <Card className="border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
-            <Card.Header
-              className="bg-gradient"
-              style={{ background: "linear-gradient(135deg, #fff3cd 0%, #ffffff 100%)" }}
-            >
+            <Card.Header className="bg-gradient-yellow">
+              <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
+                <FontAwesomeIcon icon={faUsers} className="me-2 text-warning" />
+                COMITÉS DE SUIVI
+              </Card.Title>
+            </Card.Header>
+            <Card.Body className="pt-3" style={{ backgroundColor: "#fefefe" }}>
+              <Row>
+                <Col md={6} className="mb-3 mb-md-0">
+                  <h6 className="fw-bold mb-3 text-dark">Comité Technique</h6>
+                  {conventionData.membres_comite_technique && conventionData.membres_comite_technique.length > 0 ? (
+                    <div className="d-flex flex-row flex-wrap gap-2">
+                      {conventionData.membres_comite_technique.map((member, index) => (
+                        <div key={index} className="d-flex align-items-center p-2 bg-light rounded-2 shadow-sm border">
+                          <FontAwesomeIcon icon={faUserTie} className="me-2 text-muted" />
+                          <span className="text-dark small">{member}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted fst-italic">Aucun membre défini.</p>
+                  )}
+                </Col>
+                <Col md={6}>
+                  <h6 className="fw-bold mb-3 text-dark">Comité de Pilotage</h6>
+                  {conventionData.membres_comite_pilotage && conventionData.membres_comite_pilotage.length > 0 ? (
+                    <div className="d-flex flex-row flex-wrap gap-2">
+                      {conventionData.membres_comite_pilotage.map((member, index) => (
+                        <div key={index} className="d-flex align-items-center p-2 bg-light rounded-2 shadow-sm border">
+                          <FontAwesomeIcon icon={faUserTie} className="me-2 text-muted" />
+                          <span className="text-dark small">{member}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted fst-italic">Aucun membre défini.</p>
+                  )}
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row className="g-4 mb-4">
+        <Col>
+          <Card className="border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #198754" }}>
+            <Card.Header className="bg-gradient-green">
+              <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
+                <FontAwesomeIcon icon={faHandshake} className="me-2 text-success" />
+                ENGAGEMENTS PARTENAIRES
+              </Card.Title>
+            </Card.Header>
+            <Card.Body className="pt-3" style={{ backgroundColor: "#fefefe" }}>
+              {Object.keys(groupedPartnerEngagements).length > 0 ? (
+                <div className="partner-list-container">
+                  {Object.entries(groupedPartnerEngagements).map(([partnerId, partnerData]) => (
+                    <Card key={partnerId} className="mb-3 shadow-sm">
+                      <Card.Header className="d-flex justify-content-between align-items-center bg-light">
+                          <strong className="text-dark fs-6">
+                            <FontAwesomeIcon icon={faBuilding} className="me-2 text-success" />
+                            {partnerData.label}
+                          </strong>
+                          {partnerData.is_signatory ? (
+                            <Badge bg="success" pill className="px-3 py-2 shadow-sm">
+                              <FontAwesomeIcon icon={faCheckCircle} className="me-1" /> Signé
+                            </Badge>
+                          ) : (
+                            <Badge bg="secondary" pill className="px-3 py-2 shadow-sm">
+                              <FontAwesomeIcon icon={faTimesCircle} className="me-1" /> Non Signé
+                            </Badge>
+                          )}
+                      </Card.Header>
+                      <ListGroup variant="flush">
+                        {partnerData.engagements.map((engagement, index) => (
+                          <ListGroup.Item key={index}>
+                            <div className="fw-bold mb-2">
+                              {engagement.engagement_type_label === 'Financier' && <FontAwesomeIcon icon={faHandHoldingUsd} className="me-2 text-success" />}
+                              {engagement.engagement_type_label === 'Assistance Technique' && <FontAwesomeIcon icon={faTools} className="me-2 text-info" />}
+                              {engagement.engagement_type_label === 'Mise à disposition du foncier' && <FontAwesomeIcon icon={faMapMarkerAlt} className="me-2 text-warning" />}
+                              {engagement.engagement_type_label === 'Autre' && <FontAwesomeIcon icon={faGift} className="me-2 text-secondary" />}
+                              Engagement: {engagement.engagement_type_label || 'Non défini'}
+                            </div>
+
+                            {engagement.engagement_type_label === 'Financier' ? (
+                                <div className="ps-3">
+                                    <Row>
+                                        <Col xs={6} className="text-muted">Montant Convenu:</Col>
+                                        <Col xs={6} className="fw-bold text-dark text-end">{formatCurrency(engagement.Montant_Convenu)}</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col xs={6} className="text-muted">Montant Versé:</Col>
+                                        <Col xs={6} className="text-success fw-bold text-end">{formatCurrency(engagement.Montant_Verse)}</Col>
+                                    </Row>
+                                </div>
+                            ) : (
+                                <p className="fst-italic text-dark ps-3">{displayData(engagement.autre_engagement)}</p>
+                            )}
+
+                            {engagement.engagement_description && (
+                                <div className="mt-2 p-2 bg-light rounded border-start border-3 border-secondary">
+                                    <small className="text-muted d-block">Description:</small>
+                                    <small>{engagement.engagement_description}</small>
+                                </div>
+                            )}
+                          </ListGroup.Item>
+                        ))}
+                      </ListGroup>
+                       {partnerData.is_signatory && (partnerData.date_signature || partnerData.details_signature) && (
+                            <Card.Footer className="bg-light">
+                              <small className="text-muted">
+                                <strong>Signature:</strong> {displayData(partnerData.date_signature)}
+                                {partnerData.date_signature && partnerData.details_signature && <span className="mx-2">|</span>}
+                                {displayData(partnerData.details_signature)}
+                              </small>
+                            </Card.Footer>
+                        )}
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-5">
+                  <FontAwesomeIcon icon={faHandshake} className="text-muted fa-3x mb-3" />
+                  <p className="text-muted mb-0 fst-italic">Aucun engagement partenaire associé.</p>
+                </div>
+              )}
+            </Card.Body>
+
+            <div className="border-top">
+                <Card.Body className="pt-4">
+                  <h6 className="mb-4 fw-bold text-dark text-center d-flex align-items-center justify-content-center">
+                    <FontAwesomeIcon icon={faPiggyBank} className="me-2 text-success" />
+                    SYNTHÈSE FINANCIÈRE GLOBALE
+                  </h6>
+                  <Row className="align-items-center">
+                    <Col md={6}>
+                      <div className="p-3 bg-white rounded-3 shadow-sm">
+                        <dl className="row mb-0">
+                          <dt className="col-sm-7 text-muted">Coût Global Conv.:</dt>
+                          <dd className="col-sm-5 fw-bold text-dark text-end">{formatCurrency(coutGlobal)}</dd>
+                          <dt className="col-sm-7 text-muted">Total Versé:</dt>
+                          <dd className="col-sm-5 fw-bold text-success text-end">{formatCurrency(totalMontantVerse)}</dd>
+                        </dl>
+                      </div>
+                    </Col>
+                    <Col md={6} className="d-flex align-items-center mt-3 mt-md-0">
+                      {isComplete ? (
+                        <div className="w-100 p-3 bg-success text-white text-center rounded-3 shadow-sm">
+                          <FontAwesomeIcon icon={faCheckCircle} className="me-2 fa-lg" />
+                          <strong>Financement Atteint!</strong>
+                        </div>
+                      ) : (
+                        <div className="w-100">
+                          <div className="d-flex justify-content-between mb-2">
+                            <span className="fw-bold text-dark">Reste: {formatCurrency(resteAFinancer)}</span>
+                            <Badge bg="success" text="white" className="px-2 py-1">{progression.toFixed(1)}%</Badge>
+                          </div>
+                          <ProgressBar now={progression} variant="success" style={{ height: "12px" }} className="shadow-sm rounded-pill" title={`Progression: ${progression.toFixed(1)}%`}/>
+                        </div>
+                      )}
+                    </Col>
+                  </Row>
+                </Card.Body>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row className="g-4">
+        <Col>
+          <Card className="border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
+            <Card.Header className="bg-gradient-yellow">
               <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
                 <FontAwesomeIcon icon={faFilePdf} className="me-2 text-warning" />
                 FICHIERS ASSOCIÉS
@@ -674,41 +874,20 @@ const renderYearlyBreakdown = (engagements) => {
               {conventionData.documents && conventionData.documents.length > 0 ? (
                 <div className="d-flex flex-row flex-wrap justify-content-start gap-3">
                   {conventionData.documents.map((doc) => {
-                    const fileDisplayUrl =
-                      appBaseUrl && doc.file_path ? `${appBaseUrl}/${doc.file_path.replace(/^\\/, "")}` : doc.url
+                    const fileDisplayUrl = appBaseUrl && doc.file_path ? `${appBaseUrl}/${doc.file_path.replace(/^\\/, "")}` : doc.url
                     const fileIcon = getFileIcon(doc.file_type || doc.file_name)
                     const fileSizeMB = doc.file_size ? (doc.file_size / 1024 / 1024).toFixed(2) : null
                     const mainTitle = doc.Intitule || doc.file_name || 'Fichier'
                     const secondaryTitle = doc.Intitule ? (doc.file_name || '') : ''
                     return (
-                      <div
-                        key={doc.Id_Doc}
-                        className="p-3 rounded-4 shadow-sm border position-relative"
-                        style={{
-                          minWidth: "280px",
-                          maxWidth: "45%",
-                          background: "linear-gradient(135deg, #212529 0%, #343a40 100%)",
-                          borderColor: "#ffc107 !important",
-                        }}
-                      >
+                      <div key={doc.Id_Doc} className="p-3 rounded-4 shadow-sm border position-relative bg-dark" style={{ minWidth: "280px", maxWidth: "45%" }}>
                         <div className="d-flex align-items-center">
                           <div className="p-2 rounded-3 me-3" style={{ backgroundColor: "#ffc107" }}>
-                            <FontAwesomeIcon
-                              icon={fileIcon}
-                              className="text-dark fa-lg"
-                              style={{ width: "20px" }}
-                              title={doc.file_type || "Type inconnu"}
-                            />
+                            <FontAwesomeIcon icon={fileIcon} className="text-dark fa-lg" style={{ width: "20px" }} title={doc.file_type || "Type inconnu"}/>
                           </div>
                           <div className="flex-grow-1 text-truncate me-2">
                             {fileDisplayUrl ? (
-                              <a
-                                href={fileDisplayUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="link-light text-decoration-none fw-medium stretched-link"
-                                title={`Ouvrir: ${displayData(mainTitle, "Fichier")}`}
-                              >
+                              <a href={fileDisplayUrl} target="_blank" rel="noopener noreferrer" className="link-light text-decoration-none fw-medium stretched-link" title={`Ouvrir: ${displayData(mainTitle, "Fichier")}`}>
                                 {displayData(mainTitle, "Fichier sans nom")}
                               </a>
                             ) : (
@@ -716,18 +895,10 @@ const renderYearlyBreakdown = (engagements) => {
                                 {displayData(mainTitle, "Fichier (lien indisponible)")}
                               </span>
                             )}
-                            <small className="d-block text-warning">
-                              {secondaryTitle || ''}{secondaryTitle && fileSizeMB ? ' - ' : ''}{fileSizeMB ? `${fileSizeMB} Mo` : ''}
-                            </small>
+                            <small className="d-block text-warning">{secondaryTitle || ''}{secondaryTitle && fileSizeMB ? ' - ' : ''}{fileSizeMB ? `${fileSizeMB} Mo` : ''}</small>
                           </div>
                           {fileDisplayUrl && (
-                            <Button
-                              variant="outline-warning"
-                              size="sm"
-                              className="ms-2 flex-shrink-0 rounded-3"
-                              onClick={() => window.open(fileDisplayUrl, "_blank")}
-                              title="Ouvrir dans un nouvel onglet"
-                            >
+                            <Button variant="outline-warning" size="sm" className="ms-2 flex-shrink-0 rounded-3" onClick={() => window.open(fileDisplayUrl, "_blank")} title="Ouvrir dans un nouvel onglet">
                               <FontAwesomeIcon icon={faExternalLinkAlt} />
                             </Button>
                           )}
@@ -746,290 +917,17 @@ const renderYearlyBreakdown = (engagements) => {
           </Card>
         </Col>
       </Row>
-
-      <Row className="g-4 mb-4">
-        <Col>
-          <Card className="border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
-            <Card.Header
-              className="bg-gradient"
-              style={{ background: "linear-gradient(135deg, #fff3cd 0%, #ffffff 100%)" }}
-            >
-              <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
-                <FontAwesomeIcon icon={faUsers} className="me-2 text-warning" />
-                COMITÉS DE SUIVI
-              </Card.Title>
-            </Card.Header>
-            <Card.Body className="pt-3" style={{ backgroundColor: "#fefefe" }}>
-              <Row>
-                <Col md={6} className="mb-3 mb-md-0">
-                  <div
-                    className="h-100 p-3 rounded-3"
-                    
-                  >
-                    <h6 className="fw-bold mb-3 text-dark d-flex align-items-center">
-                      <FontAwesomeIcon icon={faUsers} className="me-2 text-warning" />
-                      Comité Technique
-                    </h6>
-                    {conventionData.membres_comite_technique && conventionData.membres_comite_technique.length > 0 ? (
-                      <div className="d-flex flex-row gap-2">
-                        {conventionData.membres_comite_technique.map((member, index) => (
-                          <div key={index} className="d-flex align-items-center  p-2 bg-white rounded-2 shadow-sm">
-                            <FontAwesomeIcon icon={faUserTie} className="me-2 text-dark" />
-                            <span className="text-dark">{member}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-3">
-                        <FontAwesomeIcon icon={faUsers} className="text-muted fa-2x mb-2" />
-                        <p className="text-muted mb-0 fst-italic">Aucun membre défini.</p>
-                      </div>
-                    )}
-                  </div>
-                </Col>
-                <Col md={6}>
-                  <div
-                    className="h-100 p-3 rounded-3"
-                  >
-                    <h6 className="fw-bold mb-3 text-dark d-flex align-items-center">
-                      <FontAwesomeIcon icon={faUsers} className="me-2 text-warning" />
-                      Comité de Pilotage
-                    </h6>
-                    {conventionData.membres_comite_pilotage && conventionData.membres_comite_pilotage.length > 0 ? (
-                      <div className="d-flex flex-row gap-2">
-                        {conventionData.membres_comite_pilotage.map((member, index) => (
-                          <div key={index} className="d-flex align-items-center p-2 bg-white rounded-2 shadow-sm">
-                            <FontAwesomeIcon icon={faUserTie} className="me-2 text-dark" />
-                            <span className="text-dark">{member}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-3">
-                        <FontAwesomeIcon icon={faUsers} className="text-muted fa-2x mb-2" />
-                        <p className="text-muted mb-0 fst-italic">Aucun membre défini.</p>
-                      </div>
-                    )}
-                  </div>
-                </Col>
-              </Row>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-
-      <Row className="g-4">
-        <Col>
-          <Card className="border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
-            <Card.Header
-              className="bg-gradient"
-              style={{ background: "linear-gradient(135deg, #fff3cd 0%, #ffffff 100%)" }}
-            >
-              <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
-                <FontAwesomeIcon icon={faHandHoldingUsd} className="me-2 text-warning" />
-                ENGAGEMENTS PARTENAIRES
-              </Card.Title>
-            </Card.Header>
-            <Card.Body className="pt-3" style={{ backgroundColor: "#fefefe" }}>
-              {conventionData.partner_commitments && conventionData.partner_commitments.length > 0 ? (
-                <div
-                  className="partner-list-container"
-                  style={{ maxHeight: "450px", overflowY: "auto", paddingRight: "10px" }}
-                >
-                  <div className="d-flex flex-row wrap  justify-content-between" >
-                    {conventionData.partner_commitments.map((p, index) => {
-                      const montantConvenu = Number.parseFloat(p.Montant_Convenu) || 0
-                      const montantVerse = Number.parseFloat(p.Montant_Verse) || 0
-                      const solde = montantConvenu - montantVerse
-                      return (
-                        <div
-                          key={p.Id_CP || index}
-                          className="p-3 rounded-3 m-1 w-100 shadow-sm"
-                          style={{
-                            border: "0.1px solid #c2c2c2ff",
-                          }}
-                        >
-                          <Row className="align-items-center mb-3" >
-                            <Col md={8}>
-                              <div className="d-flex align-items-center">
-                                <FontAwesomeIcon icon={faBuilding} className="me-2 text-warning fa-lg" />
-                                <strong className="text-dark fs-6">{displayData(p.label)}</strong>
-                              </div>
-                            </Col>
-                            <Col md={4} className="text-md-end">
-                              {p.is_signatory ? (
-                                <Badge bg="success" pill className="px-3 py-2 shadow-sm">
-                                  <FontAwesomeIcon icon={faCheckCircle} className="me-1" /> Signataire
-                                </Badge>
-                              ) : (
-                                <Badge bg="secondary" pill className="px-3 py-2 shadow-sm">
-                                  <FontAwesomeIcon icon={faTimesCircle} className="me-1" /> Non Signataire
-                                </Badge>
-                              )}
-                            </Col>
-                          </Row>
-
-                          {p.autre_engagement ? (
-                            <div className="p-3  rounded-3  shadow-sm" style={{backgroundColor:"#f8f8f8ff"}}>
-                              <div className="d-flex align-items-center mb-2">
-                                <FontAwesomeIcon icon={faGift} className="me-2 text-warning" />
-                                <h6 className="mb-0 fw-bold text-dark">Engagement Non-Financier</h6>
-                              </div>
-                              <p className="mb-0 fw-medium fst-italic text-dark">{p.autre_engagement}</p>
-                            </div>
-                          ) : (
-                            <div className="p-3  rounded-3 shadow-sm" style={{backgroundColor:"#f8f8f8ff"}}>
-                              <Row className="mb-2" >
-                                <Col xs={6} className="text-muted fw-semibold">
-                                  Montant Convenu:
-                                </Col>
-                                <Col xs={6} className="fw-bold text-dark text-end">
-                                  {formatCurrency(montantConvenu)}
-                                </Col>
-                              </Row>
-                              <Row className="mb-2">
-                                <Col xs={6} className="text-muted fw-semibold">
-                                  Montant Versé:
-                                </Col>
-                                <Col xs={6} className="text-success fw-bold text-end">
-                                  {formatCurrency(montantVerse)}
-                                </Col>
-                              </Row>
-                              <hr className="my-2" style={{ borderColor: "#ffc107" }} />
-                              <Row>
-                                <Col xs={6} className="fw-bold text-dark">
-                                  Solde:
-                                </Col>
-                                <Col xs={6} className="text-end">
-                                  {montantVerse >= montantConvenu ? (
-                                    <Badge bg="success" className="px-2 py-1">
-                                      Soldé <FontAwesomeIcon icon={faCheckCircle} />
-                                    </Badge>
-                                  ) : (
-                                    <Badge bg="danger" className="px-2 py-1">
-                                      Reste: {formatCurrency(solde)}
-                                    </Badge>
-                                  )}
-                                </Col>
-                              </Row>
-                                {p.engagements_annuels && p.engagements_annuels.length > 0 && (
-                        <div className="mt-3 border-top pt-2" style={{ borderColor: "#e9ecef" }}>
-                            <Button
-                                onClick={() => handleTogglePartner(p.Id_CP)}
-                                variant="link"
-                                className="d-flex justify-content-between align-items-center w-100 text-decoration-none p-0"
-                                aria-controls={`collapse-partner-${p.Id_CP}`}
-                                aria-expanded={openPartnerId === p.Id_CP}
-                            >
-                                <h6 className="small fw-bold text-dark mb-0">
-                                    Répartition Annuelle
-                                </h6>
-                                <FontAwesomeIcon
-                                    icon={openPartnerId === p.Id_CP ? faChevronUp : faChevronDown}
-                                    className="text-muted"
-                                />
-                            </Button>
-                            <Collapse in={openPartnerId === p.Id_CP}>
-                                <div id={`collapse-partner-${p.Id_CP}`}>
-                                    {renderYearlyBreakdown(p.engagements_annuels)}
-                                </div>
-                            </Collapse>
-                        </div>
-                    )}
-                
-                            </div>
-                          )}
-
-                          {p.is_signatory && (p.date_signature || p.details_signature) && (
-                            <div className="mt-3 p-2 rounded-3 border-start border-warning border-3" style={{backgroundColor:"#fff8e1"}}>
-                              <small className="text-muted">
-                                <strong>Signature:</strong> {displayData(p.date_signature)}
-                                {p.date_signature && p.details_signature && <span className="mx-2">|</span>}
-                                {displayData(p.details_signature)}
-                              </small>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-5">
-                  <FontAwesomeIcon icon={faHandHoldingUsd} className="text-muted fa-3x mb-3" />
-                  <p className="text-muted mb-0 fst-italic">Aucun engagement partenaire associé.</p>
-                </div>
-              )}
-            </Card.Body>
-
-            <div className="border-top" style={{ borderColor: "#ffc107 !important" }}>
-              <Card.Body className="pt-4" >
-                <h6 className="mb-4 fw-bold text-dark text-center d-flex align-items-center justify-content-center">
-                  <FontAwesomeIcon icon={faPiggyBank} className="me-2 text-warning" />
-                  SYNTHÈSE FINANCIÈRE GLOBALE
-                </h6>
-                <Row className="align-items-center">
-                  <Col md={6}>
-                    <div className="p-3 bg-white rounded-3 shadow-sm">
-                      <dl className="row mb-0">
-                        <dt className="col-sm-7 text-muted">
-                          <FontAwesomeIcon icon={faPiggyBank} className="me-2 text-warning" />
-                          Coût Global Conv.:
-                        </dt>
-                        <dd className="col-sm-5 fw-bold text-dark text-end">{formatCurrency(coutGlobal)}</dd>
-                        <dt className="col-sm-7 text-muted">
-                          <FontAwesomeIcon icon={faHandHoldingUsd} className="me-2 text-success" />
-                          Total Versé:
-                        </dt>
-                        <dd className="col-sm-5 fw-bold text-success text-end">{formatCurrency(totalMontantVerse)}</dd>
-                      </dl>
-                    </div>
-                  </Col>
-                  <Col md={6} className="d-flex align-items-center mt-3 mt-md-0">
-                    {isComplete ? (
-                      <div className="w-100 p-3 bg-success text-white text-center rounded-3 shadow-sm">
-                        <FontAwesomeIcon icon={faCheckCircle} className="me-2 fa-lg" />
-                        <strong>Financement Atteint!</strong>
-                      </div>
-                    ) : (
-                      <div className="w-100">
-                        <div className="d-flex justify-content-between mb-2">
-                          <span className="fw-bold text-dark">
-                            <FontAwesomeIcon icon={faTasks} className="me-1 text-danger" />
-                            Reste: {formatCurrency(resteAFinancer)}
-                          </span>
-                          <Badge bg="warning" text="dark" className="px-2 py-1">
-                            {progression.toFixed(1)}%
-                          </Badge>
-                        </div>
-                        <ProgressBar
-                          now={progression}
-                          variant="warning"
-                          style={{ height: "12px" }}
-                          className="shadow-sm rounded-pill"
-                          title={`Progression: ${progression.toFixed(1)}%`}
-                        />
-                      </div>
-                    )}
-                  </Col>
-                </Row>
-              </Card.Body>
-            </div>
-          </Card>
-        </Col>
-      </Row>
     </div>
   )
 }
 
-// --- PropTypes ---
+// --- PropTypes & Default Props ---
 ConventionVisualisation.propTypes = {
   itemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   onClose: PropTypes.func.isRequired,
   baseApiUrl: PropTypes.string,
 }
 
-// --- Default Props ---
 ConventionVisualisation.defaultProps = {
   baseApiUrl: "http://localhost:8000/api",
 }

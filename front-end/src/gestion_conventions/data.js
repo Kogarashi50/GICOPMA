@@ -2,9 +2,9 @@
 import React from 'react'; // Import React for JSX
 import {
   faProjectDiagram, faSitemap, faFileContract, faHandshake, faShapes,
-  faHelmetSafety, faCity, faClipboardCheck, faMap, faUsersCog, faTasks,
+  faHelmetSafety, faCity,faClipboardCheck, faMap, faUsersCog, faTasks,
   faFileInvoiceDollar, faChevronDown, faFileSignature, faFileAlt, faTachometerAlt,
-  faUserTag, faScroll, faGavel, faCommentDots // Added faCommentDots for Observations
+  faUserTag, faScroll, faGavel, faCommentDots , faBell// Added faCommentDots for Observations
 } from "@fortawesome/free-solid-svg-icons";
 
 // --- Permission Constants ---
@@ -16,6 +16,7 @@ const PERMISSIONS = {
     UPDATE_CONVENTIONS: 'update conventions',
     DELETE_CONVENTIONS: 'delete conventions',
     VIEW_CONVENTION_DETAILS: 'view convention details',
+    RECEIVE_CONVENTION_ALERTS: 'receive convention alerts',
 
     VIEW_PARTENAIRES: 'view partenaires',
     CREATE_PARTENAIRES: 'create partenaires',
@@ -74,6 +75,11 @@ const PERMISSIONS = {
     UPDATE_AVENANTS: 'update avenants',
     DELETE_AVENANTS: 'delete avenants',
 
+    VIEW_SECTEURS: 'view secteurs', // Added from seeder
+    CREATE_SECTEURS: 'create secteurs',
+    UPDATE_SECTEURS: 'update secteurs',
+    DELETE_SECTEURS: 'delete secteurs',
+
     DOWNLOAD_REPORT: 'download report',
 
     // --- Admin ---
@@ -115,7 +121,14 @@ const menuItems = [
   { id: 101, type: 'heading', label: "LOCALISATION", path: '#' },
   { id: 9, icon: faCity, label: "Communes", path: "/commune", type: 'item', requiredPermission: PERMISSIONS.VIEW_COMMUNES },
   { id: 13, icon: faMap, label: "Provinces", path: "/province", type: 'item', requiredPermission: PERMISSIONS.VIEW_PROVINCES },
-
+{ 
+  id: 99, // Ensure this ID is unique
+  icon: faShapes, 
+  label: "Secteurs", 
+  path: "/secteurs", 
+  type: 'item', 
+  requiredPermission: PERMISSIONS.VIEW_SECTEURS 
+},
   // --- Section Heading: MARCHÉS & CONTRATS ---
   { id: 102, type: 'heading', label: "MARCHÉS & CONTRATS", path: '#' },
   {
@@ -154,6 +167,14 @@ const menuItems = [
     path: "/observations",
     icon: faCommentDots, // Using the new icon
     requiredPermission: PERMISSIONS.VIEW_OBSERVATIONS
+  },
+  { 
+    id: 105, // Ensure this ID is unique
+    icon: faBell, 
+    label: "Types d'Alerte", 
+    path: "/alert-types", 
+    type: 'item', 
+    requiredPermission: PERMISSIONS.MANAGE_ROLES // Re-use 'manage roles' permission for access
   },
 ];
 

@@ -38,6 +38,29 @@ body {
   /* Add back the space between the icon and the text */
   margin-left: 0.5rem; /* This is the equivalent of Bootstrap's me-2 */
 }
+/* --- ULTIMATE FIX for Toastify Colors --- */
+
+.Toastify__toast-theme--colored.Toastify__toast--info,
+.Toastify__toast-theme--colored.Toastify__toast--success,
+.Toastify__toast-theme--colored.Toastify__toast--warning,
+.Toastify__toast-theme--colored.Toastify__toast--error {
+    /* Reset any inherited background color from other global styles */
+    background-color: initial !important;
+}
+
+/* Now, apply the theme colors with !important to win any specificity war */
+.Toastify__toast-theme--colored.Toastify__toast--info {
+  background: var(--toastify-color-info) !important;
+}
+.Toastify__toast-theme--colored.Toastify__toast--success {
+  background: var(--toastify-color-success) !important;
+}
+.Toastify__toast-theme--colored.Toastify__toast--warning {
+  background: var(--toastify-color-warning) !important;
+}
+.Toastify__toast-theme--colored.Toastify__toast--error {
+  background: var(--toastify-color-error) !important;
+}
 
 
 

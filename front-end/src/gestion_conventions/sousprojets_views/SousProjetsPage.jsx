@@ -53,10 +53,13 @@ const SousProjetsPage = () => {
     // --- State for lookup data ---
     const [lookupData, setLookupData] = useState({ provinces: [], communes: [] });
     const [lookupError, setLookupError] = useState(null);
+    const [optionsLoading, setOptionsLoading] = useState(true);
 
     // --- Fetch lookup data on component mount ---
     useEffect(() => {
         const fetchLookups = async () => {
+           setOptionsLoading(true);
+
             try {
                 // Assuming you have these API endpoints to get all options
                 const [provincesRes, communesRes] = await Promise.all([
@@ -72,6 +75,8 @@ const SousProjetsPage = () => {
             } catch (error) {
                 console.error("Failed to fetch lookup data:", error);
                 setLookupError("Impossible de charger les listes de provinces et communes. L'affichage des noms peut échouer.");
+            } finally {
+                setOptionsLoading(false);
             }
         };
         fetchLookups();
@@ -180,6 +185,8 @@ const SousProjetsPage = () => {
                 CreateComponent={SousProjetForm}
                 ViewComponent={SousProjetVisualisation}
                 EditComponent={SousProjetForm}
+                isDataLoading={optionsLoading} 
+
             />
         </div>
     );
