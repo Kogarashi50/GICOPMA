@@ -9,6 +9,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import { faExclamationTriangle, faSpinner, faPlus } from '@fortawesome/free-solid-svg-icons';
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 // Styles for react-select (Keep your existing styles)
 const selectStyles = {
     control: (provided, state) => ({
@@ -304,18 +317,18 @@ const UserForm = ({
             {/* Fields: Email, Status, Fonctionnaire, Role, Password */}
             {/* Keep the existing Row/Col structure and Form.Group/Form.Control/Select setup */}
             <Row className="mb-3">
-                <Form.Group as={Col} md={6} controlId="userEmail"> <Form.Label className="small mb-1">Email <span className="text-danger">*</span></Form.Label><Form.Control type="email" name="email" value={formData.email} onChange={handleChange} isInvalid={!!formErrors.email} required size="sm"/><Form.Control.Feedback type="invalid">{formErrors.email}</Form.Control.Feedback> </Form.Group>
-                <Form.Group as={Col} md={6} controlId="userStatus"> <Form.Label className="small mb-1">Statut <span className="text-danger">*</span></Form.Label><Select name="status" options={statusOptions} value={formData.status} onChange={handleStatusChange} styles={selectStyles} placeholder="- Sélectionner statut -" className={formErrors.status ? 'is-invalid' : ''} inputId="userStatusSelect"/> {formErrors.status && <div className="d-block invalid-feedback mt-n1 small">{formErrors.status}</div>} </Form.Group>
+                <Form.Group as={Col} md={6} controlId="userEmail"> <Form.Label className="small mb-1 w-100">{bilingualLabel("Email", "البريد الإلكتروني", true)}</Form.Label><Form.Control type="email" name="email" value={formData.email} onChange={handleChange} isInvalid={!!formErrors.email} required size="sm"/><Form.Control.Feedback type="invalid">{formErrors.email}</Form.Control.Feedback> </Form.Group>
+                <Form.Group as={Col} md={6} controlId="userStatus"> <Form.Label className="small mb-1 w-100">{bilingualLabel("Statut", "الحالة", true)}</Form.Label><Select name="status" options={statusOptions} value={formData.status} onChange={handleStatusChange} styles={selectStyles} placeholder="- Sélectionner statut -" className={formErrors.status ? 'is-invalid' : ''} inputId="userStatusSelect"/> {formErrors.status && <div className="d-block invalid-feedback mt-n1 small">{formErrors.status}</div>} </Form.Group>
             </Row>
              <Row className="mb-3">
-                 <Form.Group as={Col} md={12} controlId="userFonctionnaire"> <Form.Label className="small mb-1">Fonctionnaire <span className="text-danger">*</span></Form.Label><Select name="fonctionnaire_id" options={fonctionnaireOptions} value={formData.fonctionnaire_id} onChange={handleFonctionnaireChange} styles={selectStyles} placeholder={loadingFonctionnaires ? "Chargement..." : "- Sélectionner fonctionnaire -"} isLoading={loadingFonctionnaires} isClearable={false} className={formErrors.fonctionnaire_id ? 'is-invalid' : ''} inputId="userFonctionnaireSelect"/> {formErrors.fonctionnaire_id && <div className="d-block invalid-feedback mt-n1 small">{formErrors.fonctionnaire_id}</div>} </Form.Group>
+                 <Form.Group as={Col} md={12} controlId="userFonctionnaire"> <Form.Label className="small mb-1 w-100">{bilingualLabel("Fonctionnaire", "الموظف", true)}</Form.Label><Select name="fonctionnaire_id" options={fonctionnaireOptions} value={formData.fonctionnaire_id} onChange={handleFonctionnaireChange} styles={selectStyles} placeholder={loadingFonctionnaires ? "Chargement..." : "- Sélectionner fonctionnaire -"} isLoading={loadingFonctionnaires} isClearable={false} className={formErrors.fonctionnaire_id ? 'is-invalid' : ''} inputId="userFonctionnaireSelect"/> {formErrors.fonctionnaire_id && <div className="d-block invalid-feedback mt-n1 small">{formErrors.fonctionnaire_id}</div>} </Form.Group>
             </Row>
             <Row className="mb-3">
-                <Form.Group as={Col} md={12} controlId="userRole"> <Form.Label className="small mb-1">Rôle <span className="text-danger">*</span></Form.Label><Select name="role" options={roleOptions} value={formData.role} onChange={handleRoleChange} styles={selectStyles} placeholder={loadingRoles ? "Chargement..." : "- Sélectionner un rôle -"} isLoading={loadingRoles} isClearable={false} className={formErrors.role ? 'is-invalid' : ''} inputId="userRoleSelect"/> {formErrors.role && <div className="d-block invalid-feedback mt-n1 small">{formErrors.role}</div>} <div className="mt-1 text-end"><Link to="/roles" className="small text-muted text-decoration-none" title="Gérer les rôles"><FontAwesomeIcon icon={faPlus} size="xs" className="me-1"/>Créer/Gérer les rôles</Link></div> </Form.Group>
+                <Form.Group as={Col} md={12} controlId="userRole"> <Form.Label className="small mb-1 w-100">{bilingualLabel("Rôle", "الدور", true)}</Form.Label><Select name="role" options={roleOptions} value={formData.role} onChange={handleRoleChange} styles={selectStyles} placeholder={loadingRoles ? "Chargement..." : "- Sélectionner un rôle -"} isLoading={loadingRoles} isClearable={false} className={formErrors.role ? 'is-invalid' : ''} inputId="userRoleSelect"/> {formErrors.role && <div className="d-block invalid-feedback mt-n1 small">{formErrors.role}</div>} <div className="mt-1 text-end"><Link to="/roles" className="small text-muted text-decoration-none" title="Gérer les rôles"><FontAwesomeIcon icon={faPlus} size="xs" className="me-1"/>Créer/Gérer les rôles</Link></div> </Form.Group>
             </Row>
             <Row className="mb-4">
-                 <Form.Group as={Col} md={6} controlId="userPassword"> <Form.Label className="small mb-1">Mot de passe {isEditing ? '(Laisser vide pour ne pas changer)' : <span className="text-danger">*</span>}</Form.Label><Form.Control type="password" name="password" value={formData.password} onChange={handleChange} isInvalid={!!formErrors.password} required={!isEditing} size="sm" placeholder={isEditing ? 'Nouveau mot de passe (min 8 caractères)' : 'Mot de passe (min 8 caractères)'} autoComplete="new-password" /><Form.Control.Feedback type="invalid">{formErrors.password}</Form.Control.Feedback> </Form.Group>
-                 <Form.Group as={Col} md={6} controlId="userPasswordConfirmation"> <Form.Label className="small mb-1">Confirmer Mot de passe {formData.password ? <span className="text-danger">*</span> : ''}</Form.Label><Form.Control type="password" name="password_confirmation" value={formData.password_confirmation} onChange={handleChange} isInvalid={!!formErrors.password_confirmation || (!!formErrors.password && formErrors.password.includes('correspondent pas'))} required={!!formData.password} size="sm" placeholder="Confirmer le mot de passe" autoComplete="new-password"/><Form.Control.Feedback type="invalid">{formErrors.password_confirmation}</Form.Control.Feedback> </Form.Group>
+                 <Form.Group as={Col} md={6} controlId="userPassword"> <Form.Label className="small mb-1 w-100">{bilingualLabel(isEditing ? "Mot de passe (Laisser vide pour ne pas changer)" : "Mot de passe", isEditing ? "كلمة المرور (اتركها فارغة للاحتفاظ بالقديمة)" : "كلمة المرور", !isEditing)}</Form.Label><Form.Control type="password" name="password" value={formData.password} onChange={handleChange} isInvalid={!!formErrors.password} required={!isEditing} size="sm" placeholder={isEditing ? 'Nouveau mot de passe (min 8 caractères)' : 'Mot de passe (min 8 caractères)'} autoComplete="new-password" /><Form.Control.Feedback type="invalid">{formErrors.password}</Form.Control.Feedback> </Form.Group>
+                 <Form.Group as={Col} md={6} controlId="userPasswordConfirmation"> <Form.Label className="small mb-1 w-100">{bilingualLabel("Confirmer Mot de passe", "تأكيد كلمة المرور", !!formData.password)}</Form.Label><Form.Control type="password" name="password_confirmation" value={formData.password_confirmation} onChange={handleChange} isInvalid={!!formErrors.password_confirmation || (!!formErrors.password && formErrors.password.includes('correspondent pas'))} required={!!formData.password} size="sm" placeholder="Confirmer le mot de passe" autoComplete="new-password"/><Form.Control.Feedback type="invalid">{formErrors.password_confirmation}</Form.Control.Feedback> </Form.Group>
             </Row>
 
             {/* Action Buttons (Keep existing structure) */}

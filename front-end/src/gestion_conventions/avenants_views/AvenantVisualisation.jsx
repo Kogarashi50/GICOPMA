@@ -372,7 +372,7 @@ const AvenantVisualisation = ({ itemId, onClose, baseApiUrl = 'http://localhost:
                                                         {formatCurrency(commit.Montant_Convenu)}
                                                     </Col>
                                                     <Col xs={6}>
-                                                        <span className='text-muted small d-block'>Signataire:</span>
+                                                        <span className='text-muted small d-block'>Signé:</span>
                                                         <FontAwesomeIcon
                                                             icon={commit.is_signatory ? faCheckCircle : faTimesCircle}
                                                             className={`me-1 ${commit.is_signatory ? 'text-success' : 'text-danger'}`}

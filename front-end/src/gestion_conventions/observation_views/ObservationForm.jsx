@@ -5,6 +5,19 @@ import { Form, Button, Row, Col, Spinner, Alert, Badge, Stack, Modal } from 'rea
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faCheckCircle, faUpload, faPaperclip } from '@fortawesome/free-solid-svg-icons';
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 const ObservationForm = ({ itemId, onSuccess, onCancel, baseApiUrl }) => {
     const isEditing = !!itemId;
 
@@ -164,25 +177,25 @@ const ObservationForm = ({ itemId, onSuccess, onCancel, baseApiUrl }) => {
                 {error && <Alert variant="danger" onClose={() => setError('')} dismissible>{error}</Alert>}
                 
                 <Form.Group controlId="id_fonctionnaire" className="mb-3">
-                    <Form.Label>Fonctionnaire</Form.Label>
+                    <Form.Label className="w-100">{bilingualLabel("Fonctionnaire", "الموظف")}</Form.Label>
                     <Select options={fonctionnairesOptions} value={fonctionnairesOptions.find(o => o.value === formData.id_fonctionnaire) || null} onChange={handleSelectChange} placeholder="Sélectionnez un fonctionnaire..." isClearable required />
                 </Form.Group>
                 
                 <Form.Group controlId="observation" className="mb-3">
-                    <Form.Label>Contenu de l'observation</Form.Label>
+                    <Form.Label className="w-100">{bilingualLabel("Contenu de l'observation", "محتوى الملاحظة")}</Form.Label>
                     <Form.Control as="textarea" rows={5} name="observation" value={formData.observation} onChange={handleInputChange} required />
                 </Form.Group>
                 
                 <Row>
                     <Col md={6} className="mb-3">
                         <Form.Group controlId="date_observation">
-                            <Form.Label>Date d'Observation</Form.Label>
+                            <Form.Label className="w-100">{bilingualLabel("Date d'Observation", "تاريخ الملاحظة")}</Form.Label>
                             <Form.Control type="date" name="date_observation" value={formData.date_observation} onChange={handleInputChange} required />
                         </Form.Group>
                     </Col>
                     <Col md={6} className="mb-3">
                         <Form.Group>
-                            <Form.Label><FontAwesomeIcon icon={faPaperclip} className="me-1"/> Fichiers Joints</Form.Label>
+                            <Form.Label className="w-100"><FontAwesomeIcon icon={faPaperclip} className="me-1"/> {bilingualLabel("Fichiers Joints", "الملفات المرفقة")}</Form.Label>
                             <div className="border p-2 rounded bg-light" style={{minHeight: '76px'}}>
                                 <Stack direction="horizontal" gap={2} className="flex-wrap">
                                     {existingFiles.map((file, index) => (
@@ -220,7 +233,7 @@ const ObservationForm = ({ itemId, onSuccess, onCancel, baseApiUrl }) => {
                 <Modal.Body>
                     <p className="text-muted small text-truncate">Fichier: {editingFile?.data.nom_fichier || editingFile?.data.file?.name}</p>
                     <Form.Group>
-                        <Form.Label>Intitulé du document</Form.Label>
+                        <Form.Label className="w-100">{bilingualLabel("Intitulé du document", "عنوان المستند")}</Form.Label>
                         <Form.Control type="text" value={editingFile?.data.intitule || ''} onChange={(e) => handleEditingFileChange('intitule', e.target.value)} autoFocus />
                     </Form.Group>
                 </Modal.Body>

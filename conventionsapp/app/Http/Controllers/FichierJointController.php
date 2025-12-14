@@ -6,6 +6,7 @@ use App\Models\MarchePublic;
 use App\Models\FichierJoint;
 use App\Models\Lot;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -21,23 +22,26 @@ class FichierJointController extends Controller
      * Display files for a specific MarchePublic.
      * GET /api/marches-publics/{marche}/fichiers
      */
-    public function updateMetadata(Request $request, FichierJoint $fichier_joint)
+    public function updateMetadata(Request $request, FichierJoint $fichier_joint): JsonResponse
     {
-        // Optionnel : Ajoutez une politique de sécurité pour vérifier que l'utilisateur a le droit de modifier ce fichier.
-        // $this->authorize('update', $fichier_joint);
-
         $validatedData = $request->validate([
             'intitule' => 'required|string|max:255',
-            // Validez contre une liste fixe de catégories pour la sécurité
-            'categorie' => ['required', 'string']
+            'fichier_categorie_id' => 'required|integer|exists:fichier_categories,id',
         ]);
 
-        $fichier_joint->update($validatedData);
+        try {
+            $fichier_joint->update($validatedData);
 
-        return response()->json([
-            'message' => 'Les informations du fichier ont été mises à jour.',
-            'fichier_joint' => $fichier_joint
-        ]);
+            // Reload the model with its category relationship to send back full data
+            $fichier_joint->load('categorie');
+
+            Log::info("Metadata updated for FichierJoint ID: {$fichier_joint->id}");
+            return response()->json(['message' => 'Métadonnées mises à jour.', 'fichier_joint' => $fichier_joint]);
+
+        } catch (\Exception $e) {
+            Log::error("Error updating metadata for FichierJoint ID {$fichier_joint->id}: " . $e->getMessage());
+            return response()->json(['message' => 'Erreur serveur.'], 500);
+        }
     }
     public function indexForMarche(MarchePublic $marche)
     {

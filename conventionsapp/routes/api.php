@@ -44,6 +44,7 @@ use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\AlertTypeController;
 use App\Http\Controllers\UserAlertSettingsController; // <-- ADD THIS
 use App\Http\Controllers\AlertController;
+use App\Http\Controllers\FichierCategorieController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,11 +64,14 @@ Route::put('/fichiers-joints/{fichier_joint}', [FichierJointController::class, '
 Route::get('/conventions/{convention_id}/commitment-details', [ConvPartController::class, 'getCommitmentsForConvention']);
 Route::get('/convparts/lookup', [ConvPartController::class, 'lookupDetails'])->name('convparts.lookup');
  Route::get('/conventions/options/cadre', [ConventionController::class, 'getCadreOptions']);
- Route::get('/conventions/{convention}/partenaire-options', [ConventionController::class, 'getPartenaireOptions'])
-         ->middleware('permission:view conventions');
+
 Route::prefix('options')->group(function () {
  Route::get('/projets-et-sous-projets', [OptionsController::class, 'getProjetsAndSousProjets']);
-    
+    Route::get('/communes', [CommuneController::class, 'getOptions'])
+            ->name('communes');
+    Route::get('/communes/province/{provinceId}', [CommuneController::class, 'getByProvince'])
+            ->name('communes.by.province')
+            ->middleware('permission:create conventions|update conventions');
 
     // Ajoutez ici d'autres routes d'options si nécessaire, par exemple :
     Route::get('/appel-offres', [\App\Http\Controllers\AppelOffreController::class, 'getOptions']);
@@ -85,9 +89,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
    Route::get('observations/{observation}', [ObservationController::class, 'show'])->middleware('permission:view observations');
     Route::put('observations/{observation}', [ObservationController::class, 'update'])->middleware('permission:update observations');
-
+ Route::get('/conventions/{convention}/partenaire-options', [ConventionController::class, 'getPartenaireOptions'])
+         ->middleware('permission:view conventions');
     Route::delete('observations/{observation}', [ObservationController::class, 'destroy'])->middleware('permission:delete observations');    // --- User & Role Management ---
-    
+     Route::get('/fichier-categories', [App\Http\Controllers\FichierCategorieController::class, 'index'])
+         ->middleware('permission:view appeloffres');
+    Route::post('/fichier-categories', [App\Http\Controllers\FichierCategorieController::class, 'store'])
+         ->middleware('permission:create appeloffres');
+    Route::delete('/fichier-categories/{fichierCategorie}', [App\Http\Controllers\FichierCategorieController::class, 'destroy'])
+         ->middleware('permission:delete appeloffres'); 
    // --- Appel Offres Routes ---
     Route::get('/appel-offres', [AppelOffreController::class, 'index'])->middleware('permission:view appeloffres');
     Route::post('/appel-offres', [AppelOffreController::class, 'store'])->middleware('permission:create appeloffres');
@@ -326,6 +336,16 @@ Route::put('/fichiers-joints-os/{fichierJoint}', [FichierJointOsController::clas
         'update'  => 'permission:update conventions',
         'destroy' => 'permission:delete conventions',
     ]);
+    // --- START: ADD THIS ROUTE ---
+Route::get('/conventions/{convention}/financial-summary', [ConventionController::class, 'getFinancialSummary'])
+    ->name('conventions.financial_summary')
+    ->middleware('permission:view conventions');
+// --- END: ADD THIS ROUTE ---
+
+    // --- Export Route ---
+    Route::get('/conventions/export/data', [ConventionController::class, 'getExportData'])
+        ->name('conventions.export.data')
+        ->middleware('permission:view conventions');
 
     // --- Engagements Financiers (for Projets) ---
     Route::apiResource('engagements-financiers', EngagementFinancierController::class)
@@ -403,7 +423,9 @@ Route::get('/secteurs', [SecteurController::class, 'getOptions'])
             ->name('provinces')
             ->middleware('permission:create conventions|update conventions|create projets|update projets');
         Route::get('/communes', [CommuneController::class, 'getOptions'])
-        ->name('communes')
+        ->name('communes');
+        Route::get('/communes/province/{provinceId}', [CommuneController::class, 'getByProvince'])
+                ->name('communes.by.province')
         ->middleware('permission:create projets|update projets'); 
         Route::get('/domaines', [DomaineController::class, 'getOptions'])
             ->name('domaines')

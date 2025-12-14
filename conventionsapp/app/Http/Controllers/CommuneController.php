@@ -14,18 +14,50 @@ class CommuneController extends Controller
     {
         Log::info("API: Fetching Commune options for dropdown.");
         try {
-            // Ensure 'Id' and 'Description' match your Commune model's actual column names
-            $communes = Commune::orderBy('Description')->get(['Id', 'Description']);
+            $provinceId = $request->query('province_id');
+            
+            // If province_id is provided, filter communes by province
+            if ($provinceId) {
+                $communes = Commune::where('province_id', $provinceId)
+                    ->orderBy('Description')
+                    ->get(['Id', 'Description', 'province_id']);
+            } else {
+                // Otherwise, return all communes
+                $communes = Commune::orderBy('Description')->get(['Id', 'Description', 'province_id']);
+            }
 
             $options = $communes->map(function ($commune) {
                 return ['value' => $commune->Id, 'label' => $commune->Description];
             });
 
-            Log::info("API: Returning " . $options->count() . " Commune options.");
+            Log::info("API: Returning " . $options->count() . " Commune options" . ($provinceId ? " for province_id: {$provinceId}" : ""));
             return response()->json($options); // Return the array of {value, label} directly
         } catch (\Exception $e) {
             Log::error('Error fetching Commune options: ' . $e->getMessage());
             return response()->json(['message' => 'Erreur serveur lors du chargement des options de communes.'], 500);
+        }
+    }
+    
+    /**
+     * Get communes by province ID
+     */
+    public function getByProvince(Request $request, $provinceId): JsonResponse
+    {
+        Log::info("API: Fetching communes for province_id: {$provinceId}");
+        try {
+            $communes = Commune::where('province_id', $provinceId)
+                ->orderBy('Description')
+                ->get(['Id', 'Description', 'Code', 'Description_Arr']);
+
+            $options = $communes->map(function ($commune) {
+                return ['value' => $commune->Id, 'label' => $commune->Description];
+            });
+
+            Log::info("API: Returning " . $options->count() . " communes for province_id: {$provinceId}");
+            return response()->json($options);
+        } catch (\Exception $e) {
+            Log::error('Error fetching communes by province: ' . $e->getMessage());
+            return response()->json(['message' => 'Erreur serveur lors du chargement des communes.'], 500);
         }
     }
     public function index()
@@ -74,7 +106,8 @@ class CommuneController extends Controller
         $data=$request->validate([
             'Code' => 'required|integer',
             'Description' => 'required|string',
-            'Description_Arr' => 'required|string'
+            'Description_Arr' => 'required|string',
+            'province_id' => 'nullable|exists:province,Id'
         ]);
 
      
@@ -108,6 +141,7 @@ class CommuneController extends Controller
             'Code' => 'required|integer',
             'Description' => 'required|string',
             'Description_Arr' => 'required|string',
+            'province_id' => 'nullable|exists:province,Id'
         ]);
 
 

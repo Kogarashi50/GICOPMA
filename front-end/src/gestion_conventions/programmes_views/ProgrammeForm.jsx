@@ -8,6 +8,19 @@ import Select from 'react-select';
 import { Form, Button, Row, Col, Alert, Spinner } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 // Styles for react-select (Copied from ConventionForm for consistency)
 const selectStyles = {
     control: (provided, state) => ({
@@ -155,13 +168,13 @@ dataToSubmit.append('domaine_id', formData.Domaine.value); // <-- Correct field 
                 <Form noValidate onSubmit={handleSubmit}>
                     <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={6} controlId="formCodeProgramme">
-                            <Form.Label className="small mb-1 fw-medium">Code Programme <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Code Programme", "رمز البرنامج", true)}</Form.Label>
                             <Form.Control className={FORM_CONTROL_CLASS} isInvalid={!!formErrors.Code_Programme} required type="text" name="Code_Programme" value={formData.Code_Programme} onChange={handleChange} size="sm"/>
                             <Form.Control.Feedback type="invalid">{formErrors.Code_programme}</Form.Control.Feedback>
                         </Form.Group>
                         <Form.Control.Feedback type="invalid">{formErrors.Code_Programme}</Form.Control.Feedback>
                         <Form.Group as={Col} md={6} controlId="formDomaine">
-    <Form.Label className="small mb-1 fw-medium">Axe stratégique <span className="text-danger">*</span></Form.Label>
+    <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Axe stratégique", "المحور الاستراتيجي", true)}</Form.Label>
     <Select
         name="Domaine"
         menuPlacement="auto"
@@ -181,7 +194,7 @@ dataToSubmit.append('domaine_id', formData.Domaine.value); // <-- Correct field 
                     </Row>
                     <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={12} controlId="formDescription">
-                            <Form.Label className="small mb-1 fw-medium">Description <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Description", "الوصف", true)}</Form.Label>
                             {/* Use different style class for textarea if needed */}
                             <Form.Control className={FORM_TEXTAREA_CLASS} style={{borderRadius: '1rem'}} as="textarea" rows={3} isInvalid={!!formErrors.Description} required name="Description" value={formData.Description} onChange={handleChange} size="sm"/>
                             <Form.Control.Feedback type="invalid">{formErrors.Description}</Form.Control.Feedback>

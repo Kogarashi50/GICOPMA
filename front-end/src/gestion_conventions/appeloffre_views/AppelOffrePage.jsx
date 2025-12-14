@@ -1,17 +1,14 @@
-// src/gestion_conventions/appel_offres_views/AppelOffrePage.jsx
-
-import React, { useMemo, useCallback,useState } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import DynamicTable from '../components/DynamicTable'; // Adjust path as needed
-// Ensure these point to the updated Form/Visualisation components for JSON provinces
 import AppelOffreForm from './AppelOffreForm';
 import AppelOffreVisualisation from './AppelOffreVisualisation';
+import axios from 'axios'; // Import axios for API calls
 
 // --- UI & Utilities ---
 import Select from 'react-select';
-import { FICHIER_CATEGORIES } from './AppelOffreForm';
 import { Badge, Form, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faBuilding, faToggleOn, faToggleOff, faMapMarkedAlt } from '@fortawesome/free-solid-svg-icons'; // Added faMapMarkedAlt
+import { faTimes, faToggleOn, faToggleOff } from '@fortawesome/free-solid-svg-icons';
 import { useSearchParams } from 'react-router-dom';
 
 // --- Constants & Helpers ---
@@ -22,8 +19,8 @@ const formatDate = (dateString) => {
     if (!dateString) return '-';
     try {
         const datePart = dateString.split(' ')[0];
-         if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) { return dateString; }
-         return new Date(datePart).toLocaleDateString('fr-CA');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) { return dateString; }
+        return new Date(datePart).toLocaleDateString('fr-CA');
     } catch (e) { console.error("Date format error:", dateString, e); return dateString; }
 };
 
@@ -41,14 +38,12 @@ const CATEGORIE_OPTIONS = [
     { value: 'Services', label: 'Services' },
     { value: 'Fournitures', label: 'Fournitures' }
 ];
-const FILE_CATEGORY_OPTIONS = FICHIER_CATEGORIES;
 
 const PORTAIL_FILTER_OPTIONS = [
     { value: 'true', label: 'Oui' },
     { value: 'false', label: 'Non' }
 ];
 
-// Static province options for filtering (if needed)
 const PROVINCE_FILTER_OPTIONS = [
     { value: 'Berkane', label: 'Berkane' },
     { value: 'Driouch', label: 'Driouch' },
@@ -59,15 +54,40 @@ const PROVINCE_FILTER_OPTIONS = [
     { value: 'Oujda-Angad', label: 'Oujda-Angad' },
     { value: 'Taourirt', label: 'Taourirt' }
 ];
-
 // --- End Helpers ---
 
 // --- Main Page Component ---
 const AppelOffrePage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const [provinceFilter, setProvinceFilter] = useState(null); // Keep state
+    
+    // State for the server-side province filter
+    const [provinceFilter, setProvinceFilter] = useState(null);
+    
+    // --- NEW: State for dynamic file categories ---
+    const [fichierCategories, setFichierCategories] = useState([]);
+    const [loadingCategories, setLoadingCategories] = useState(true);
+
     const action = searchParams.get('action');
     const isCreating = action === 'create';
+
+    // --- NEW: Effect to fetch file categories on component mount ---
+    useEffect(() => {
+        const fetchFichierCategories = async () => {
+            setLoadingCategories(true);
+            try {
+                const response = await axios.get(`${BASE_API_URL}/fichier-categories`, { withCredentials: true });
+                // The backend already returns {id, label, value}, so we can use it directly
+                setFichierCategories(response.data || []);
+            } catch (error) {
+                console.error("Erreur lors du chargement des catégories de fichiers pour les filtres.", error);
+                // Optionally set an error state to show in the UI
+            } finally {
+                setLoadingCategories(false);
+            }
+        };
+
+        fetchFichierCategories();
+    }, []);
 
     // --- Column Definitions for the DynamicTable ---
     const appelOffreColumns = useMemo(() => [
@@ -82,33 +102,22 @@ const AppelOffrePage = () => {
             meta: { align: 'center', enableGlobalFilter: true },
         },
         {
-            // --- UPDATED Province Column for JSON Array ---
-            id: 'provincesList', // Unique column ID
+            id: 'provincesList',
             header: 'Province(s)',
-            size: 180, // Adjust size if needed
-            accessorKey: 'provinces', // Access the array directly
+            size: 180,
+            accessorKey: 'provinces',
             cell: info => {
-                const provincesArray = info.getValue(); // Gets the array ['Prov1', 'Prov2', ...] or null/[]
-                if (!provincesArray || provincesArray.length === 0) {
-                    return '-';
-                }
-                // Display as badges or comma-separated list
+                const provincesArray = info.getValue();
+                if (!provincesArray || provincesArray.length === 0) return '-';
                 return (
                     <div className="d-flex flex-wrap gap-1" style={{ maxWidth: '180px' }}>
                         {provincesArray.map((prov, index) => (
-                            <Badge key={index} pill bg="light" text="dark" className="text-truncate" title={prov}>
-                               {prov}
-                            </Badge>
+                            <Badge key={index} pill bg="light" text="dark" className="text-truncate" title={prov}>{prov}</Badge>
                         ))}
                     </div>
                 );
-                // Alternative: Comma separated string
-                // return <div className="text-truncate" style={{ maxWidth: '180px' }} title={provincesArray.join(', ')}>{provincesArray.join(', ')}</div>;
             },
-            // Note: Filtering directly on a JSON array might be complex/inefficient depending on DynamicTable capabilities.
-            // It might be better to filter this server-side if needed.
-            meta: { align: 'left', enableGlobalFilter: true }, // Enable global search (might search the stringified JSON)
-            // --- END UPDATED Province Column ---
+            meta: { align: 'left', enableGlobalFilter: true },
         },
         {
             accessorKey: 'estimation_HT', header: 'Estimation HT', size: 150, filterFn: 'numericRange',
@@ -136,43 +145,39 @@ const AppelOffrePage = () => {
         { id: 'files_search', header: 'Recherche Fichiers', size: 0, accessorFn: row => {
             const files = Array.isArray(row.fichiers) ? row.fichiers : [];
             if (files.length === 0) return '';
-            return files.map(f => [f.intitule, f.nom_fichier, f.categorie, f.type_fichier].filter(Boolean).join(' ')).join(' | ');
+            return files.map(f => [f.intitule, f.nom_fichier, f.categorie?.value, f.type_fichier].filter(Boolean).join(' ')).join(' | ');
         }, meta: { align: 'left', enableGlobalFilter: true }, enableHiding: false },
         { id: 'has_files', header: 'A des fichiers', size: 0, accessorFn: row => row, meta: { align: 'left', enableGlobalFilter: false }, enableHiding: false, filterFn: 'hasFiles' },
-    ], []); // Dependency array is empty
+    ], []);
+
+    // --- UPDATED: The fetch URL is now dynamically built based on the server-side province filter ---
     const dynamicFetchUrl = useMemo(() => {
-        let url = '/appel-offres'; // Base URL segment
+        let url = '/appel-offres';
         if (provinceFilter) {
-            // Append the province filter as a query parameter
             url += `?province=${encodeURIComponent(provinceFilter)}`;
         }
         return url;
     }, [provinceFilter]);
+
     // --- Filter Rendering Function ---
-    // Added Province Filter (Single Select for filtering, not multi)
     const renderAppelOffreFilters = useCallback((table) => {
         if (!table) return null;
         const categorieColumn = table.getColumn('categorie');
         const portailColumn = table.getColumn('lancement_portail');
-        // Add province filter column if you want to filter by ONE province at a time
-        const provinceColumn = table.getColumn('provincesList'); // Use the column ID
         const estimationColumn = table.getColumn('estimation_HT');
         const dateOuvertureColumn = table.getColumn('date_ouverture');
         const filesTitleColumn = table.getColumn('files_title');
         const filesTypeColumn = table.getColumn('files_type');
         const hasFilesColumn = table.getColumn('has_files');
         const isAnyColumnFiltered = table.getState().columnFilters.length > 0;
+        
         const handleProvinceChange = (selectedOption) => {
-            setProvinceFilter(selectedOption?.value ?? null); // Update state
+            setProvinceFilter(selectedOption?.value ?? null);
         };
         const selectedProvinceFilterOption = PROVINCE_FILTER_OPTIONS.find(option => provinceFilter === option.value) || null;
+        
         const currentPortailFilterValue = portailColumn?.getFilterValue();
         const selectedPortailOption = PORTAIL_FILTER_OPTIONS.find(option => option.value === String(currentPortailFilterValue)) || null;
-
-        // Get current province filter value (will be a string or undefined)
-        const currentProvinceFilterValue = provinceColumn?.getFilterValue();
-        console.log("Current Province Filter Value:", provinceColumn);
-
 
         return (
             <Form>
@@ -190,7 +195,7 @@ const AppelOffrePage = () => {
                    />
                 </Form.Group>
 
-                {/* Province Filter (Single Select) */}
+                {/* Province Filter (Server-Side) */}
                 <Form.Group controlId="filterProvinceAO" className="mb-3">
                     <Form.Label className="small mb-1 fw-bold">Contient Province</Form.Label>
                     <Select
@@ -229,10 +234,22 @@ const AppelOffrePage = () => {
                     <Form.Control type="text" placeholder="Contient..." value={filesTitleColumn?.getFilterValue() || ''} onChange={e => filesTitleColumn?.setFilterValue(e.target.value || undefined)} />
                 </Form.Group>
 
-                {/* Files Category Filter */}
+                {/* --- UPDATED: Files Category Filter (Dynamic) --- */}
                 <Form.Group controlId="filterFilesCategoryAO" className="mb-3">
                     <Form.Label className="small mb-1 fw-bold">Catégorie de Fichier</Form.Label>
-                    <Select inputId="filterFilesCategoryAOSelect" options={FILE_CATEGORY_OPTIONS} value={FILE_CATEGORY_OPTIONS.find(o => o.value === filesTypeColumn?.getFilterValue()) || null} onChange={opt => filesTypeColumn?.setFilterValue(opt?.value ?? undefined)} isClearable placeholder="Toutes Catégories..." styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }} menuPortalTarget={document.body} />
+                    <Select
+                        inputId="filterFilesCategoryAOSelect"
+                        options={fichierCategories} // Use dynamic options
+                        getOptionLabel={opt => opt.label} // Specify how to get label
+                        getOptionValue={opt => opt.value} // Specify how to get value
+                        value={fichierCategories.find(o => o.value === filesTypeColumn?.getFilterValue()) || null}
+                        onChange={opt => filesTypeColumn?.setFilterValue(opt?.value ?? undefined)}
+                        isClearable
+                        isLoading={loadingCategories} // Show loading indicator
+                        placeholder={loadingCategories ? "Chargement..." : "Toutes Catégories..."}
+                        styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                        menuPortalTarget={document.body}
+                    />
                 </Form.Group>
 
                 {/* Has Files Toggle */}
@@ -256,26 +273,20 @@ const AppelOffrePage = () => {
 
                 {/* Reset Button */}
                 <Button variant="outline-secondary" size="sm" onClick={() => {
-                     
-                    table.resetColumnFilters()
-                    setProvinceFilter(null);}} disabled={!provinceFilter && !isAnyColumnFiltered} className="w-100 mt-3">
-                   <FontAwesomeIcon icon={faTimes} className="me-2"/> Réinitialiser Filtres Spécifiques
+                    table.resetColumnFilters(); // Resets client-side filters
+                    setProvinceFilter(null);   // Resets server-side province filter
+                }} disabled={!provinceFilter && !isAnyColumnFiltered} className="w-100 mt-3">
+                   <FontAwesomeIcon icon={faTimes} className="me-2"/> Réinitialiser Filtres
                 </Button>
             </Form>
         );
-    }, [provinceFilter]);
+    }, [provinceFilter, fichierCategories, loadingCategories]); // Add dependencies
 
 
     // --- DynamicTable Configuration ---
     const defaultVisibleCols = useMemo(() => [
-        'numero',
-        'intitule',
-        'categorie',
-        'provincesList', // Show the list of provinces
-        'estimation_HT',
-        'date_ouverture',
-        'lancement_portail',
-        'actions',
+        'numero', 'intitule', 'categorie', 'provincesList', 'estimation_HT',
+        'date_ouverture', 'lancement_portail', 'actions',
     ], []);
 
     const handleFormClose = () => {
@@ -293,11 +304,10 @@ const AppelOffrePage = () => {
               ) : (
                   <DynamicTable
                       fetchUrl={dynamicFetchUrl}
-                      // Use the key the controller returns for the list
-                      dataKey="appel_offres" // Ensure this matches controller response
+                      dataKey="appel_offres"
                       deleteUrlBase="/appel-offres"
                       baseApiUrl={BASE_API_URL}
-                      columns={appelOffreColumns} // Use updated column definitions
+                      columns={appelOffreColumns}
                       itemName="Appel d'Offre"
                       itemNamePlural="Appels d'Offre"
                       identifierKey="id"
@@ -349,8 +359,9 @@ const AppelOffrePage = () => {
                             const files = Array.isArray(row?.original?.fichiers) ? row.original.fichiers : [];
                             if (files.length === 0) return false;
                             return files.some(f => {
-                                const category = (f.categorie || '').toString().toLowerCase();
-                                return category.includes(query);
+                                // Now we check against the 'value' of the related category object
+                                const categoryValue = (f.categorie?.value || '').toString().toLowerCase();
+                                return categoryValue === query;
                             });
                         },
                         hasFiles: (row, _columnId, filterValue) => {

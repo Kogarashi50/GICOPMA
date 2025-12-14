@@ -5,6 +5,20 @@ import { Form, Button, Row, Col, Spinner, Alert, InputGroup, Card, Badge, Modal,
 import Select from 'react-select';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers, faPaperclip, faPlus, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import FichierCategoryManager from './FichierCategoryManager';
+
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
 
 // --- Constants ---
 const CATEGORIE_OPTIONS = [
@@ -14,27 +28,10 @@ const CATEGORIE_OPTIONS = [
     { value: 'Fournitures', label: 'Fournitures' }
 ];
 
-const PROVINCE_OPTIONS = [
-    { value: 'Berkane', label: 'Berkane' },
-    { value: 'Driouch', label: 'Driouch' },
-    { value: 'Figuig', label: 'Figuig' },
-    { value: 'Guercif', label: 'Guercif' },
-    { value: 'Jerada', label: 'Jerada' },
-    { value: 'Nador', label: 'Nador' },
-    { value: 'Oujda-Angad', label: 'Oujda-Angad' },
-    { value: 'Taourirt', label: 'Taourirt' }
-];
-
-export const FICHIER_CATEGORIES = [
-    { value: 'cps', label: 'CPS (Cahier des Prescriptions Spéciales)' },
-    { value: 'rc', label: 'RC (Règlement de Consultation)' },
-    { value: 'estimation', label: 'Estimation Détaillée' },
-    { value: 'autre', label: 'Autre Document' }
-];
-
 const initialFormData = {
     categorie: '',
     provinces: null,
+    communes: null, // Add communes
     numero: '',
     intitule: '',
     estimation: '',
@@ -84,21 +81,50 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
     // --- State Management ---
     const [formData, setFormData] = useState(initialFormData);
     const [selectedProvinceOptions, setSelectedProvinceOptions] = useState([]);
+    const [selectedCommuneOptions, setSelectedCommuneOptions] = useState([]);
+    const [provinceOptions, setProvinceOptions] = useState([]);
+    const [communeOptions, setCommuneOptions] = useState([]);
+    const [filteredCommuneOptions, setFilteredCommuneOptions] = useState([]);
+    const [loadingCommunes, setLoadingCommunes] = useState(false);
     const [fonctionnairesOptions, setFonctionnairesOptions] = useState([]);
-    const [loadingOptions, setLoadingOptions] = useState({ fonctionnaires: true });
+    const [loadingOptions, setLoadingOptions] = useState({ fonctionnaires: true, provinces: true, communes: true });
     const [loadingData, setLoadingData] = useState(isEditMode);
     const [error, setError] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+const [showCategoryModal, setShowCategoryModal] = useState(false);
 
+   
     // File-related states
     const [newFiles, setNewFiles] = useState([]); // { file: File, intitule: string, categorie: string }
     const [existingFiles, setExistingFiles] = useState([]);
     const [filesToDelete, setFilesToDelete] = useState([]);
     const [editingFile, setEditingFile] = useState(null); // { isExisting: bool, data: fileObject, location: { index: num } }
     const FORM_HEADER_CLOSE_BUTTON_CLASS = 'btn rounded-5 px-5 py-2 bg-warning shadow-sm fw-bold border-0';
+const [fichierCategories, setFichierCategories] = useState([]);
+    const [loadingCategories, setLoadingCategories] = useState(true);
+    const fetchFichierCategories = useCallback(async () => {
+        setLoadingCategories(true);
+        try {
+            const response = await axios.get(`${baseApiUrl}/fichier-categories`, { withCredentials: true });
+            setFichierCategories(response.data || []);
+        } catch (err) {
+            // You might want to set an error state here to show the user
+            console.error("Erreur lors du chargement des catégories de fichiers.", err);
+            setError(prev => prev + " Erreur chargement des catégories de fichiers.");
+        } finally {
+            setLoadingCategories(false);
+        }
+    }, [baseApiUrl]);
 
-    // --- Data Fetching ---
+    useEffect(() => {
+        fetchFichierCategories();
+    }, [fetchFichierCategories]);
+    // src/gestion_conventions/appel_offres_views/AppelOffreForm.jsx
+
+  
+
+
     const fetchFonctionnaires = useCallback(async () => {
         setLoadingOptions(prev => ({ ...prev, fonctionnaires: true }));
         try {
@@ -113,9 +139,85 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
         }
     }, [baseApiUrl]);
 
+    // Fetch provinces and communes
+    const fetchProvincesAndCommunes = useCallback(async () => {
+        setLoadingOptions(prev => ({ ...prev, provinces: true, communes: true }));
+        try {
+            const [provRes, comRes] = await Promise.allSettled([
+                axios.get(`${baseApiUrl}/options/provinces`, { withCredentials: true }),
+                axios.get(`${baseApiUrl}/options/communes`, { withCredentials: true })
+            ]);
+
+            if (provRes.status === 'fulfilled') {
+                const provinces = Array.isArray(provRes.value.data) ? provRes.value.data : (provRes.value.data?.data || []);
+                setProvinceOptions(provinces);
+            }
+
+            if (comRes.status === 'fulfilled') {
+                const communes = Array.isArray(comRes.value.data) ? comRes.value.data : (comRes.value.data?.data || []);
+                setCommuneOptions(communes);
+                setFilteredCommuneOptions(communes);
+            }
+        } catch (err) {
+            console.error("Erreur chargement provinces/communes:", err);
+        } finally {
+            setLoadingOptions(prev => ({ ...prev, provinces: false, communes: false }));
+        }
+    }, [baseApiUrl]);
+
     useEffect(() => {
         fetchFonctionnaires();
-    }, [fetchFonctionnaires]);
+        fetchProvincesAndCommunes();
+    }, [fetchFonctionnaires, fetchProvincesAndCommunes]);
+
+    // Effect to filter communes based on selected provinces
+    useEffect(() => {
+        const fetchFilteredCommunes = async () => {
+            if (!selectedProvinceOptions || selectedProvinceOptions.length === 0) {
+                setFilteredCommuneOptions(communeOptions);
+                if (selectedCommuneOptions && selectedCommuneOptions.length > 0) {
+                    setSelectedCommuneOptions([]);
+                    setFormData(prev => ({ ...prev, communes: null }));
+                }
+                return;
+            }
+
+            setLoadingCommunes(true);
+            try {
+                const provinceIds = selectedProvinceOptions.map(p => p.value);
+                const communePromises = provinceIds.map(provinceId =>
+                    axios.get(`${baseApiUrl}/options/communes/province/${provinceId}`, { withCredentials: true })
+                        .then(res => res.data)
+                        .catch(() => [])
+                );
+
+                const communeArrays = await Promise.all(communePromises);
+                const allCommunes = communeArrays.flat();
+                const uniqueCommunes = Array.from(
+                    new Map(allCommunes.map(c => [c.value, c])).values()
+                );
+                
+                setFilteredCommuneOptions(uniqueCommunes);
+                
+                // Filter current communes
+                if (selectedCommuneOptions && selectedCommuneOptions.length > 0) {
+                    const validCommuneValues = new Set(uniqueCommunes.map(c => c.value));
+                    const filteredCommunes = selectedCommuneOptions.filter(c => validCommuneValues.has(c.value));
+                    if (filteredCommunes.length !== selectedCommuneOptions.length) {
+                        setSelectedCommuneOptions(filteredCommunes);
+                        setFormData(prev => ({ ...prev, communes: filteredCommunes.map(c => c.value) }));
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching filtered communes:', error);
+                setFilteredCommuneOptions([]);
+            } finally {
+                setLoadingCommunes(false);
+            }
+        };
+
+        fetchFilteredCommunes();
+    }, [selectedProvinceOptions, baseApiUrl, communeOptions]);
 
     useEffect(() => {
         let isMounted = true;
@@ -126,16 +228,26 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
                     if (!isMounted) return;
                     const itemData = response.data?.appel_offre || response.data || {};
                     
-                    const matchedProvinces = Array.isArray(itemData.provinces)
-                        ? itemData.provinces.map(p => PROVINCE_OPTIONS.find(opt => opt.value === p)).filter(Boolean)
-                        : [];
-                    setSelectedProvinceOptions(matchedProvinces);
+                    // Wait for province options to load before matching
+                    if (provinceOptions.length > 0) {
+                        const matchedProvinces = Array.isArray(itemData.provinces)
+                            ? itemData.provinces.map(p => provinceOptions.find(opt => String(opt.value) === String(p) || String(opt.label) === String(p))).filter(Boolean)
+                            : [];
+                        setSelectedProvinceOptions(matchedProvinces);
+                    }
+                    
+                    // Handle communes
+                    if (itemData.communes && Array.isArray(itemData.communes) && communeOptions.length > 0) {
+                        const matchedCommunes = itemData.communes.map(c => communeOptions.find(opt => String(opt.value) === String(c.Id || c.id || c))).filter(Boolean);
+                        setSelectedCommuneOptions(matchedCommunes);
+                    }
 
                     const matchedFonctionnaires = findMultiOptions(fonctionnairesOptions, itemData.id_fonctionnaire, ';');
                     
                     setFormData({
                         categorie: itemData.categorie || '',
                         provinces: itemData.provinces || null,
+                        communes: itemData.communes ? (Array.isArray(itemData.communes) ? itemData.communes.map(c => c.Id || c.id || c) : []) : null,
                         numero: itemData.numero || '',
                         intitule: itemData.intitule || '',
                         estimation: itemData.estimation ?? '',
@@ -167,13 +279,14 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
         } else if (!isEditMode) {
             setFormData(initialFormData);
             setSelectedProvinceOptions([]);
+            setSelectedCommuneOptions([]);
             setExistingFiles([]);
             setNewFiles([]);
             setFilesToDelete([]);
             setLoadingData(false);
         }
         return () => { isMounted = false; };
-    }, [itemId, isEditMode, baseApiUrl, fonctionnairesOptions, loadingOptions.fonctionnaires]);
+    }, [itemId, isEditMode, baseApiUrl, fonctionnairesOptions, loadingOptions.fonctionnaires, provinceOptions, communeOptions]);
 
 
     // --- Handlers ---
@@ -192,6 +305,15 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
         if (validationErrors.provinces) {
             setValidationErrors(prev => { const next = {...prev}; delete next.provinces; return next; });
         }
+        // Communes will be filtered automatically by useEffect
+    };
+
+    const handleCommuneMultiSelectChange = (options) => {
+        setSelectedCommuneOptions(options || []);
+        setFormData(prev => ({ ...prev, communes: options ? options.map(o => o.value) : null }));
+        if (validationErrors.communes) {
+            setValidationErrors(prev => { const next = {...prev}; delete next.communes; return next; });
+        }
     };
 
     const handleFonctionnaireChange = useCallback((options) => {
@@ -206,9 +328,8 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
         // This is a simplified version compared to Marche. No metadata modal on add.
         const filesToUpload = Array.from(e.target.files).map(file => ({
             file: file,
-            // Set initial metadata
             intitule: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
-            categorie: FICHIER_CATEGORIES.find(c => c.value === 'autre') // Default category object
+            categorie: null
         }));
         setNewFiles(prev => [...prev, ...filesToUpload]);
         e.target.value = null; // Allow re-selecting the same file
@@ -228,10 +349,9 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
             isExisting,
             data: {
                 ...fileData,
-                // Ensure the category is an object for react-select
                 categorie: isExisting
-                    ? FICHIER_CATEGORIES.find(c => c.value === fileData.categorie) || FICHIER_CATEGORIES.find(c => c.value === 'autre')
-                    : fileData.categorie,
+                ? fileData.categorie 
+                : fileData.categorie,
             },
             location: { index }
         });
@@ -246,6 +366,9 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
     };
 
     // Handles saving the changes from the modal
+ // src/gestion_conventions/appel_offres_views/AppelOffreForm.jsx
+
+    // This function handles saving changes from the file edit modal
     const handleSaveFileMetadata = async () => {
         if (!editingFile) return;
 
@@ -253,18 +376,20 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
         const updatedFileData = editingFile.data;
 
         if (editingFile.isExisting) {
-            // Logic for EXISTING files: make an API call to update
+            // Logic for EXISTING files: make an API call to update metadata on the server
             const url = `${baseApiUrl}/fichiers-joints/${updatedFileData.id}`;
             const payload = {
                 intitule: updatedFileData.intitule,
-                categorie: updatedFileData.categorie.value
+                // V-- THIS IS THE CRITICAL CHANGE --V
+                // We now send the ID from the category object.
+                fichier_categorie_id: updatedFileData.categorie?.id 
             };
 
             try {
                 const response = await axios.put(url, payload, { withCredentials: true });
                 const updatedFileFromServer = response.data.fichier_joint;
                 
-                // Update the `existingFiles` state with the fresh data
+                // Refresh the `existingFiles` state with fresh data, including the nested category object
                 setExistingFiles(prev => {
                     const updatedFiles = [...prev];
                     updatedFiles[index] = updatedFileFromServer;
@@ -275,13 +400,14 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
                 alert("Une erreur est survenue lors de la mise à jour du fichier.");
             }
         } else {
-            // Logic for NEW files: just update local state
+            // Logic for NEW files: just update local state. This is already correct.
             setNewFiles(prev => {
                 const updatedFiles = [...prev];
                 updatedFiles[index] = updatedFileData;
                 return updatedFiles;
             });
         }
+        // --- END: MODIFICATION ---
 
         setEditingFile(null); // Close the modal
     };
@@ -309,6 +435,7 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
         const dataToAppend = {
             ...formData,
             provinces: null, // handle array separately
+            communes: null, // handle array separately
             fonctionnaires: null, // handle object array separately
             id_fonctionnaire: fonctionnaireIdsString || ''
         };
@@ -321,12 +448,14 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
 
         // Handle provinces array
         (formData.provinces || []).forEach(p => submissionPayload.append('provinces[]', p));
+        // Handle communes array
+        (formData.communes || []).forEach(c => submissionPayload.append('communes[]', c));
 
         // 2. Append file data
         newFiles.forEach((fileWrapper, index) => {
             submissionPayload.append('files[]', fileWrapper.file);
             submissionPayload.append(`intitule_file[${index}]`, fileWrapper.intitule);
-            submissionPayload.append(`categorie_file[${index}]`, fileWrapper.categorie.value);
+submissionPayload.append(`categorie_file_id[${index}]`, fileWrapper.categorie.id);
         });
         
         // 3. Append data for edit mode
@@ -386,13 +515,14 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
             <h5 className="mb-3 mt-2 text-primary">Détails de l'Appel d'Offre</h5>
              <Row className="g-3">
                  <Form.Group as={Col} md="6" className="mb-3">
-                    <Form.Label htmlFor="numero">Numéro AO <span className="text-danger">*</span></Form.Label>
+                    <Form.Label htmlFor="numero" className="w-100">{bilingualLabel("Numéro AO", "رقم طلب العروض", true)}</Form.Label>
                     <Form.Control id="numero" className={inputClass} type="text" name="numero" value={formData.numero} onChange={handleChange} isInvalid={!!validationErrors.numero} required/>
                     <Form.Control.Feedback type="invalid">{validationErrors.numero}</Form.Control.Feedback>
                 </Form.Group>
                 {/* Catégorie */}
-                <Form.Group as={Col} md="6" className="mb-3">
-                    <Form.Label htmlFor="categorie">Catégorie <span className="text-danger">*</span></Form.Label>
+
+                   <Form.Group as={Col} md="6" className="mb-3">
+                    <Form.Label htmlFor="categorie" className="w-100">{bilingualLabel("Catégorie", "الفئة", true)}</Form.Label>
                     <Form.Select id="categorie" className={selectClass} name="categorie" value={formData.categorie} onChange={handleChange} isInvalid={!!validationErrors.categorie} required>
                         <option value="" disabled>-- Sélectionner --</option>
                         {CATEGORIE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -403,31 +533,66 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
 
             {/* Intitule */}
             <Form.Group className="mb-3">
-               <Form.Label htmlFor="intitule">Intitulé <span className="text-danger">*</span></Form.Label>
+               <Form.Label htmlFor="intitule" className="w-100">{bilingualLabel("Intitulé", "العنوان", true)}</Form.Label>
                <Form.Control id="intitule" className={textareaClass} as="textarea" rows={2} name="intitule" value={formData.intitule} onChange={handleChange} isInvalid={!!validationErrors.intitule} required/>
                <Form.Control.Feedback type="invalid">{validationErrors.intitule}</Form.Control.Feedback>
            </Form.Group>
 
-            {/* Province Multi-Select */}
-            <Form.Group className="mb-3">
-                 <Form.Label htmlFor="provinces_select">Province(s) Affectée(s)</Form.Label>
-                 <Select
-                     inputId="provinces_select" isMulti name="provinces_select" options={PROVINCE_OPTIONS}
-                     value={selectedProvinceOptions} onChange={handleProvinceMultiSelectChange}
-                     placeholder={"Sélectionner Province(s) (Optionnel)..."}
-                     isClearable closeMenuOnSelect={false} noOptionsMessage={() => 'Aucune province définie'}
-                     styles={getReactSelectStyles(!!validationErrors.provinces || !!validationErrors['provinces.*'])}
-                     className={(validationErrors.provinces || validationErrors['provinces.*']) ? 'is-invalid' : ''}
-                     menuPortalTarget={document.body}
-                 />
-                 {(validationErrors.provinces || validationErrors['provinces.*']) &&
-                    <div className="invalid-feedback d-block ps-2 small mt-1"> {validationErrors.provinces || validationErrors['provinces.*']} </div>
-                 }
-            </Form.Group>
+            {/* Province and Commune Multi-Select */}
+            <Row className="mb-3">
+                <Col md={6}>
+                    <Form.Label htmlFor="provinces_select" className="w-100">{bilingualLabel("Province(s) Affectée(s)", "الإقليم (الإقاليم) المتأثرة")}</Form.Label>
+                    <Select
+                        inputId="provinces_select" 
+                        isMulti 
+                        name="provinces_select" 
+                        options={provinceOptions}
+                        value={selectedProvinceOptions} 
+                        onChange={handleProvinceMultiSelectChange}
+                        placeholder={loadingOptions.provinces ? "Chargement..." : "Sélectionner Province(s) (Optionnel)..."}
+                        isClearable 
+                        closeMenuOnSelect={false} 
+                        isLoading={loadingOptions.provinces}
+                        noOptionsMessage={() => 'Aucune province définie'}
+                        styles={getReactSelectStyles(!!validationErrors.provinces || !!validationErrors['provinces.*'])}
+                        className={(validationErrors.provinces || validationErrors['provinces.*']) ? 'is-invalid' : ''}
+                        menuPortalTarget={document.body}
+                    />
+                    {(validationErrors.provinces || validationErrors['provinces.*']) &&
+                        <div className="invalid-feedback d-block ps-2 small mt-1"> {validationErrors.provinces || validationErrors['provinces.*']} </div>
+                    }
+                </Col>
+                <Col md={6}>
+                    <Form.Label htmlFor="communes_select" className="w-100">{bilingualLabel("Commune(s) Affectée(s)", "الجماعة (الجماعات) المتأثرة")}</Form.Label>
+                    <Select
+                        inputId="communes_select" 
+                        isMulti 
+                        name="communes_select" 
+                        options={filteredCommuneOptions.length > 0 ? filteredCommuneOptions : communeOptions}
+                        value={selectedCommuneOptions} 
+                        onChange={handleCommuneMultiSelectChange}
+                        placeholder={selectedProvinceOptions && selectedProvinceOptions.length > 0 ? (loadingCommunes || loadingOptions.communes ? "Chargement..." : "Sélectionner Commune(s) (filtrées par province)...") : "Sélectionner des provinces d'abord..."}
+                        isClearable 
+                        closeMenuOnSelect={false} 
+                        isLoading={loadingCommunes || loadingOptions.communes}
+                        isDisabled={!selectedProvinceOptions || selectedProvinceOptions.length === 0}
+                        noOptionsMessage={() => 'Aucune commune définie'}
+                        styles={getReactSelectStyles(!!validationErrors.communes || !!validationErrors['communes.*'])}
+                        className={(validationErrors.communes || validationErrors['communes.*']) ? 'is-invalid' : ''}
+                        menuPortalTarget={document.body}
+                    />
+                    {(!selectedProvinceOptions || selectedProvinceOptions.length === 0) && (
+                        <Form.Text className="text-muted">Veuillez d'abord sélectionner au moins une province</Form.Text>
+                    )}
+                    {(validationErrors.communes || validationErrors['communes.*']) &&
+                        <div className="invalid-feedback d-block ps-2 small mt-1"> {validationErrors.communes || validationErrors['communes.*']} </div>
+                    }
+                </Col>
+            </Row>
 
             {/* Fonctionnaire Multi-Select */}
             <Form.Group className="mb-3">
-                 <Form.Label htmlFor="fonctionnaires_select">
+                 <Form.Label htmlFor="fonctionnaires_select" className="w-100">{bilingualLabel("Fonctionnaires", "الموظفون")}
                      <FontAwesomeIcon icon={faUsers} className="me-2" /> Points Focaux Affecté(s)
                  </Form.Label>
                  <Select
@@ -449,7 +614,7 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
             {/* --- Estimations Section --- */}
             <Row className="g-3">
                 <Form.Group as={Col} md="4" className="mb-3">
-                    <Form.Label htmlFor="estimation_HT">Estimation HT <span className="text-danger">*</span></Form.Label>
+                    <Form.Label htmlFor="estimation_HT" className="w-100">{bilingualLabel("Estimation HT", "التقدير بدون ضريبة", true)}</Form.Label>
                      <InputGroup>
                         <Form.Control id="estimation_HT" className={inputClass + ' ps-3 border-end-0'} type="number" step="0.01" name="estimation_HT" value={formData.estimation_HT} onChange={handleChange} isInvalid={!!validationErrors.estimation_HT} placeholder="0.00" required/>
                         <InputGroup.Text className={inputGroupTextClass + ' border-start-0'}>MAD</InputGroup.Text>
@@ -457,7 +622,7 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
                     </InputGroup>
                 </Form.Group>
                 <Form.Group as={Col} md="4" className="mb-3">
-                    <Form.Label htmlFor="montant_TVA">Montant TVA <span className="text-danger">*</span></Form.Label>
+                    <Form.Label htmlFor="montant_TVA" className="w-100">{bilingualLabel("Montant TVA", "مبلغ الضريبة", true)}</Form.Label>
                      <InputGroup>
                         <Form.Control id="montant_TVA" className={inputClass + ' ps-3 border-end-0'} type="number" step="0.01" name="montant_TVA" value={formData.montant_TVA} onChange={handleChange} isInvalid={!!validationErrors.montant_TVA} placeholder="0.00" required/>
                         <InputGroup.Text className={inputGroupTextClass + ' border-start-0'}>MAD</InputGroup.Text>
@@ -465,7 +630,7 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
                     </InputGroup>
                 </Form.Group>
                 <Form.Group as={Col} md="4" className="mb-3">
-                    <Form.Label htmlFor="estimation">Estimation TTC</Form.Label>
+                    <Form.Label htmlFor="estimation" className="w-100">{bilingualLabel("Estimation TTC", "التقدير شامل الضريبة")}</Form.Label>
                     <InputGroup>
                         <Form.Control id="estimation" className={inputClass + ' ps-3 border-end-0'} type="number" step="0.01" name="estimation" value={formData.estimation} onChange={handleChange} isInvalid={!!validationErrors.estimation} placeholder="Optionnel"/>
                         <InputGroup.Text className={inputGroupTextClass + ' border-start-0'}>MAD</InputGroup.Text>
@@ -477,22 +642,22 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
             {/* --- Duration & Dates Section --- */}
             <Row className="g-3">
                 <Form.Group as={Col} md="6" lg="3" className="mb-3">
-                    <Form.Label htmlFor="duree_execution">Durée Exécution (jours)</Form.Label>
+                    <Form.Label htmlFor="duree_execution" className="w-100">{bilingualLabel("Durée Exécution (jours)", "مدة التنفيذ (بالأيام)")}</Form.Label>
                     <Form.Control id="duree_execution" className={inputClass} type="number" step="1" min="0" name="duree_execution" value={formData.duree_execution} onChange={handleChange} isInvalid={!!validationErrors.duree_execution} placeholder="Optionnel"/>
                     <Form.Control.Feedback type="invalid">{validationErrors.duree_execution}</Form.Control.Feedback>
                 </Form.Group>
                  <Form.Group as={Col} md="6" lg="3" className="mb-3">
-                    <Form.Label htmlFor="date_verification">Date Vérification</Form.Label>
+                    <Form.Label htmlFor="date_verification" className="w-100">{bilingualLabel("Date Vérification", "تاريخ التحقق")}</Form.Label>
                     <Form.Control id="date_verification" className={inputClass} type="date" name="date_verification" value={formData.date_verification} onChange={handleChange} isInvalid={!!validationErrors.date_verification} />
                     <Form.Control.Feedback type="invalid">{validationErrors.date_verification}</Form.Control.Feedback>
                  </Form.Group>
                  <Form.Group as={Col} md="6" lg="3" className="mb-3">
-                    <Form.Label htmlFor="date_ouverture">Date Ouverture Plis</Form.Label>
+                    <Form.Label htmlFor="date_ouverture" className="w-100">{bilingualLabel("Date Ouverture Plis", "تاريخ فتح المظاريف")}</Form.Label>
                     <Form.Control id="date_ouverture" className={inputClass} type="date" name="date_ouverture" value={formData.date_ouverture} onChange={handleChange} isInvalid={!!validationErrors.date_ouverture} />
                     <Form.Control.Feedback type="invalid">{validationErrors.date_ouverture}</Form.Control.Feedback>
                  </Form.Group>
                  <Form.Group as={Col} md="6" lg="3" className="mb-3">
-                     <Form.Label htmlFor="last_session_op">Dernière Session OP</Form.Label>
+                     <Form.Label htmlFor="last_session_op" className="w-100">{bilingualLabel("Dernière Session OP", "آخر جلسة طلب العروض")}</Form.Label>
                      <Form.Control id="last_session_op" className={inputClass} type="date" name="last_session_op" value={formData.last_session_op} onChange={handleChange} isInvalid={!!validationErrors.last_session_op} />
                      <Form.Control.Feedback type="invalid">{validationErrors.last_session_op}</Form.Control.Feedback>
                  </Form.Group>
@@ -502,7 +667,7 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
             <h5 className="mb-3 mt-4 pt-3 border-top text-primary">Publication</h5>
              <Row className="g-3 align-items-center">
                 <Form.Group as={Col} md="4" className="mb-3">
-                    <Form.Label htmlFor="date_publication">Date Publication</Form.Label>
+                    <Form.Label htmlFor="date_publication" className="w-100">{bilingualLabel("Date Publication", "تاريخ النشر")}</Form.Label>
                     <Form.Control
                         id="date_publication" className={inputClass} type="date"
                         name="date_publication" value={formData.date_publication}
@@ -527,7 +692,7 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
                 {/* Conditionally render Date Lancement Portail field */}
                 {formData.lancement_portail && (
                     <Form.Group as={Col} md="4" className="mb-3">
-                        <Form.Label htmlFor="date_lancement_portail">Date Lancement Portail <span className="text-danger">*</span></Form.Label>
+                        <Form.Label htmlFor="date_lancement_portail" className="w-100">{bilingualLabel("Date Lancement Portail", "تاريخ إطلاق البوابة", true)}</Form.Label>
                         <Form.Control
                             id="date_lancement_portail" className={inputClass} type="date"
                             name="date_lancement_portail" value={formData.date_lancement_portail}
@@ -623,6 +788,8 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
                     {isSubmitting ? 'Enregistrement...' : (isEditMode ? 'Enregistrer Modifications' : 'Créer Appel d\'Offre')}
                 </Button>
             </div>
+
+
             {editingFile && (
                 <Modal show={!!editingFile} onHide={() => setEditingFile(null)} centered>
                     <Modal.Header closeButton>
@@ -633,22 +800,36 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
                             Fichier: {editingFile.data.nom_fichier || editingFile.data.file?.name}
                         </p>
                         <Form.Group className="mb-3">
-                            <Form.Label>Intitulé</Form.Label>
+                            <Form.Label className="w-100">{bilingualLabel("Intitulé", "العنوان")}</Form.Label>
                             <Form.Control
                                 type="text"
                                 value={editingFile.data.intitule || ''}
                                 onChange={(e) => handleEditingFileChange('intitule', e.target.value)}
                             />
                         </Form.Group>
+
+                        {/* --- START: THIS IS THE BLOCK TO ADD BACK --- */}
                         <Form.Group>
-                            <Form.Label>Catégorie</Form.Label>
-                            <Select
-                                options={FICHIER_CATEGORIES}
-                                value={editingFile.data.categorie}
-                                onChange={(opt) => handleEditingFileChange('categorie', opt)}
-                                styles={getReactSelectStyles(false)}
-                            />
+                            <Form.Label className="w-100">{bilingualLabel("Catégorie", "الفئة")}</Form.Label>
+                            <InputGroup>
+                                <Select
+                                    className="flex-grow-1"
+                                    options={fichierCategories}
+                                    value={fichierCategories.find(c => c.id === editingFile.data.categorie?.id)}
+                                    onChange={(opt) => handleEditingFileChange('categorie', opt)}
+                                    styles={getReactSelectStyles(false)}
+                                    getOptionValue={opt => opt.id}
+                                    getOptionLabel={opt => opt.label}
+                                    isLoading={loadingCategories}
+                                    placeholder="Sélectionner..."
+                                />
+                                <Button variant="outline-secondary" onClick={() => setShowCategoryModal(true)}>
+                                    Gérer
+                                </Button>
+                            </InputGroup>
                         </Form.Group>
+                        {/* --- END: THIS IS THE BLOCK TO ADD BACK --- */}
+
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={() => setEditingFile(null)}>Annuler</Button>
@@ -656,6 +837,14 @@ const AppelOffreForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApi
                     </Modal.Footer>
                 </Modal>
             )}
+             {showCategoryModal && (
+            <FichierCategoryManager
+                show={showCategoryModal}
+                onHide={() => setShowCategoryModal(false)}
+                baseApiUrl={baseApiUrl}
+                onCategoriesChange={setFichierCategories}
+            />
+        )}
         </Form>
     );
 };

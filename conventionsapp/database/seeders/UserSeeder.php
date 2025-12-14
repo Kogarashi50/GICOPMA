@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\User; // Import your model
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class UserSeeder extends Seeder
 {
@@ -13,30 +14,68 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Example: Create an Admin user
-        $admin = User::factory()->create([
-            'username' => 'admin', // Override default username
-            // 'email' => 'admin@example.com', // Override if needed
-            // Password will default to 'password' from factory and get hashed by model
+        // First, seed the fonctionnaires, including the missing one with ID 38
+        DB::table('fonctionnaires')->insert([
+            ['id' => 31, 'nom' => 'TABET', 'prenom' => 'Abdelhafid'],
+            ['id' => 38, 'nom' => 'BOUCRAA', 'prenom' => 'Hanae'], // <-- THIS IS THE FIX
+            ['id' => 71, 'nom' => 'AMER', 'prenom' => 'Abdelhakim'],
+            ['id' => 76, 'nom' => 'SRHIRI', 'prenom' => 'Abdelhafid'],
+            ['id' => 120, 'nom' => 'Essahli', 'prenom' => 'Ayoub'],
+            ['id' => 121, 'nom' => 'Assamure', 'prenom' => 'Abdelhamid'],
+            ['id' => 122, 'nom' => 'Messoussi', 'prenom' => 'Loubna'],
+            ['id' => 123, 'nom' => 'Boulebroud', 'prenom' => 'Chaimae'],
+            ['id' => 124, 'nom' => 'Khaloua', 'prenom' => 'Mouad'],
         ]);
-        $admin->assignRole('Admin'); // Assign the role by NAME
 
-        // Example: Create an Editor user
-        $editor = User::factory()->create([
-            'username' => 'editor',
-             // 'email' => 'editor@example.com',
+        // Now, seed the users and assign roles
+        $defaultPassword = Hash::make('cro1234');
+
+        $user = User::create([
+            'id' => 7,
+            'email' => 'hanae.boucraa@cr-oriental.ma',
+            'password' => $defaultPassword,
+            'fonctionnaire_id' => 38, // This will now work
         ]);
-        $editor->assignRole('Editor');
+        $user->assignRole('Admin');
 
-         // Example: Create a Viewer user
-         $viewer = User::factory()->create([
-            'username' => 'viewer',
-            // 'email' => 'viewer@example.com',
-         ]);
-         $viewer->assignRole('Viewer');
+        $user = User::create([
+            'id' => 218,
+            'email' => 'abdelhamid.assamure@cr-oriental.ma',
+            'password' => $defaultPassword,
+            'fonctionnaire_id' => 121,
+        ]);
+        $user->assignRole('gestionnaire des conventions');
+        
+        $user = User::create([
+            'id' => 219,
+            'email' => 'loubna.messoussi@cr-oriental.ma',
+            'password' => $defaultPassword,
+            'fonctionnaire_id' => 122,
+        ]);
+        $user->assignRole('gestionnaire des projets');
 
+        $user = User::create([
+            'id' => 220,
+            'email' => 'chaimae.boulbroud@cr-oriental.ma',
+            'password' => $defaultPassword,
+            'fonctionnaire_id' => 123,
+        ]);
+        $user->assignRole('gestionnaire marché');
 
-        // Example: Create some generic users using the factory defaults
-        // Utilisateur::factory(5)->create(); // Creates 5 users with random usernames
+        $user = User::create([
+            'id' => 221,
+            'email' => 'mouad.khaloua@cr-oriental.ma',
+            'password' => $defaultPassword,
+            'fonctionnaire_id' => 124,
+        ]);
+        $user->assignRole('gestionnaire des bon de commande');
+        
+        $user = User::create([
+            'id' => 223,
+            'email' => 'loubna@gmail.com',
+            'password' => $defaultPassword,
+            'fonctionnaire_id' => 76,
+        ]);
+        $user->assignRole('loubna');
     }
 }

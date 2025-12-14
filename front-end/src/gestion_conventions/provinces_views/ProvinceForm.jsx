@@ -8,6 +8,19 @@ import { Form, Button, Row, Col, Alert, Spinner } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import '../components/form.css'
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 const ProvinceForm = ({
     itemId = null,
     onClose,
@@ -180,21 +193,21 @@ const ProvinceForm = ({
                 <Form noValidate onSubmit={handleSubmit}>
                      <Row className="mb-3 g-3">
                          <Form.Group as={Col} md={6} controlId="formCode">
-                             <Form.Label className="small mb-1 fw-medium">Code <span className="text-danger">*</span></Form.Label>
+                             <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Code", "الرمز", true)}</Form.Label>
                              <Form.Control className="form-control-style p-2 mt-1 mb-3 rounded-pill shadow-sm bg-light" isInvalid={!!formErrors.Code} required type="text" name="Code" value={formData.Code} onChange={handleChange} size="sm" />
                              <Form.Control.Feedback type="invalid">{formErrors.Code}</Form.Control.Feedback>
                          </Form.Group>
                      </Row>
                      <Row className="mb-3 g-3">
                          <Form.Group as={Col} md={12} controlId="formDescription">
-                             <Form.Label className="small mb-1 fw-medium">Description <span className="text-danger">*</span></Form.Label>
+                             <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Description", "الوصف", true)}</Form.Label>
                              <Form.Control className="form-control-style p-2 mt-1 mb-3 rounded-pill shadow-sm bg-light" isInvalid={!!formErrors.Description} required type="text" name="Description" value={formData.Description} onChange={handleChange} size="sm" />
                              <Form.Control.Feedback type="invalid">{formErrors.Description}</Form.Control.Feedback>
                          </Form.Group>
                      </Row>
                     <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={12} controlId="formDescriptionArr">
-                            <Form.Label className="small mb-1 fw-medium">Description (Arabe)</Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Description (Arabe)", "الوصف (بالعربية)")}</Form.Label>
                             {/* Add isInvalid={!!formErrors.Description_Arr} if validation added */}
                             <Form.Control className="form-control-style p-2 mt-1 mb-3 rounded-pill shadow-sm bg-light" style={{direction: 'rtl', textAlign: 'right'}} type="text" name="Description_Arr" value={formData.Description_Arr} onChange={handleChange} size="sm" />
                             {/* <Form.Control.Feedback type="invalid">{formErrors.Description_Arr}</Form.Control.Feedback> */}

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Programme;
 use App\Models\Province; 
 use App\Models\Document;
+use App\Models\Commune;
 use App\Models\ConvPart;
 use App\Models\MaitreOuvrage;
 use App\Models\MaitreOuvrageDelegue;
@@ -67,6 +68,12 @@ class Convention extends Model
         'maitre_ouvrage_delegue',
         'membres_comite_technique',
         'membres_comite_pilotage',
+        'has_audit',
+        'audit_text',
+        'indicateur_suivi',
+        'cadence_reunion',
+        'commune_id'
+        
 
     ];
     protected $casts = [
@@ -75,13 +82,19 @@ class Convention extends Model
     'membres_comite_technique' => 'array',
     'membres_comite_pilotage' => 'array',
     'requires_council_approval' => 'boolean', 
+    'has_audit' => 'boolean', // <-- ADD THIS CAST
+
 ];
 
     /**
      * Get the programme that owns the convention.
      */
 // in app/Models/Convention.php
-
+ public function communes(): BelongsToMany
+    {
+        return $this->belongsToMany(Commune::class, 'commune_convention', 'convention_id', 'commune_id')
+                    ->withTimestamps();
+    }
 public function programme(): BelongsTo
 {
     // We are adding 'Id' as the third argument

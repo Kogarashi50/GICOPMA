@@ -7,6 +7,19 @@ import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 const DomaineForm = ({
     itemId = null,
     onClose,
@@ -163,7 +176,7 @@ const DomaineForm = ({
 
             <Row className="mb-3 ">
                 <Form.Group as={Col} md={4} controlId="domaineCode">
-                    <Form.Label className="small mb-1">Code <span className="text-danger">*</span></Form.Label>
+                    <Form.Label className="small mb-1 w-100">{bilingualLabel("Code", "الرمز", true)}</Form.Label>
                     <Form.Control
                         className="p-2 mt-1 mb-3 rounded-5 shadow-sm bg-light" // Standard rounded, not pill for textarea
 
@@ -180,7 +193,7 @@ const DomaineForm = ({
             </Row>
             <Row className="mb-3">
                  <Form.Group as={Col} md={12} controlId="domaineDescription">
-                    <Form.Label className="small mb-1">Description (Français) <span className="text-danger">*</span></Form.Label>
+                    <Form.Label className="small mb-1 w-100">{bilingualLabel("Description (Français)", "الوصف (بالفرنسية)", true)}</Form.Label>
                     <Form.Control
                         className="p-2 mt-1 mb-3 rounded-5 shadow-sm bg-light" // Standard rounded, not pill for textarea
 
@@ -197,7 +210,7 @@ const DomaineForm = ({
             </Row>
              <Row className="mb-4">
                  <Form.Group as={Col} md={12} controlId="domaineDescriptionArr">
-                    <Form.Label className="small mb-1">Description (Arabe) <span className="text-danger">*</span></Form.Label>
+                    <Form.Label className="small mb-1 w-100">{bilingualLabel("Description (Arabe)", "الوصف (بالعربية)", true)}</Form.Label>
                     <Form.Control
                         className="p-2 text-right-arabic mt-1 mb-3 rounded-5 shadow-sm bg-light" // Standard rounded, not pill for textarea
 

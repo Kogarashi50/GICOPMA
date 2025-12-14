@@ -10,6 +10,19 @@ import {
     faUsers
 } from '@fortawesome/free-solid-svg-icons';
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 // --- Constants ---
 const BASE_API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 const STORAGE_URL = process.env.REACT_APP_STORAGE_URL || 'http://localhost:8000';
@@ -205,20 +218,20 @@ const ContratDroitCommunForm = ({ itemId, onClose, onItemCreated, onItemUpdated,
             <Form onSubmit={handleSubmit} noValidate className="px-md-3">
                 <h5 className="mb-3 mt-2 text-secondary">Détails du Contrat</h5>
                 <Row className="g-3">
-                    <Form.Group as={Col} md="6"><Form.Label>Numéro Contrat <span className="text-danger">*</span></Form.Label><Form.Control type="text" name="numero_contrat" value={formData.numero_contrat} onChange={handleChange} isInvalid={!!validationErrors.numero_contrat} className={inputClass} /><Form.Control.Feedback type="invalid">{validationErrors.numero_contrat?.[0]}</Form.Control.Feedback></Form.Group>
-                    <Form.Group as={Col} md="6"><Form.Label>Fournisseur <span className="text-danger">*</span></Form.Label><Form.Control type="text" name="fournisseur_nom" value={formData.fournisseur_nom} onChange={handleChange} isInvalid={!!validationErrors.fournisseur_nom} className={inputClass} /><Form.Control.Feedback type="invalid">{validationErrors.fournisseur_nom?.[0]}</Form.Control.Feedback></Form.Group>
+                    <Form.Group as={Col} md="6"><Form.Label className="w-100">{bilingualLabel("Numéro Contrat", "رقم العقد", true)}</Form.Label><Form.Control type="text" name="numero_contrat" value={formData.numero_contrat} onChange={handleChange} isInvalid={!!validationErrors.numero_contrat} className={inputClass} /><Form.Control.Feedback type="invalid">{validationErrors.numero_contrat?.[0]}</Form.Control.Feedback></Form.Group>
+                    <Form.Group as={Col} md="6"><Form.Label className="w-100">{bilingualLabel("Fournisseur", "المورد", true)}</Form.Label><Form.Control type="text" name="fournisseur_nom" value={formData.fournisseur_nom} onChange={handleChange} isInvalid={!!validationErrors.fournisseur_nom} className={inputClass} /><Form.Control.Feedback type="invalid">{validationErrors.fournisseur_nom?.[0]}</Form.Control.Feedback></Form.Group>
                 </Row>
-                <Form.Group className="my-3"><Form.Label>Objet <span className="text-danger">*</span></Form.Label><Form.Control as="textarea" rows={2} name="objet" value={formData.objet} onChange={handleChange} isInvalid={!!validationErrors.objet} className={textareaClass} /><Form.Control.Feedback type="invalid">{validationErrors.objet?.[0]}</Form.Control.Feedback></Form.Group>
+                <Form.Group className="my-3"><Form.Label className="w-100">{bilingualLabel("Objet", "الموضوع", true)}</Form.Label><Form.Control as="textarea" rows={2} name="objet" value={formData.objet} onChange={handleChange} isInvalid={!!validationErrors.objet} className={textareaClass} /><Form.Control.Feedback type="invalid">{validationErrors.objet?.[0]}</Form.Control.Feedback></Form.Group>
                 <Row className="g-3">
-                    <Form.Group as={Col} md="4"><Form.Label>Date Signature <span className="text-danger">*</span></Form.Label><Form.Control type="date" name="date_signature" value={formData.date_signature} onChange={handleChange} isInvalid={!!validationErrors.date_signature} className={inputClass} /><Form.Control.Feedback type="invalid">{validationErrors.date_signature?.[0]}</Form.Control.Feedback></Form.Group>
-                    <Form.Group as={Col} md="4"><Form.Label>Montant Total TTC <span className="text-danger">*</span></Form.Label><Form.Control type="number" step="0.01" name="montant_total" value={formData.montant_total} onChange={handleChange} isInvalid={!!validationErrors.montant_total} placeholder="0.00" className={inputClass} /><Form.Control.Feedback type="invalid">{validationErrors.montant_total?.[0]}</Form.Control.Feedback></Form.Group>
-                    <Form.Group as={Col} md="4"><Form.Label>Durée Contrat</Form.Label><Form.Control type="text" name="duree_contrat" value={formData.duree_contrat} onChange={handleChange} isInvalid={!!validationErrors.duree_contrat} placeholder="Ex: 12 mois" className={inputClass} /><Form.Control.Feedback type="invalid">{validationErrors.duree_contrat?.[0]}</Form.Control.Feedback></Form.Group>
+                    <Form.Group as={Col} md="4"><Form.Label className="w-100">{bilingualLabel("Date Signature", "تاريخ التوقيع", true)}</Form.Label><Form.Control type="date" name="date_signature" value={formData.date_signature} onChange={handleChange} isInvalid={!!validationErrors.date_signature} className={inputClass} /><Form.Control.Feedback type="invalid">{validationErrors.date_signature?.[0]}</Form.Control.Feedback></Form.Group>
+                    <Form.Group as={Col} md="4"><Form.Label className="w-100">{bilingualLabel("Montant Total TTC", "المبلغ الإجمالي شامل الضريبة", true)}</Form.Label><Form.Control type="number" step="0.01" name="montant_total" value={formData.montant_total} onChange={handleChange} isInvalid={!!validationErrors.montant_total} placeholder="0.00" className={inputClass} /><Form.Control.Feedback type="invalid">{validationErrors.montant_total?.[0]}</Form.Control.Feedback></Form.Group>
+                    <Form.Group as={Col} md="4"><Form.Label className="w-100">{bilingualLabel("Durée Contrat", "مدة العقد")}</Form.Label><Form.Control type="text" name="duree_contrat" value={formData.duree_contrat} onChange={handleChange} isInvalid={!!validationErrors.duree_contrat} placeholder="Ex: 12 mois" className={inputClass} /><Form.Control.Feedback type="invalid">{validationErrors.duree_contrat?.[0]}</Form.Control.Feedback></Form.Group>
                 </Row>
                 <Row className="my-3 g-3">
-                    <Form.Group as={Col} md={6}><Form.Label><FontAwesomeIcon icon={faUsers} className="me-1 text-secondary" /> Points Focaux</Form.Label><Select inputId="fonctionnaires" name="fonctionnaires" options={fonctionnairesOptions} value={formData.fonctionnaires} onChange={handleFonctionnaireChange} placeholder="Sélectionner..." isClearable isMulti closeMenuOnSelect={false} styles={selectStyles} className={validationErrors.id_fonctionnaire ? 'is-invalid' : ''} menuPortalTarget={document.body} /></Form.Group>
-                    <Form.Group as={Col} md="6"><Form.Label>Type Contrat</Form.Label><Form.Select name="type_contrat" value={formData.type_contrat} onChange={handleChange} isInvalid={!!validationErrors.type_contrat} className={selectClass}><option value="">-- Sélectionner --</option>{TYPE_CONTRAT_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</Form.Select><Form.Control.Feedback type="invalid">{validationErrors.type_contrat?.[0]}</Form.Control.Feedback></Form.Group>
+                    <Form.Group as={Col} md={6}><Form.Label className="w-100"><FontAwesomeIcon icon={faUsers} className="me-1 text-secondary" /> {bilingualLabel("Points Focaux", "النقاط المحورية")}</Form.Label><Select inputId="fonctionnaires" name="fonctionnaires" options={fonctionnairesOptions} value={formData.fonctionnaires} onChange={handleFonctionnaireChange} placeholder="Sélectionner..." isClearable isMulti closeMenuOnSelect={false} styles={selectStyles} className={validationErrors.id_fonctionnaire ? 'is-invalid' : ''} menuPortalTarget={document.body} /></Form.Group>
+                    <Form.Group as={Col} md="6"><Form.Label className="w-100">{bilingualLabel("Type Contrat", "نوع العقد")}</Form.Label><Form.Select name="type_contrat" value={formData.type_contrat} onChange={handleChange} isInvalid={!!validationErrors.type_contrat} className={selectClass}><option value="">-- Sélectionner --</option>{TYPE_CONTRAT_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</Form.Select><Form.Control.Feedback type="invalid">{validationErrors.type_contrat?.[0]}</Form.Control.Feedback></Form.Group>
                 </Row>
-                <Form.Group className="mb-3"><Form.Label>Observations</Form.Label><Form.Control as="textarea" rows={2} name="observations" value={formData.observations} onChange={handleChange} className={textareaClass} /></Form.Group>
+                <Form.Group className="mb-3"><Form.Label className="w-100">{bilingualLabel("Observations", "الملاحظات")}</Form.Label><Form.Control as="textarea" rows={2} name="observations" value={formData.observations} onChange={handleChange} className={textareaClass} /></Form.Group>
 
                 <h5 className="mt-4 mb-3 text-secondary">Fichiers Joints</h5>
                 <Card className="border-dashed my-3">

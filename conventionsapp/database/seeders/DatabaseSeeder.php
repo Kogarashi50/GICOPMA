@@ -18,7 +18,16 @@ class DatabaseSeeder extends Seeder
         
             $this->call([
                 // RolesAndPermissionsSeeder::class,
-                ObservationPermissionSeeder::class,
+                RolesAndPermissionsSeeder::class,
+            LocationSeeder::class,
+            CoreDataSeeder::class,
+            UserSeeder::class,
+            ProjectAndMarcheSeeder::class,
+            ConventionSeeder::class,
+            ConventionVisaAlertTypesSeeder::class,
+           
+
+
                 //PermissionsSeeder::class,
                 //RolesSeeder::class,
                 //UserSeeder::class, // Include if you created one

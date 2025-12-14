@@ -41,6 +41,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+    public $guard_name = 'sanctum';
 
     /**
      * The attributes that should be cast.

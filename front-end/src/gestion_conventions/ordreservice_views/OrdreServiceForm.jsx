@@ -9,6 +9,19 @@ import Select from 'react-select';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperclip, faTrashAlt, faUpload, faFileContract, faEye, faUserTie, faTimes } from '@fortawesome/free-solid-svg-icons';
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 // --- Constants ---
 const TYPE_OPTIONS = [
     { value: 'commencement', label: 'Ordre de Commencement' },
@@ -302,34 +315,34 @@ try {
                     
                     {/* --- Form Fields (from robust version) --- */}
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="marche_id_select_osf">Marché Public Associé <span className="text-danger">*</span></Form.Label>
+                        <Form.Label htmlFor="marche_id_select_osf" className="w-100">{bilingualLabel("Marché Public Associé", "السوق العام المرتبط", true)}</Form.Label>
                         <Select inputId="marche_id_select_osf" name="marche_id" options={marcheOptions} value={formData.marche_id} onChange={(opt) => handleSelectChange(opt, {name: 'marche_id'})} placeholder="Sélectionner un marché..." isDisabled={isSubmitting || loadingMarcheOptions} styles={customSelectStyles(!!validationErrors.marche_id)} menuPortalTarget={document.body} />
                         {validationErrors.marche_id && <div className="d-block invalid-feedback ps-2 small mt-1">{validationErrors.marche_id[0]}</div>}
                     </Form.Group>
                     <Row>
                         <Form.Group as={Col} md="6" className="mb-3">
-                            <Form.Label htmlFor="type_ordre_select_osf">Type <span className="text-danger">*</span></Form.Label>
+                            <Form.Label htmlFor="type_ordre_select_osf" className="w-100">{bilingualLabel("Type", "النوع", true)}</Form.Label>
                             <Select inputId="type_ordre_select_osf" name="type" options={TYPE_OPTIONS} value={formData.type} onChange={(opt) => handleSelectChange(opt, {name: 'type'})} placeholder="Sélectionner type..." isDisabled={isSubmitting} styles={customSelectStyles(!!validationErrors.type)} menuPortalTarget={document.body} />
                             {validationErrors.type && <div className="d-block invalid-feedback ps-2 small mt-1">{validationErrors.type[0]}</div>}
                         </Form.Group>
                         <Form.Group as={Col} md="6" className="mb-3">
-                            <Form.Label htmlFor="numero_ordre_osf">Numéro/Référence <span className="text-danger">*</span></Form.Label>
+                            <Form.Label htmlFor="numero_ordre_osf" className="w-100">{bilingualLabel("Numéro/Référence", "الرقم/المرجع", true)}</Form.Label>
                             <Form.Control id="numero_ordre_osf" type="text" name="numero" value={formData.numero} onChange={handleChange} isInvalid={!!validationErrors.numero} required disabled={isSubmitting} className='form-control-style shadow-sm form-control-rounded' />
                             <Form.Control.Feedback type="invalid">{validationErrors.numero?.[0]}</Form.Control.Feedback>
                         </Form.Group>
                     </Row>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="date_emission_osf">Date d'Émission <span className="text-danger">*</span></Form.Label>
+                        <Form.Label htmlFor="date_emission_osf" className="w-100">{bilingualLabel("Date d'Émission", "تاريخ الإصدار", true)}</Form.Label>
                         <Form.Control id="date_emission_osf" type="date" name="date_emission" value={formData.date_emission} onChange={handleChange} isInvalid={!!validationErrors.date_emission} required disabled={isSubmitting} className='form-control-style shadow-sm form-control-rounded' />
                         <Form.Control.Feedback type="invalid">{validationErrors.date_emission?.[0]}</Form.Control.Feedback>
                     </Form.Group>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="fonctionnaire_select_osf_form"><FontAwesomeIcon icon={faUserTie} className="me-1" /> Points Focaux</Form.Label>
+                        <Form.Label htmlFor="fonctionnaire_select_osf_form" className="w-100"><FontAwesomeIcon icon={faUserTie} className="me-1" /> {bilingualLabel("Points Focaux", "النقاط المحورية")}</Form.Label>
                         <Select inputId="fonctionnaire_select_osf_form" name="id_fonctionnaire" options={fonctionnaireOptions} value={formData.id_fonctionnaire} onChange={(opts) => handleSelectChange(opts, {name: 'id_fonctionnaire'})} placeholder={loadingFonctionnaireOptions ? "Chargement..." : "Sélectionner (Optionnel)..."} isLoading={loadingFonctionnaireOptions} isDisabled={isSubmitting} isClearable isMulti closeMenuOnSelect={false} styles={customSelectStyles(!!validationErrors.id_fonctionnaire)} menuPortalTarget={document.body} />
                         {validationErrors.id_fonctionnaire && <div className="d-block invalid-feedback ps-2 small mt-1">{validationErrors.id_fonctionnaire[0]}</div>}
                     </Form.Group>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="description_osf">Description</Form.Label>
+                        <Form.Label htmlFor="description_osf" className="w-100">{bilingualLabel("Description", "الوصف")}</Form.Label>
                         <Form.Control id="description_osf" as="textarea" rows={3} name="description" value={formData.description} onChange={handleChange} disabled={isSubmitting} className='form-control-style shadow-sm form-control-rounded' />
                     </Form.Group>
 

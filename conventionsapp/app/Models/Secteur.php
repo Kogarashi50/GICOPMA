@@ -34,4 +34,8 @@ class Secteur extends Model
     {
         return $this->hasMany(Convention::class, 'secteur_id');
     }
+    public function projets(): HasMany
+{
+    return $this->hasMany(Projet::class, 'secteur_id');
+}
 }

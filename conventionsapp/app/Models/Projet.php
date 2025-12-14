@@ -64,6 +64,7 @@ class Projet extends Model
         "Date_Fin",
         "Convention_Code",
         "Code_Projet",
+        "secteur_id", // --- ADD THIS LINE ---
         "Cout_Projet",
         'id_fonctionnaire',
         'maitre_ouvrage',
@@ -131,7 +132,10 @@ class Projet extends Model
         // Foreign key on projet table ('Id_Programme'), Owner key on programme table ('Code_Programme')
         return $this->belongsTo(Programme::class, 'Id_Programme', 'Code_Programme');
     }
-
+    public function secteur(): BelongsTo
+{
+    return $this->belongsTo(Secteur::class, 'secteur_id');
+}
     /**
      * Get the chantier associated with the projet.
      *

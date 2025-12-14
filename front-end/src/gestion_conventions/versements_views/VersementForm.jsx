@@ -12,6 +12,19 @@ import {
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 // --- Styles & Classes --- (Keep consistent styles)
 // *** Full selectStyles definition included ***
 const selectStyles = {
@@ -555,7 +568,7 @@ const VersementForm = ({
                      <Row className="mb-3 g-3">
                          <Col md={6}>
                              <Form.Group controlId="formConvention">
-                                 <Form.Label className="small mb-1 fw-medium">Convention <span className="text-danger">*</span></Form.Label>
+                                 <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Convention", "الاتفاقية", true)}</Form.Label>
                                  <Select
                                      name="convention"
                                      options={conventionOptions}
@@ -575,7 +588,7 @@ const VersementForm = ({
                          </Col>
                          <Col md={6}>
                              <Form.Group controlId="formPartner">
-                                 <Form.Label className="small mb-1 fw-medium">Partenaire <span className="text-danger">*</span></Form.Label>
+                                 <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Partenaire", "الشريك", true)}</Form.Label>
                                  <Select
                                      name="partenaire"
                                      options={partnerOptions}
@@ -616,7 +629,7 @@ const VersementForm = ({
                     <h5 className="mb-3 mt-4 fw-semibold text-warning border-bottom pb-2">Détails du Versement</h5>
                      <Row className="mb-1 g-3">
                          <Form.Group as={Col} md={6} controlId="formDateVersement">
-                             <Form.Label className="small mb-1 fw-medium">Date Versement <span className="text-danger">*</span></Form.Label>
+                             <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Date Versement", "تاريخ الدفع", true)}</Form.Label>
                              <Form.Control
                                 className={FORM_CONTROL_CLASS}
                                 isInvalid={!!formErrors.date_versement} required type="date" name="date_versement"
@@ -625,7 +638,7 @@ const VersementForm = ({
                          </Form.Group>
 
                          <Form.Group as={Col} md={6} controlId="formMontantVerse">
-                             <Form.Label className="small mb-1 fw-medium">Montant Versé (MAD) <span className="text-danger">*</span></Form.Label>
+                             <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Montant Versé (MAD)", "المبلغ المدفوع (درهم)", true)}</Form.Label>
                              <InputGroup size="sm" hasValidation>
                                  <Form.Control
                                     className="form-control-sm"

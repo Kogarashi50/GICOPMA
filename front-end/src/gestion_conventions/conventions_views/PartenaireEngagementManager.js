@@ -8,7 +8,11 @@ const PartenaireEngagementManager = ({
     selectedPartenaires, 
     onEngagementsChange,
     engagementTypes,
-    initialEngagements = []
+    conventionYear,
+    conventionDuration,
+    initialEngagements = [],
+   conventionCoutGlobal // <--- AJOUTEZ CETTE LIGNE
+
 }) => {
     const [engagementsByPartner, setEngagementsByPartner] = useState({});
     const [openPartnerId, setOpenPartnerId] = useState(null);
@@ -35,6 +39,7 @@ const PartenaireEngagementManager = ({
                         engagement_type_id: e.engagement_type_id,
                         montant_convenu: e.montant_convenu || '',
                         autre_engagement: e.autre_engagement || '',
+                        engagements_annuels: e.engagements_annuels || [],
                         engagement_description: e.engagement_description || ''
                     }))
                 };
@@ -103,7 +108,41 @@ const PartenaireEngagementManager = ({
         });
         onEngagementsChange(flattenedEngagements);
     }, [engagementsByPartner, onEngagementsChange]);
-    
+    useEffect(() => {
+    const isFinancialType = (typeId) => String(typeId) === String(engagementTypes.find(et => et.label.toLowerCase() === 'financier')?.value);
+
+    setEngagementsByPartner(prev => {
+        let hasChanged = false;
+        const nextState = { ...prev };
+
+        const generatedYears = generateYearsArray(conventionYear, conventionDuration);
+
+        Object.keys(nextState).forEach(partnerId => {
+            const partnerData = nextState[partnerId];
+            const updatedEngagements = partnerData.engagements.map(eng => {
+                if (isFinancialType(eng.engagement_type_id)) {
+                    // If it's a financial engagement that hasn't been processed yet
+                    // (either new or just switched to financial), generate the years.
+                    if (eng.engagements_annuels.length === 0 && generatedYears.length > 0) {
+                        hasChanged = true;
+                        return { ...eng, engagements_annuels: generatedYears.map(y => ({...y})) }; // Use a copy
+                    }
+                } else {
+                    // If it's NOT a financial engagement, ensure the yearly breakdown is cleared.
+                    if (eng.engagements_annuels.length > 0) {
+                        hasChanged = true;
+                        return { ...eng, engagements_annuels: [] };
+                    }
+                }
+                return eng;
+            });
+            nextState[partnerId] = { ...partnerData, engagements: updatedEngagements };
+        });
+
+        // Only update state if something actually changed to avoid infinite loops
+        return hasChanged ? nextState : prev;
+    });
+}, [engagementsByPartner, conventionYear, conventionDuration, engagementTypes]);
     const handlePartnerSignatureChange = (partnerId, field, value) => {
         setEngagementsByPartner(prev => ({
             ...prev,
@@ -116,24 +155,27 @@ const PartenaireEngagementManager = ({
         }));
     };
 
-    const handleAddEngagement = (partnerId) => {
-        setEngagementsByPartner(prev => ({
+// --- REPLACE the old handleAddEngagement with this ---
+const handleAddEngagement = (partnerId) => {
+    setEngagementsByPartner(prev => {
+        const newEngagement = {
+            id: `temp_${Date.now()}_${Math.random()}`,
+            engagement_type_id: engagementTypes.find(et => et.label.toLowerCase() === 'financier')?.value || engagementTypes[0]?.value || '',
+            montant_convenu: '',
+            autre_engagement: '',
+            engagement_description: '',
+            engagements_annuels: [] // Start with an empty array
+        };
+
+        return {
             ...prev,
             [partnerId]: {
                 ...prev[partnerId],
-                engagements: [
-                    ...prev[partnerId].engagements,
-                    {
-                        id: `temp_${Date.now()}_${Math.random()}`,
-                        engagement_type_id: engagementTypes[0]?.value || '',
-                        montant_convenu: '',
-                        autre_engagement: '',
-                        engagement_description: ''
-                    }
-                ]
+                engagements: [...prev[partnerId].engagements, newEngagement]
             }
-        }));
-    };
+        };
+    });
+};
 
     const handleEngagementChange = (partnerId, engagementId, field, value) => {
         setEngagementsByPartner(prev => {
@@ -152,7 +194,57 @@ const PartenaireEngagementManager = ({
             return { ...prev, [partnerId]: { ...prev[partnerId], engagements: updatedEngagements } };
         });
     };
+const handleAddYearlyRow = (partnerId, engagementId) => {
+    setEngagementsByPartner(prev => {
+        const updatedEngagements = prev[partnerId].engagements.map(eng => {
+            if (eng.id === engagementId) {
+                const newYear = eng.engagements_annuels.length > 0
+                    ? Math.max(...eng.engagements_annuels.map(y => y.annee)) + 1
+                    : new Date().getFullYear();
+                
+                return {
+                    ...eng,
+                    engagements_annuels: [
+                        ...eng.engagements_annuels,
+                        { annee: newYear, montant_prevu: '' }
+                    ]
+                };
+            }
+            return eng;
+        });
+        return { ...prev, [partnerId]: { ...prev[partnerId], engagements: updatedEngagements } };
+    });
+};
 
+const handleYearlyAmountChange = (partnerId, engagementId, year, newAmount) => {
+    setEngagementsByPartner(prev => {
+        const updatedEngagements = prev[partnerId].engagements.map(eng => {
+            if (eng.id === engagementId) {
+                const updatedYearly = eng.engagements_annuels.map(y => 
+                    y.annee === year ? { ...y, montant_prevu: newAmount } : y
+                );
+                return { ...eng, engagements_annuels: updatedYearly };
+            }
+            return eng;
+        });
+        return { ...prev, [partnerId]: { ...prev[partnerId], engagements: updatedEngagements } };
+    });
+};
+
+const handleRemoveYearlyRow = (partnerId, engagementId, year) => {
+    setEngagementsByPartner(prev => {
+        const updatedEngagements = prev[partnerId].engagements.map(eng => {
+            if (eng.id === engagementId) {
+                return {
+                    ...eng,
+                    engagements_annuels: eng.engagements_annuels.filter(y => y.annee !== year)
+                };
+            }
+            return eng;
+        });
+        return { ...prev, [partnerId]: { ...prev[partnerId], engagements: updatedEngagements } };
+    });
+};
     const handleRemoveEngagement = (partnerId, engagementId) => {
         setEngagementsByPartner(prev => ({
             ...prev,
@@ -166,7 +258,26 @@ const PartenaireEngagementManager = ({
     const togglePartnerCard = (partnerId) => {
         setOpenPartnerId(prev => (prev === partnerId ? null : partnerId));
     };
+const generateYearsArray = (startYear, durationMonths) => {
+    const years = [];
+    const numStartYear = parseInt(startYear, 10);
+    const numDuration = parseInt(durationMonths, 10);
 
+    if (!numStartYear || isNaN(numStartYear) || !numDuration || isNaN(numDuration) || numDuration <= 0) {
+        return []; // Return empty if year or duration is invalid
+    }
+
+    // Calculate the number of years, rounding up. e.g., 37 months is 4 years.
+    const numYears = Math.ceil(numDuration / 12);
+
+    for (let i = 0; i < numYears; i++) {
+        years.push({
+            annee: numStartYear + i,
+            montant_prevu: ''
+        });
+    }
+    return years;
+};
     const partnerList = useMemo(() => {
         return selectedPartenaires.map(p => ({
             value: p.value,
@@ -230,16 +341,65 @@ const PartenaireEngagementManager = ({
                                                     </Form.Select>
                                                 </Col>
                                                 <Col md={8}>
-                                                    {isFinancialType(engagement.engagement_type_id) ? (
-                                                        <InputGroup size="sm">
-                                                            <Form.Control type="number" placeholder="Montant" value={engagement.montant_convenu} onChange={(e) => handleEngagementChange(partnerId, engagement.id, 'montant_convenu', e.target.value)} />
-                                                            <InputGroup.Text>MAD</InputGroup.Text>
-                                                        </InputGroup>
-                                                    ) : (
-                                                        <Form.Control as="textarea" rows={1} size="sm" placeholder="Description de l'engagement..." value={engagement.autre_engagement} onChange={(e) => handleEngagementChange(partnerId, engagement.id, 'autre_engagement', e.target.value)} />
-                                                    )}
+                                                   {isFinancialType(engagement.engagement_type_id) ? (
+    <>
+        <InputGroup size="sm">
+            <Form.Control type="number" placeholder="Montant" value={engagement.montant_convenu} onChange={(e) => handleEngagementChange(partnerId, engagement.id, 'montant_convenu', e.target.value)} />
+            <InputGroup.Text>MAD</InputGroup.Text>
+        </InputGroup>
+        {(() => {
+            const coutGlobalNum = parseFloat(String(conventionCoutGlobal).replace(/,/g, '.')) || 0;
+            const montantConvenuNum = parseFloat(String(engagement.montant_convenu).replace(/,/g, '.')) || 0;
+
+            if (coutGlobalNum > 0 && montantConvenuNum > 0) {
+                const rate = (montantConvenuNum / coutGlobalNum) * 100;
+                return (
+                    <div className="form-text text-end text-success fw-bold pe-2">
+                        Taux de participation : {rate.toFixed(2)}%
+                    </div>
+                );
+            }
+            return null;
+        })()}
+    </>
+) : (
+    <Form.Control as="textarea" rows={1} size="sm" placeholder="Description de l'engagement..." value={engagement.autre_engagement} onChange={(e) => handleEngagementChange(partnerId, engagement.id, 'autre_engagement', e.target.value)} />
+)}
                                                 </Col>
                                             </Row>
+                                            {isFinancialType(engagement.engagement_type_id) && engagement.engagements_annuels && engagement.engagements_annuels.length > 0 && (
+                                            <div className="mt-2 ps-3 pe-2 py-2 border-top">
+                                                <h6 className="small text-muted fw-bold mb-2">Décomposition Annuelle</h6>
+                                                {engagement.engagements_annuels.map(yearly => (
+                                                    <Row key={yearly.annee} className="gx-2 mb-1 align-items-center">
+                                                        <Col xs={4}>
+                                                            <InputGroup size="sm">
+                                                                <InputGroup.Text>{yearly.annee}</InputGroup.Text>
+                                                            </InputGroup>
+                                                        </Col>
+                                                        <Col xs={8}>
+                                                            <InputGroup size="sm">
+                                                                <Form.Control
+                                                                    type="number"
+                                                                    placeholder="Montant prévu"
+                                                                    value={yearly.montant_prevu}
+                                                                    onChange={(e) => handleYearlyAmountChange(partnerId, engagement.id, yearly.annee, e.target.value)}
+                                                                />
+                                                                <InputGroup.Text>MAD</InputGroup.Text>
+                                                                <Button variant="outline-secondary" size="sm" onClick={() => handleRemoveYearlyRow(partnerId, engagement.id, yearly.annee)}>
+                                                                    <FontAwesomeIcon icon={faTrash} />
+                                                                </Button>
+                                                            </InputGroup>
+                                                        </Col>
+                                                    </Row>
+                                                ))}
+                                                <div className="text-center mt-2">
+                                                    <Button variant="link" size="sm" onClick={() => handleAddYearlyRow(partnerId, engagement.id)}>
+                                                        <FontAwesomeIcon icon={faPlus} className="me-1" /> Ajouter une année
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )}
                                             <Row className="mt-2 gx-2">
                                                 <Col>
                                                     <InputGroup size="sm">
@@ -273,6 +433,9 @@ PartenaireEngagementManager.propTypes = {
     onEngagementsChange: PropTypes.func.isRequired,
     engagementTypes: PropTypes.array.isRequired,
     initialEngagements: PropTypes.array,
+      conventionYear: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    conventionDuration: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    conventionCoutGlobal: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 export default PartenaireEngagementManager;

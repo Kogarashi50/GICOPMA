@@ -4,6 +4,19 @@ import axios from 'axios';
 import { Form, Button, Row, Col, Alert, Spinner } from 'react-bootstrap';
 import Select from 'react-select';
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 const AlertTypeForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApiUrl }) => {
     const isEditing = useMemo(() => !!itemId, [itemId]);
     const [formData, setFormData] = useState({
@@ -113,7 +126,7 @@ const AlertTypeForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApiU
             <Row>
                 <Col md={12}>
                     <Form.Group className="mb-3" controlId="name">
-                        <Form.Label>Nom Unique (machine-readable)</Form.Label>
+                        <Form.Label className="w-100">{bilingualLabel("Nom Unique (machine-readable)", "الاسم الفريد (قابل للقراءة آلياً)", true)}</Form.Label>
                         <Form.Control
                             type="text"
                             name="name"
@@ -127,7 +140,7 @@ const AlertTypeForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApiU
                 </Col>
                 <Col md={12}>
                     <Form.Group className="mb-3" controlId="description">
-                        <Form.Label>Description</Form.Label>
+                        <Form.Label className="w-100">{bilingualLabel("Description", "الوصف")}</Form.Label>
                         <Form.Control
                             as="textarea"
                             rows={2}
@@ -142,7 +155,7 @@ const AlertTypeForm = ({ itemId, onClose, onItemCreated, onItemUpdated, baseApiU
                 </Col>
                 <Col md={12}>
                     <Form.Group className="mb-3" controlId="permission_name">
-                        <Form.Label>Permission Requise</Form.Label>
+                        <Form.Label className="w-100">{bilingualLabel("Permission Requise", "الإذن المطلوب")}</Form.Label>
                         <Select
                             options={allPermissions}
                             value={formData.permission_name}

@@ -32,6 +32,8 @@ class FichierJoint extends Model
         'ordre_service_id', // <-- MUST be here
         'marche_id',
         'lot_id',
+                'fichier_categorie_id', // <-- UPDATE THIS LINE
+
         'appel_offre_id', // <-- NOUVEAU : Pour lier à un Appel d'Offre
         'nom_fichier',
         'intitule',       // <-- NOUVEAU : Le titre personnalisé du fichier
@@ -74,7 +76,10 @@ class FichierJoint extends Model
     {
         return $this->belongsTo(Lot::class, 'lot_id');
     }
-
+public function categorie(): BelongsTo
+    {
+        return $this->belongsTo(FichierCategorie::class, 'fichier_categorie_id');
+    }
     /**
      * NOUVELLE RELATION
      * Récupère l'appel d'offre auquel ce fichier appartient.

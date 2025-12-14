@@ -1,0 +1,40 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('province', function (Blueprint $table) {
+            $table->id('Id');
+            $table->string('Code')->unique()->nullable();
+            $table->string('Description')->nullable();
+            $table->string('Description_Arr')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('commune', function (Blueprint $table) {
+            $table->id('Id');
+            $table->string('Code')->unique()->nullable();
+            $table->string('Description')->nullable();
+            $table->string('Description_Arr')->nullable();
+            $table->foreignId('province_id')->constrained('province', 'Id')->onDelete('cascade');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('commune');
+        Schema::dropIfExists('province');
+    }
+};

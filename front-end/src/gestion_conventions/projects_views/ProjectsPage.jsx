@@ -103,6 +103,7 @@ const RenderProjetFiltersComponent = ({ table, options, optionsLoading }) => {
         maitreOuvrage: getColumn('maitre_ouvrage'),
         maitreOuvrageDelegue: getColumn('maitre_ouvrage_delegue'),
         province: getColumn('provinces_filter'),
+            secteur: getColumn('secteur_filter'), // --- ADD THIS LINE ---
         commune: getColumn('communes_filter'),
         partenaire: getColumn('partenaires_filter'),
         fonctionnaire: getColumn('fonctionnaires_filter'),
@@ -119,6 +120,8 @@ const RenderProjetFiltersComponent = ({ table, options, optionsLoading }) => {
         maitreOuvrageDelegue: getFilterValue(columns.maitreOuvrageDelegue),
         province: getFilterValue(columns.province) || [],
         commune: getFilterValue(columns.commune) || [],
+    secteur: getFilterValue(columns.secteur), // --- ADD THIS LINE ---
+
         partenaire: getFilterValue(columns.partenaire) || [],
         fonctionnaire: getFilterValue(columns.fonctionnaire) || [],
         cout: getFilterValue(columns.cout) || {},
@@ -166,6 +169,20 @@ const RenderProjetFiltersComponent = ({ table, options, optionsLoading }) => {
                     <Col xs={12}><Form.Group><Form.Label className="mb-1 fw-bold">Programme</Form.Label><Select value={options.programmeOptions.find(o => o.value === filters.programme) || null} options={options.programmeOptions} isClearable onChange={(opt) => handleSelectChange(columns.programme, opt)} styles={selectStyles} isLoading={optionsLoading} menuPortalTarget={document.body} /></Form.Group></Col>
                     <Col xs={12}><Form.Group><Form.Label className="mb-1 fw-bold">Maitre d'ouvrage</Form.Label><Select value={options.maitreOuvrageOptions.find(o => o.value === filters.maitreOuvrage) || null} options={options.maitreOuvrageOptions} isClearable onChange={(opt) => handleSelectChange(columns.maitreOuvrage, opt)} styles={selectStyles} isLoading={optionsLoading} menuPortalTarget={document.body} /></Form.Group></Col>
                     <Col xs={12}><Form.Group><Form.Label className="mb-1 fw-bold">M.O. Délégué</Form.Label><Select value={options.maitreOuvrageDelegueOptions.find(o => o.value === filters.maitreOuvrageDelegue) || null} options={options.maitreOuvrageDelegueOptions} isClearable onChange={(opt) => handleSelectChange(columns.maitreOuvrageDelegue, opt)} styles={selectStyles} isLoading={optionsLoading} menuPortalTarget={document.body} /></Form.Group></Col>
+                    <Col xs={12}>
+    <Form.Group>
+        <Form.Label className="mb-1 fw-bold">Secteur</Form.Label>
+        <Select
+            value={options.secteurOptions.find(o => o.value === filters.secteur) || null}
+            options={options.secteurOptions}
+            isClearable
+            onChange={(opt) => handleSelectChange(columns.secteur, opt)}
+            styles={selectStyles}
+            isLoading={optionsLoading}
+            menuPortalTarget={document.body}
+        />
+    </Form.Group>
+</Col>
                     <Col xs={12}><Form.Group><Form.Label className="mb-1 fw-bold"><FontAwesomeIcon icon={faMapMarkerAlt} className="me-1"/> Provinces</Form.Label><Select value={options.provinceOptions.filter(o => filters.province.includes(o.value))} options={options.provinceOptions} isMulti isClearable closeMenuOnSelect={false} onChange={(opts) => handleSelectChange(columns.province, opts, true)} styles={selectStyles} isLoading={optionsLoading} menuPortalTarget={document.body} /></Form.Group></Col>
                     <Col xs={12}><Form.Group><Form.Label className="mb-1 fw-bold"><FontAwesomeIcon icon={faMapMarkerAlt} className="me-1"/> Communes</Form.Label><Select value={options.communeOptions.filter(o => filters.commune.includes(o.value))} options={options.communeOptions} isMulti isClearable closeMenuOnSelect={false} onChange={(opts) => handleSelectChange(columns.commune, opts, true)} styles={selectStyles} isLoading={optionsLoading} menuPortalTarget={document.body} /></Form.Group></Col>
                     <Col xs={12}><Form.Group><Form.Label className="mb-1 fw-bold"><FontAwesomeIcon icon={faBuilding} className="me-1"/> Partenaires Engagés</Form.Label><Select value={options.partenaireOptions.filter(o => filters.partenaire.includes(o.value))} options={options.partenaireOptions} isMulti isClearable closeMenuOnSelect={false} onChange={(opts) => handleSelectChange(columns.partenaire, opts, true)} styles={selectStyles} isLoading={optionsLoading} menuPortalTarget={document.body} /></Form.Group></Col>
@@ -194,6 +211,7 @@ const ProjetsPage = () => {
         provinceOptions: [],
         communeOptions: [],
         fonctionnaireOptions: [],
+            secteurOptions: [], // --- ADD THIS LINE ---
         partenaireOptions: [],
     });
     const [optionsLoading, setOptionsLoading] = useState(true);
@@ -209,6 +227,7 @@ const ProjetsPage = () => {
                     axios.get(`${BASE_API_URL}/options/provinces`),
                     axios.get(`${BASE_API_URL}/options/communes`),
                     axios.get(`${BASE_API_URL}/options/fonctionnaires`),
+                        axios.get(`${BASE_API_URL}/options/secteurs`), // --- ADD THIS LINE ---
                     axios.get(`${BASE_API_URL}/options/partenaires`),
                 ]);
 
@@ -221,7 +240,9 @@ const ProjetsPage = () => {
                     provinceOptions: getOptions(responses[3]),
                     communeOptions: getOptions(responses[4]),
                     fonctionnaireOptions: (responses[5].status === 'fulfilled' ? responses[5].value.data.fonctionnaires : []).map(f => ({ value: f.id, label: f.nom_complet })),
-                    partenaireOptions: getOptions(responses[6]),
+                     secteurOptions: getOptions(responses[6]).map(s => ({ value: s.id, label: s.description_fr })), 
+                    partenaireOptions: getOptions(responses[7]),
+
                 });
             } catch (error) {
                 console.error("Error fetching comprehensive filter options:", error);
@@ -259,8 +280,27 @@ const ProjetsPage = () => {
             meta: { enableGlobalFilter: true }
         },
         
-        // --- Invisible columns dedicated to SIDEBAR FILTERING ---
-        // These are not shown in the table. They hold the raw data for the filter functions.
+    // --- ADD THIS ENTIRE COLUMN DEFINITION ---
+    // --- START: REPLACE THE PREVIOUS SECTEUR COLUMNS WITH THESE TWO ---
+
+    // Column for DISPLAY and SIDEBAR FILTERING
+    {
+        id: 'secteur_filter', // The main ID used by the filter component
+        header: 'Secteur',
+        accessorFn: row => row.secteur?.id, // Filter is based on the ID
+        cell: info => info.row.original.secteur?.description_fr || '-', // Display shows the name
+        filterFn: 'equalsString',
+        meta: { enableGlobalFilter: false } // Global search is DISABLED here
+    },
+
+    // NEW INVISIBLE column just for GLOBAL SEARCH (CORRECTED)
+    {
+        id: 'secteur',
+        accessorFn: row => row.secteur?.description_fr || '', // CORRECTED: Access property directly on the object
+        meta: { enableGlobalFilter: true } // Global search is ENABLED here
+    },
+    
+  
         { 
             id: 'provinces_filter', 
             accessorFn: row => row.provinces, // Returns array of objects
@@ -326,6 +366,8 @@ const ProjetsPage = () => {
     const availableCols = useMemo(() => [
         'Code_Projet',
         'Nom_Projet',
+            'secteur', // --- ADD THIS LINE ---
+
         'Programme_Description',
         'maitre_ouvrage',
         'provinces_display', // Use the display column ID

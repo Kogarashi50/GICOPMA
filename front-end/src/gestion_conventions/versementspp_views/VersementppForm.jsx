@@ -13,6 +13,19 @@ import {
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 // --- Styles & Classes --- (Preserved)
 const selectStyles = { control: (provided, state) => ({ ...provided, backgroundColor: '#f8f9fa', borderRadius: '1.5rem', border: state.isFocused ? '1px solid #86b7fe' : '1px solid #ced4da', boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13, 110, 253, 0.25)' : 'none', minHeight: '38px', }), valueContainer: (provided) => ({ ...provided, padding: '0.25rem 0.8rem', }), input: (provided) => ({ ...provided, margin: '0px', padding: '0px', }), indicatorSeparator: () => ({ display: 'none', }), indicatorsContainer: (provided) => ({ ...provided, padding: '1px', }), placeholder: (provided) => ({ ...provided, color: '#6c757d', }), menu: (provided) => ({ ...provided, borderRadius: '0.5rem', boxShadow: '0 0.5rem 1rem rgba(0, 0, 0, 0.15)', zIndex: 1050 }), option: (provided, state) => ({ ...provided, backgroundColor: state.isSelected ? '#0d6efd' : state.isFocused ? '#e9ecef' : null, color: state.isSelected ? 'white' : 'black', }), };
 const FORM_CONTAINER_CLASS = "p-3 p-md-4 versement-form-container";
@@ -312,11 +325,11 @@ const VersementPPForm = ({
                     <h5 className="mb-3 mt-4 fw-semibold text-warning border-bottom pb-2">Détails du Versement</h5>
                      <Row className="mb-1 g-3">
                          {/* Date Versement (Unchanged JSX) */}
-                         <Form.Group as={Col} md={6} controlId="formDateVersement"><Form.Label className="small mb-1 fw-medium">Date Versement <span className="text-danger">*</span></Form.Label><Form.Control className={FORM_CONTROL_CLASS} isInvalid={!!formErrors.date_versement} required type="date" name="date_versement" value={formData.date_versement} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.date_versement}</Form.Control.Feedback></Form.Group>
+                         <Form.Group as={Col} md={6} controlId="formDateVersement"><Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Date Versement", "تاريخ الدفع", true)}</Form.Label><Form.Control className={FORM_CONTROL_CLASS} isInvalid={!!formErrors.date_versement} required type="date" name="date_versement" value={formData.date_versement} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.date_versement}</Form.Control.Feedback></Form.Group>
 
                          {/* Montant Versé (Updated Helper Text Condition) */}
                          <Form.Group as={Col} md={6} controlId="formMontantVerse">
-                             <Form.Label className="small mb-1 fw-medium">Montant Versé (MAD) <span className="text-danger">*</span></Form.Label>
+                             <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Montant Versé (MAD)", "المبلغ المدفوع (درهم)", true)}</Form.Label>
                              <Form.Control
                                 className={FORM_CONTROL_CLASS}
                                 isInvalid={!!formErrors.montant_verse}

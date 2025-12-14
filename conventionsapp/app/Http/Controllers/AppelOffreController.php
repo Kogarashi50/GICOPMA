@@ -36,6 +36,7 @@ class AppelOffreController extends Controller
     {
         try {
             $query = AppelOffre::orderBy('created_at', 'desc'); // Consider ordering by 'numero' or 'intitule'
+            $query = AppelOffre::with('fichiers.categorie')->orderBy('created_at', 'desc');
 
             if ($request->has('province') && !empty($request->query('province'))) {
                 $provinceFilter = $request->query('province');
@@ -177,8 +178,7 @@ foreach ($request->file('files', []) as $key => $file) {
                         FichierJoint::create([
                             'appel_offre_id' => $appelOffre->id,
                             'intitule' => $request->input("intitule_file.{$key}",  $file->getClientOriginalName()),
-                            'categorie' => $request->input("categorie_file.{$key}", 'autre'),
-                            'nom_fichier' => $file->getClientOriginalName(),
+'fichier_categorie_id' => $request->input("categorie_file_id.{$key}"),                            'nom_fichier' => $file->getClientOriginalName(),
                             'chemin_fichier' => $path,
                             'type_fichier' => $file->getClientMimeType(),
                         ]);
@@ -209,8 +209,8 @@ foreach ($request->file('files', []) as $key => $file) {
     public function show(string $id): JsonResponse
     {
         try {
-            $appelOffre = AppelOffre::with('fichiers')->findOrFail($id);
-            
+            $appelOffre = AppelOffre::with('fichiers.categorie')->findOrFail($id);
+
             // Générer les URLs publiques pour les fichiers
             $appelOffre->fichiers->each(function ($fichier) {
                 $fichier->url = $fichier->chemin_fichier ? Storage::disk('public')->url($fichier->chemin_fichier) : null;
@@ -311,8 +311,8 @@ foreach ($request->file('files', []) as $key => $file) {
                         FichierJoint::create([
                             'appel_offre_id' => $appelOffre->id,
                             'intitule' => $request->input("intitule_file.{$key}", $file->getClientOriginalName()),
-                            'categorie' => $request->input("categorie_file.{$key}", 'autre'),
-                            'nom_fichier' => $file->getClientOriginalName(),
+'fichier_categorie_id' => $request->input("categorie_file_id.{$key}"),    
+                           'nom_fichier' => $file->getClientOriginalName(),
                             'chemin_fichier' => $path,
                             'type_fichier' => $file->getClientMimeType(),
                         ]);

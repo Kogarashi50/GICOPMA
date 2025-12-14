@@ -8,7 +8,8 @@ import {
   faFilePdf, faFileWord, faFileImage, faFileExcel, faFileAlt, faCommentDots,
   faPiggyBank, faHandHoldingUsd, faTasks, faUserTie, faBuilding, faChevronDown, faChevronUp,
   faMapMarkerAlt, faProjectDiagram, faClipboardList, faInfoCircle, faGift, faSitemap,
-  faHandshake, faTools,faGavel
+  faHandshake, faTools,faGavel,
+faMapPin, faClock, faClipboardCheck
 } from "@fortawesome/free-solid-svg-icons"
 import Button from "react-bootstrap/Button"
 import Card from "react-bootstrap/Card"
@@ -73,6 +74,7 @@ const ConventionVisualisation = ({ itemId, onClose, baseApiUrl = "http://localho
   const [error, setError] = useState(null)
   const [provincesList, setProvincesList] = useState([])
   const [fonctionnairesList, setFonctionnairesList] = useState([])
+  const [communesList, setCommunesList] = useState([]); // --- ADD THIS LINE ---
   const [openPartnerId, setOpenPartnerId] = useState(null);
     const [maitresOuvrageList, setMaitresOuvrageList] = useState([]); // <-- ADD THIS
   const [maitresOuvrageDeleguesList, setMaitresOuvrageDeleguesList] = useState([]); 
@@ -138,6 +140,8 @@ const ConventionVisualisation = ({ itemId, onClose, baseApiUrl = "http://localho
           axios.get(`${baseApiUrl}/options/fonctionnaires`, { withCredentials: true }),
           axios.get(`${baseApiUrl}/options/maitre-ouvrage`, { withCredentials: true }),
           axios.get(`${baseApiUrl}/options/maitre-ouvrage-delegue`, { withCredentials: true }),
+          axios.get(`${baseApiUrl}/options/communes`, { withCredentials: true }), // --- ADD THIS LINE ---
+
         ])
 const getArray = (res) => (Array.isArray(res?.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []));
         if (auxiliaryFetches[0].status === "fulfilled") {
@@ -154,6 +158,19 @@ const getArray = (res) => (Array.isArray(res?.data) ? res.data : (Array.isArray(
         } else {
           console.warn("VISU CONV: Could not fetch provinces list:", auxiliaryFetches[0].reason?.message)
         }
+        if (auxiliaryFetches[4].status === "fulfilled") {
+    const communesRes = auxiliaryFetches[4].value;
+    const comDataPayload = communesRes.data.communes || communesRes.data.data || communesRes.data;
+    const comDataArray = Array.isArray(comDataPayload) ? comDataPayload : [];
+    setCommunesList(
+        comDataArray.map((c) => ({
+            value: c.Id || c.id || c.value,
+            label: c.Description || c.Nom || c.label || `ID: ${c.Id || c.id}`,
+        }))
+    );
+} else {
+    console.warn("VISU CONV: Could not fetch communes list:", auxiliaryFetches[4].reason?.message);
+}
         if (auxiliaryFetches[1].status === "fulfilled") {
           const foncRes = auxiliaryFetches[1].value
           const foncDataPayload = foncRes.data.fonctionnaires
@@ -231,7 +248,28 @@ const getPrincipalNameById = useCallback((id, list) => {
     },
     [provincesList],
   )
+const getCommuneNames = useCallback(
+(communesArray) => {
+if (!communesArray || !Array.isArray(communesArray) || communesArray.length === 0 || communesList.length === 0) {
+return displayData(null);
+}
+return (
+<Stack direction="horizontal" gap={1} wrap="wrap">
+{communesArray.map((commune) => {
 
+const communeDetails = communesList.find((c) => String(c.value) === String(commune.Id));
+return (
+<Badge key={commune.Id} pill bg="secondary" text="white" className="border me-1 mb-1">
+<FontAwesomeIcon icon={faMapPin} className="me-1" />
+{communeDetails?.label || communeDetails?.Description ||`ID ${commune.Id}`}
+</Badge>
+);
+})}
+</Stack>
+);
+},
+[communesList]
+);
   const getFonctionnaireNames = useCallback(
     (fonctionnaireIdString) => {
       if (!fonctionnaireIdString || typeof fonctionnaireIdString !== "string") return displayData(null, "Aucun ID")
@@ -276,7 +314,6 @@ const getPrincipalNameById = useCallback((id, list) => {
           return acc;
       }, {});
   }, [conventionData]);
-console.log(conventionData?.maitres_ouvrage)
 
   const globalFinancialSummary = useMemo(() => {
     if (!conventionData)
@@ -463,7 +500,6 @@ console.log(conventionData?.maitres_ouvrage)
       </Row>
 
       <Row className="g-4 mb-4">
-        <Col>
           <Card className="h-100 border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
             <Card.Header className="bg-gradient-yellow">
               <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
@@ -478,18 +514,17 @@ console.log(conventionData?.maitres_ouvrage)
                   {displayData(conventionData.type).toUpperCase()}
                 </Badge>
               </div>
-
-              {conventionData.type === "cadre" && (
-                <div className="text-center p-3 rounded-3 bg-light-yellow border border-warning">
+<Row>
+              {["cadre","convention"].includes(conventionData.type) && (
+                <Col className="text-center p-3 rounded-3 bg-light-yellow border border-warning">
                   <FontAwesomeIcon icon={faClipboardList} className="text-warning fa-2x mb-2" />
                   <h6 className="fw-bold text-dark mb-1">Programme Associé</h6>
                   <p className="mb-0 fw-medium text-dark">{displayData(conventionData.programme?.Description)}</p>
-                </div>
+                </Col>
               )}
-
               {conventionData.type === "specifique" && (
-                <Row>
-                    <Col md={6} className="mb-3 mb-md-0">
+                
+                    <Col  className="mb-3 mb-md-0">
                         <div className="h-100 text-center p-3 rounded-3 bg-light-yellow border border-warning">
                             <FontAwesomeIcon icon={faSitemap} className="text-warning fa-2x mb-2" />
                             <h6 className="fw-bold text-dark mb-1">Rattachée à la Convention Cadre</h6>
@@ -497,18 +532,19 @@ console.log(conventionData?.maitres_ouvrage)
                             <small className="text-muted">{displayData(conventionData.convention_cadre?.intitule, '')}</small>
                         </div>
                     </Col>
-                    <Col md={6}>
+              )}
+              {["specifique","convention"].includes(conventionData.type) &&(
+                    <Col>
                         <div className="h-100 text-center p-3 rounded-3 bg-light-yellow border border-warning">
                             <FontAwesomeIcon icon={faProjectDiagram} className="text-warning fa-2x mb-2" />
                             <h6 className="fw-bold text-dark mb-1">Projet Associé</h6>
                             <p className="mb-0 fw-medium text-dark">{displayData(conventionData.projet?.Nom_Projet)}</p>
                         </div>
-                    </Col>
-                </Row>
-              )}
+                    </Col>)}
+            </Row>
             </Card.Body>
+            
           </Card>
-        </Col>
       </Row>
 
       {conventionData.type === 'cadre' && conventionData.conventions_specifiques && conventionData.conventions_specifiques.length > 0 && (
@@ -552,7 +588,7 @@ console.log(conventionData?.maitres_ouvrage)
       )}
 
       <Row className="g-4 mb-4">
-        <Col lg={6}>
+        <Col lg={4}>
           <Card className="h-100 border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
             <Card.Header className="bg-gradient-yellow">
               <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
@@ -566,7 +602,8 @@ console.log(conventionData?.maitres_ouvrage)
 
               <h6 className="fw-bold mb-2 text-dark">Objectifs</h6>
               <p className="mb-3 text-muted" style={{ lineHeight: "1.6" }}>{displayData(conventionData.Objectifs)}</p>
-
+<h6 className="fw-bold mb-2 text-dark">Indicateur d’évaluation / de suivi</h6>
+<p className="mb-3 text-muted" style={{ lineHeight: "1.6" }}>{displayData(conventionData.indicateur_suivi)}</p>
               <div className="border-top pt-3">
                 <h6 className="fw-bold mb-2 text-dark">Observations</h6>
                 <div className="p-2 rounded-3 bg-light-yellow">
@@ -576,7 +613,38 @@ console.log(conventionData?.maitres_ouvrage)
             </Card.Body>
           </Card>
         </Col>
-        <Col lg={6}>
+        <Col lg={4}>
+      <Card className="h-100 border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #6c757d" }}>
+          <Card.Header className="bg-gradient-secondary">
+              <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
+                  <FontAwesomeIcon icon={faClipboardCheck} className="me-2 text-secondary" />
+                  DÉTAILS ADDITIONNELS
+              </Card.Title>
+          </Card.Header>
+          <Card.Body className="pt-3" style={{ backgroundColor: "#fefefe" }}>
+              <dl className="row mb-0 dl-compact">
+                  <dt className="col-sm-4 text-muted fw-semibold">
+                      <FontAwesomeIcon icon={faClock} className="me-2"/>
+                      Cadence de Réunion:
+                  </dt>
+                  <dd className="col-sm-8 text-dark">{displayData(conventionData.cadence_reunion)}</dd>
+                  
+                  {conventionData.has_audit && (
+                      <>
+                          <dt className="col-sm-12 mt-3 text-muted fw-semibold border-top pt-3">
+                              <FontAwesomeIcon icon={faClipboardCheck} className="me-2"/>
+                              Suivi par Audit:
+                          </dt>
+                          <dd className="col-sm-12 text-dark fst-italic bg-light p-2 rounded">
+                              {displayData(conventionData.audit_text)}
+                          </dd>
+                      </>
+                  )}
+              </dl>
+          </Card.Body>
+      </Card>
+  </Col>
+        <Col lg={4}>
           <Card className="h-100 border-0 shadow-sm card-visual" style={{ borderLeft: "4px solid #ffc107" }}>
             <Card.Header className="bg-gradient-yellow">
               <Card.Title as="h6" className="mb-0 fw-bold text-dark d-flex align-items-center">
@@ -589,6 +657,10 @@ console.log(conventionData?.maitres_ouvrage)
                 <h6 className="fw-bold mb-3 text-dark">Localisation</h6>
                 <div>{getProvinceNames(conventionData.localisation)}</div>
               </div>
+              <div className="mb-4">
+      <h6 className="fw-bold mb-3 text-dark">Communes</h6>
+      <div>{getCommuneNames(conventionData.communes)}</div>
+  </div>
               <div className="border-top pt-3">
                 <h6 className="fw-bold mb-3 text-dark">Points Focaux</h6>
                 <div>{getFonctionnaireNames(conventionData.id_fonctionnaire)}</div>
@@ -777,20 +849,54 @@ console.log(conventionData?.maitres_ouvrage)
                               Engagement: {engagement.engagement_type_label || 'Non défini'}
                             </div>
 
-                            {engagement.engagement_type_label === 'Financier' ? (
-                                <div className="ps-3">
-                                    <Row>
-                                        <Col xs={6} className="text-muted">Montant Convenu:</Col>
-                                        <Col xs={6} className="fw-bold text-dark text-end">{formatCurrency(engagement.Montant_Convenu)}</Col>
-                                    </Row>
-                                    <Row>
-                                        <Col xs={6} className="text-muted">Montant Versé:</Col>
-                                        <Col xs={6} className="text-success fw-bold text-end">{formatCurrency(engagement.Montant_Verse)}</Col>
-                                    </Row>
-                                </div>
-                            ) : (
-                                <p className="fst-italic text-dark ps-3">{displayData(engagement.autre_engagement)}</p>
-                            )}
+{/* --- REPLACE THE ENTIRE LOGIC BLOCK WITH THIS --- */}
+{engagement.engagement_type_label === 'Financier' ? (
+    <div className="ps-3">
+        <Row>
+            <Col xs={6} className="text-muted">Montant Convenu:</Col>
+            <Col xs={6} className="fw-bold text-dark text-end">{formatCurrency(engagement.Montant_Convenu)}</Col>
+        </Row>
+        {/* --- DÉBUT DU BLOC À AJOUTER --- */}
+{(() => {
+    const coutGlobalNum = parseFloat(conventionData.Cout_Global) || 0;
+    const montantConvenuNum = parseFloat(engagement.Montant_Convenu) || 0;
+
+    if (coutGlobalNum > 0 && montantConvenuNum > 0) {
+        const rate = (montantConvenuNum / coutGlobalNum) * 100;
+        return (
+            <Row>
+                <Col xs={6} className="text-muted fst-italic">Taux participation :</Col>
+                <Col xs={6} className="fw-bold text-info text-end">
+                    {rate.toFixed(2)}%
+                </Col>
+            </Row>
+        );
+    }
+    return null;
+})()}
+        <Row>
+            <Col xs={6} className="text-muted">Montant Versé:</Col>
+            <Col xs={6} className="text-success fw-bold text-end">{formatCurrency(engagement.Montant_Verse)}</Col>
+        </Row>
+
+        {/* --- START: New Yearly Breakdown Display --- */}
+        {Array.isArray(engagement.engagements_annuels) && engagement.engagements_annuels.length > 0 && (
+            <div className="mt-2 pt-2 border-top">
+                <h6 className="small text-muted fw-bold">Décomposition Annuelle Prévue:</h6>
+                {engagement.engagements_annuels.map(yearly => (
+                    <Row key={yearly.id} className="ps-2">
+                        <Col xs={6} className="text-muted small">{yearly.annee}:</Col>
+                        <Col xs={6} className="text-dark text-end small">{formatCurrency(yearly.montant_prevu)}</Col>
+                    </Row>
+                ))}
+            </div>
+        )}
+        {/* --- END: New Yearly Breakdown Display --- */}
+
+    </div>
+) : (
+    <p className="fst-italic text-dark ps-3">{displayData(engagement.autre_engagement)}</p>
+)}
 
                             {engagement.engagement_description && (
                                 <div className="mt-2 p-2 bg-light rounded border-start border-3 border-secondary">

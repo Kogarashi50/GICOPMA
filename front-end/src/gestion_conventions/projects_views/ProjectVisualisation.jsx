@@ -215,6 +215,12 @@ console.log(partnerSummary)
                 <dt className="col-sm-5 text-muted">Maitre d'ouvrage:</dt><dd className="col-sm-7">{displayData(projetData.maitre_ouvrage)}</dd>
                 <dt className="col-sm-5 text-muted">M.O. Délégué:</dt><dd className="col-sm-7">{displayData(projetData.maitre_ouvrage_delegue)}</dd>
                 <dt className="col-sm-5 text-muted">Programme:</dt><dd className="col-sm-7" title={projetData.programme?.Description}>{displayData(projetData.programme?.Description)}</dd>
+                <dt className="col-sm-5 text-muted">Secteur:</dt>
+<dd className="col-sm-7">
+    <Badge bg="info" text="dark">
+        {displayData(projetData.secteur?.description_fr)}
+    </Badge>
+</dd>
               </dl>
             </Card.Body>
           </Card>

@@ -8,6 +8,19 @@ import { Form, Button, Row, Col, Alert, Spinner } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import '../components/form.css' // Assuming shared form styles
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 // Styles for react-select (can be shared or defined here)
 const selectStyles = {
     control: (provided, state) => ({
@@ -258,7 +271,7 @@ const ChantierForm = ({
                 <Form noValidate onSubmit={handleSubmit}>
                     <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={6} controlId="formCodeChantier">
-                            <Form.Label className="small mb-1 fw-medium">Code Chantier <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Code Chantier", "رمز الورشة", true)}</Form.Label>
                             <Form.Control
                                 className="p-2 mt-1 mb-3 rounded-pill shadow-sm bg-light "
                                 isInvalid={!!formErrors.Code_Chantier}
@@ -273,7 +286,7 @@ const ChantierForm = ({
                         </Form.Group>
 
                         <Form.Group as={Col} md={6} controlId="formDomaine">
-                            <Form.Label className="small mb-1 fw-medium">Domaine <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Domaine", "المحور الاستراتيجي", true)}</Form.Label>
                             <Select
                                 name="Domaine"
                                 menuPlacement="auto"
@@ -294,7 +307,7 @@ const ChantierForm = ({
 
                     <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={12} controlId="formDescription">
-                            <Form.Label className="small mb-1 fw-medium">Description <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Description", "الوصف", true)}</Form.Label>
                             <Form.Control
                                 className="p-2 mt-1 mb-3 rounded-5 shadow-sm bg-light" // Standard rounded, not pill for textarea
                                 style={{ borderRadius: '1.5rem'}} // Custom radius if needed

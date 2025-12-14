@@ -8,6 +8,19 @@ import { faSpinner, faExclamationTriangle, faUsers } from '@fortawesome/free-sol
 import Select from 'react-select';
 import { Form, Button, Row, Col, Alert, Spinner } from 'react-bootstrap';
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 // --- Styles & Classes ---
 const selectStyles = {
     control: (provided, state) => ({ ...provided, backgroundColor: '#f8f9fa', borderRadius: '1.5rem', border: state.selectProps.className?.includes('is-invalid') ? '#dc3545' : (state.isFocused ? '1px solid #86b7fe' : '1px solid #ced4da'), boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13, 110, 253, 0.25)' : 'none', minHeight: '38px', fontSize: '0.875rem', }),
@@ -75,6 +88,68 @@ const SousProjetForm = ({
     const [formErrors, setFormErrors] = useState({});
     const [loadingData, setLoadingData] = useState(isEditing);
 
+    // State to track filtered commune options based on selected provinces
+    const [filteredCommuneOptions, setFilteredCommuneOptions] = useState([]);
+    const [loadingCommunes, setLoadingCommunes] = useState(false);
+
+    // Effect to filter communes based on selected provinces
+    useEffect(() => {
+        const fetchFilteredCommunes = async () => {
+            if (!formData.province || formData.province.length === 0) {
+                // If no provinces selected, show all communes or empty
+                setFilteredCommuneOptions(communeOptions);
+                // Also reset communes if provinces are cleared
+                if (formData.commune && formData.commune.length > 0) {
+                    setFormData(prev => ({ ...prev, commune: [] }));
+                }
+                return;
+            }
+
+            setLoadingCommunes(true);
+            try {
+                // Fetch communes for all selected provinces
+                const provinceIds = formData.province.map(p => p.value);
+                const communePromises = provinceIds.map(provinceId =>
+                    axios.get(`${baseApiUrl}/options/communes/province/${provinceId}`, { withCredentials: true })
+                        .then(res => res.data)
+                        .catch(() => [])
+                );
+
+                const communeArrays = await Promise.all(communePromises);
+                // Flatten and deduplicate communes
+                const allCommunes = communeArrays.flat();
+                const uniqueCommunes = Array.from(
+                    new Map(allCommunes.map(c => [c.value, c])).values()
+                );
+
+                setFilteredCommuneOptions(uniqueCommunes);
+
+                // Filter current communes to only keep those in the new filtered list
+                if (formData.commune && formData.commune.length > 0) {
+                    const validCommuneValues = new Set(uniqueCommunes.map(c => c.value));
+                    const filteredCommunes = formData.commune.filter(c => validCommuneValues.has(c.value));
+                    if (filteredCommunes.length !== formData.commune.length) {
+                        setFormData(prev => ({ ...prev, commune: filteredCommunes }));
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching filtered communes:', error);
+                setFilteredCommuneOptions([]);
+            } finally {
+                setLoadingCommunes(false);
+            }
+        };
+
+        fetchFilteredCommunes();
+    }, [formData.province, baseApiUrl, communeOptions]);
+
+    // Initialize filtered communes when communeOptions are loaded
+    useEffect(() => {
+        if (communeOptions.length > 0 && (!formData.province || formData.province.length === 0)) {
+            setFilteredCommuneOptions(communeOptions);
+        }
+    }, [communeOptions]);
+
     // --- Data Fetching ---
     const fetchOptions = useCallback(async () => {
         setLoadingOptions({ projets: true, provinces: true, communes: true, fonctionnaires: true });
@@ -87,10 +162,10 @@ const SousProjetForm = ({
             ]);
 
             const extractData = (res) => {
-                 if (res.status === 'fulfilled' && res.value.data) {
-                     return Array.isArray(res.value.data) ? res.value.data : (res.value.data.data || Object.values(res.value.data)[0] || []);
-                 }
-                 return [];
+                if (res.status === 'fulfilled' && res.value.data) {
+                    return Array.isArray(res.value.data) ? res.value.data : (res.value.data.data || Object.values(res.value.data)[0] || []);
+                }
+                return [];
             };
 
             const rawProjetOptions = extractData(projRes);
@@ -99,11 +174,11 @@ const SousProjetForm = ({
                 return { ...opt, code: code };
             });
             setProjetOptions(enrichedProjetOptions);
-             const rawFonctionnaires = extractData(foncRes, 'fonctionnaires');
+            const rawFonctionnaires = extractData(foncRes, 'fonctionnaires');
             const formattedFonctionnaires = rawFonctionnaires.map(user => ({
                 value: user.id,       // Use 'id' as the value
                 label: user.nom_complet // Use 'nom_complet' as the label
-            }));   
+            }));
             setProvinceOptions(extractData(provRes));
             setCommuneOptions(extractData(comRes));
             setFonctionnaireOptions(formattedFonctionnaires);
@@ -236,7 +311,9 @@ const SousProjetForm = ({
     };
 
     const provinceGroupedOptions = useMemo(() => buildGroupedOptions(provinceOptions, parentProjetDetails.provinces), [provinceOptions, parentProjetDetails.provinces, formData.projetMaitre]);
-    const communeGroupedOptions = useMemo(() => buildGroupedOptions(communeOptions, parentProjetDetails.communes), [communeOptions, parentProjetDetails.communes, formData.projetMaitre]);
+    // Use filtered communes for grouping, fallback to all communes if no filter applied
+    const communesToGroup = filteredCommuneOptions.length > 0 ? filteredCommuneOptions : communeOptions;
+    const communeGroupedOptions = useMemo(() => buildGroupedOptions(communesToGroup, parentProjetDetails.communes), [communesToGroup, parentProjetDetails.communes, formData.projetMaitre]);
 
     // --- Validation ---
     const validateForm = () => {
@@ -268,22 +345,25 @@ const SousProjetForm = ({
 
     // --- SIMPLIFIED Handlers ---
     const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); if (formErrors[name]) { setFormErrors(prev => ({ ...prev, [name]: undefined })); } };
-    
+
     const handleProjetMaitreChange = (selectedOption) => {
         setFormData(prev => ({ ...prev, projetMaitre: selectedOption, province: [], commune: [] }));
         if (formErrors.ID_Projet_Maitre) setFormErrors(prev => ({ ...prev, ID_Projet_Maitre: undefined }));
     };
 
+
+
     const handleProvinceChange = (selectedOptions) => {
         setFormData(prev => ({ ...prev, province: selectedOptions || [] }));
         if (formErrors.Id_Province) setFormErrors(prev => ({ ...prev, Id_Province: undefined }));
+        // Communes will be filtered automatically by the useEffect above
     };
 
     const handleCommuneChange = (selectedOptions) => {
         setFormData(prev => ({ ...prev, commune: selectedOptions || [] }));
         if (formErrors.Id_Commune) setFormErrors(prev => ({ ...prev, Id_Commune: undefined }));
     };
-    
+
     const handleFonctionnaireChange = useCallback((selectedOptions) => { setFormData(prev => ({ ...prev, fonctionnaires: selectedOptions || [] })); }, []);
 
     // --- Submit Handler ---
@@ -301,20 +381,20 @@ const SousProjetForm = ({
                 dataToSubmit.append(key, value ?? '');
             }
         });
-        
+
         if (formData.projetMaitre?.code) dataToSubmit.append('ID_Projet_Maitre', formData.projetMaitre.code);
-        
+
         // Handle multiple provinces
         if (formData.province && Array.isArray(formData.province) && formData.province.length > 0) {
-            formData.province.forEach((province, index) => {
-                dataToSubmit.append(`Id_Province[${index}]`, province.value);
+            formData.province.forEach((province) => {
+                dataToSubmit.append(`Id_Province[]`, province.value);
             });
         }
-        
+
         // Handle multiple communes
         if (formData.commune && Array.isArray(formData.commune) && formData.commune.length > 0) {
-            formData.commune.forEach((commune, index) => {
-                dataToSubmit.append(`Id_Commune[${index}]`, commune.value);
+            formData.commune.forEach((commune) => {
+                dataToSubmit.append(`Id_Commune[]`, commune.value);
             });
         }
         dataToSubmit.append('id_fonctionnaire', formData.fonctionnaires.map(f => f.value).join(';') || '');
@@ -324,7 +404,7 @@ const SousProjetForm = ({
         const url = isEditing ? `${baseApiUrl}/sousprojets/${itemId}` : `${baseApiUrl}/sousprojets`;
 
         try {
-            const response = await axios.post(url, dataToSubmit, { withCredentials: true, headers: { 'Accept': 'application/json' }});
+            const response = await axios.post(url, dataToSubmit, { withCredentials: true, headers: { 'Accept': 'application/json' } });
             setSubmissionStatus({ loading: false, error: null, success: true });
             const submittedData = response.data.sousprojet || Object.fromEntries(dataToSubmit.entries());
             if (isEditing) onItemUpdated?.(submittedData);
@@ -343,7 +423,7 @@ const SousProjetForm = ({
     const isSubmitDisabled = submissionStatus.loading || loadingData || anyOptionsLoading || loadingParentDetails;
 
     if (isEditing && loadingData) { return (<div className="d-flex justify-content-center align-items-center p-5" style={{ minHeight: '300px' }}> <Spinner animation="border" variant="primary" /> <span className='ms-3 text-muted'>Chargement...</span> </div>); }
-    if (anyOptionsLoading && !loadingData) { return (<div className={FORM_CONTAINER_CLASS} style={{ minHeight: '400px', display:'flex', justifyContent: 'center', alignItems: 'center' }}><Spinner animation="border" variant="secondary" /><span className='ms-3 text-muted'>Chargement des listes...</span></div>); }
+    if (anyOptionsLoading && !loadingData) { return (<div className={FORM_CONTAINER_CLASS} style={{ minHeight: '400px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}><Spinner animation="border" variant="secondary" /><span className='ms-3 text-muted'>Chargement des listes...</span></div>); }
 
     return (
         <div className={FORM_CONTAINER_CLASS} style={{ backgroundColor: '#fff', borderRadius: '20px', boxShadow: '0 6px 18px rgba(0,0,0,0.1)', maxHeight: 'calc(90vh - 100px)', overflowY: 'auto' }}>
@@ -354,16 +434,16 @@ const SousProjetForm = ({
 
             <div className="flex-grow-1 px-md-3">
                 {submissionStatus.error && (<Alert variant="danger" className="mb-3 py-2" dismissible onClose={() => setSubmissionStatus(prev => ({ ...prev, error: null }))}><FontAwesomeIcon icon={faExclamationTriangle} className="me-2" /> {submissionStatus.error}</Alert>)}
-                
+
                 <Form noValidate onSubmit={handleSubmit}>
                     <Row className="mb-3 g-3">
-                        <Form.Group as={Col} md={6} controlId="formCodeSousProjet"><Form.Label className="small mb-1 fw-medium">Code {!isEditing && <span className="text-danger">*</span>}</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Code_Sous_Projet} required={!isEditing} type="text" name="Code_Sous_Projet" value={formData.Code_Sous_Projet} onChange={handleChange} size="sm" disabled={isEditing} title={isEditing ? "Non modifiable" : ""}/><Form.Control.Feedback type="invalid">{formErrors.Code_Sous_Projet}</Form.Control.Feedback></Form.Group>
-                        <Form.Group as={Col} md={6} controlId="formNomProjet"><Form.Label className="small mb-1 fw-medium">Intitulé <span className="text-danger">*</span></Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Nom_Projet} required type="text" name="Nom_Projet" value={formData.Nom_Projet} onChange={handleChange} size="sm"/><Form.Control.Feedback type="invalid">{formErrors.Nom_Projet}</Form.Control.Feedback></Form.Group>
+                        <Form.Group as={Col} md={6} controlId="formCodeSousProjet"><Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Code", "الرمز", !isEditing)}</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Code_Sous_Projet} required={!isEditing} type="text" name="Code_Sous_Projet" value={formData.Code_Sous_Projet} onChange={handleChange} size="sm" disabled={isEditing} title={isEditing ? "Non modifiable" : ""} /><Form.Control.Feedback type="invalid">{formErrors.Code_Sous_Projet}</Form.Control.Feedback></Form.Group>
+                        <Form.Group as={Col} md={6} controlId="formNomProjet"><Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Intitulé", "العنوان", true)}</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Nom_Projet} required type="text" name="Nom_Projet" value={formData.Nom_Projet} onChange={handleChange} size="sm" /><Form.Control.Feedback type="invalid">{formErrors.Nom_Projet}</Form.Control.Feedback></Form.Group>
                     </Row>
                     <Row className="mb-3 g-3">
-                        <Form.Group as={Col} md={6} controlId="formProjetMaitre"><Form.Label className="small mb-1 fw-medium">Projet Maître <span className="text-danger">*</span></Form.Label><Select name="projetMaitre" options={projetOptions} value={formData.projetMaitre} onChange={handleProjetMaitreChange} styles={selectStyles} placeholder="- Sélectionner -" isClearable isLoading={loadingOptions.projets} isDisabled={loadingOptions.projets} className={formErrors.ID_Projet_Maitre ? 'is-invalid' : ''} menuPlacement="auto" menuPortalTarget={document.body}/>{formErrors.ID_Projet_Maitre && <div className="invalid-feedback d-block">{formErrors.ID_Projet_Maitre}</div>}</Form.Group>
+                        <Form.Group as={Col} md={6} controlId="formProjetMaitre"><Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Projet Maître", "المشروع الرئيسي", true)}</Form.Label><Select name="projetMaitre" options={projetOptions} value={formData.projetMaitre} onChange={handleProjetMaitreChange} styles={selectStyles} placeholder="- Sélectionner -" isClearable isLoading={loadingOptions.projets} isDisabled={loadingOptions.projets} className={formErrors.ID_Projet_Maitre ? 'is-invalid' : ''} menuPlacement="auto" menuPortalTarget={document.body} />{formErrors.ID_Projet_Maitre && <div className="invalid-feedback d-block">{formErrors.ID_Projet_Maitre}</div>}</Form.Group>
                         <Form.Group as={Col} md={6} controlId="formProvince">
-                            <Form.Label className="small mb-1 fw-medium">Province(s) <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Province(s)", "الأقاليم", true)}</Form.Label>
                             <Select
                                 name="province"
                                 options={provinceGroupedOptions}
@@ -385,46 +465,49 @@ const SousProjetForm = ({
                     </Row>
                     <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={6} controlId="formCommune">
-                            <Form.Label className="small mb-1 fw-medium">Commune(s)</Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Commune(s)", "الجماعات")}</Form.Label>
                             <Select
                                 name="commune"
                                 options={communeGroupedOptions}
                                 value={formData.commune}
                                 onChange={handleCommuneChange}
                                 styles={selectStyles}
-                                placeholder={!formData.projetMaitre ? "Sélectionnez d'abord un projet" : "- Sélectionner -"}
+                                placeholder={!formData.projetMaitre ? "Sélectionnez d'abord un projet" : (!formData.province || formData.province.length === 0 ? "Sélectionnez d'abord des provinces" : "- Sélectionner -")}
                                 isMulti
                                 isClearable
                                 closeMenuOnSelect={false}
-                                isLoading={loadingOptions.communes || loadingParentDetails}
-                                isDisabled={!formData.projetMaitre || loadingOptions.communes}
+                                isLoading={loadingCommunes || loadingOptions.communes || loadingParentDetails}
+                                isDisabled={!formData.projetMaitre || !formData.province || formData.province.length === 0 || loadingOptions.communes}
                                 className={formErrors.Id_Commune ? 'is-invalid' : ''}
                                 menuPlacement="auto"
                                 menuPortalTarget={document.body}
                             />
+                            {(!formData.province || formData.province.length === 0) && formData.projetMaitre && (
+                                <Form.Text className="text-muted">Veuillez d'abord sélectionner au moins une province</Form.Text>
+                            )}
                             {formErrors.Id_Commune && <div className="invalid-feedback d-block">{formErrors.Id_Commune}</div>}
                         </Form.Group>
-                        <Form.Group as={Col} md={6} controlId="formStatus"><Form.Label className="small mb-1 fw-medium">Statut</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Status} type="text" name="Status" value={formData.Status} onChange={handleChange} size="sm" placeholder="Ex: En cours"/><Form.Control.Feedback type="invalid">{formErrors.Status}</Form.Control.Feedback></Form.Group>
+                        <Form.Group as={Col} md={6} controlId="formStatus"><Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Statut", "الحالة")}</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Status} type="text" name="Status" value={formData.Status} onChange={handleChange} size="sm" placeholder="Ex: En cours" /><Form.Control.Feedback type="invalid">{formErrors.Status}</Form.Control.Feedback></Form.Group>
                     </Row>
                     <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={12} controlId="formFonctionnaire">
-                            <Form.Label className="small mb-1 fw-medium"><FontAwesomeIcon icon={faUsers} className="me-1 text-secondary"/> Points Focaux</Form.Label>
-                            <Select name="fonctionnaires" options={fonctionnaireOptions} value={formData.fonctionnaires} onChange={handleFonctionnaireChange} styles={selectStyles} placeholder="- Sélectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.fonctionnaires} isDisabled={loadingOptions.fonctionnaires} className={formErrors.id_fonctionnaire ? 'is-invalid' : ''} menuPlacement="auto" menuPortalTarget={document.body}/>
+                            <Form.Label className="small mb-1 fw-medium w-100"><FontAwesomeIcon icon={faUsers} className="me-1 text-secondary" /> {bilingualLabel("Points Focaux", "النقاط المحورية")}</Form.Label>
+                            <Select name="fonctionnaires" options={fonctionnaireOptions} value={formData.fonctionnaires} onChange={handleFonctionnaireChange} styles={selectStyles} placeholder="- Sélectionner -" isMulti isClearable closeMenuOnSelect={false} isLoading={loadingOptions.fonctionnaires} isDisabled={loadingOptions.fonctionnaires} className={formErrors.id_fonctionnaire ? 'is-invalid' : ''} menuPlacement="auto" menuPortalTarget={document.body} />
                             {formErrors.id_fonctionnaire && <div className="invalid-feedback d-block">{formErrors.id_fonctionnaire}</div>}
                         </Form.Group>
                     </Row>
                     <Row className="mb-3 g-3">
-                        <Form.Group as={Col} md={4} controlId="formEtatAvanPhysi"><Form.Label className="small mb-1 fw-medium">Av. Physi (%)</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Etat_Avan_Physi} type="number" name="Etat_Avan_Physi" value={formData.Etat_Avan_Physi} onChange={handleChange} size="sm" step="0.01" min="0" max="100" placeholder="0-100"/><Form.Control.Feedback type="invalid">{formErrors.Etat_Avan_Physi}</Form.Control.Feedback></Form.Group>
-                        <Form.Group as={Col} md={4} controlId="formEtatAvanFinan"><Form.Label className="small mb-1 fw-medium">Av. Finan (%)</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Etat_Avan_Finan} type="number" name="Etat_Avan_Finan" value={formData.Etat_Avan_Finan} onChange={handleChange} size="sm" step="0.01" min="0" max="100" placeholder="0-100"/><Form.Control.Feedback type="invalid">{formErrors.Etat_Avan_Finan}</Form.Control.Feedback></Form.Group>
-                        <Form.Group as={Col} md={4} controlId="formEstimIniti"><Form.Label className="small mb-1 fw-medium">Estim. Initiale</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Estim_Initi} type="number" name="Estim_Initi" value={formData.Estim_Initi} onChange={handleChange} size="sm" step="0.01" min="0" placeholder="Montant"/><Form.Control.Feedback type="invalid">{formErrors.Estim_Initi}</Form.Control.Feedback></Form.Group>
+                        <Form.Group as={Col} md={4} controlId="formEtatAvanPhysi"><Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Av. Physi (%)", "التقدم المادي (%)")}</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Etat_Avan_Physi} type="number" name="Etat_Avan_Physi" value={formData.Etat_Avan_Physi} onChange={handleChange} size="sm" step="0.01" min="0" max="100" placeholder="0-100" /><Form.Control.Feedback type="invalid">{formErrors.Etat_Avan_Physi}</Form.Control.Feedback></Form.Group>
+                        <Form.Group as={Col} md={4} controlId="formEtatAvanFinan"><Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Av. Finan (%)", "التقدم المالي (%)")}</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Etat_Avan_Finan} type="number" name="Etat_Avan_Finan" value={formData.Etat_Avan_Finan} onChange={handleChange} size="sm" step="0.01" min="0" max="100" placeholder="0-100" /><Form.Control.Feedback type="invalid">{formErrors.Etat_Avan_Finan}</Form.Control.Feedback></Form.Group>
+                        <Form.Group as={Col} md={4} controlId="formEstimIniti"><Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Estim. Initiale", "التقدير الأولي")}</Form.Label><Form.Control className={inputClass} isInvalid={!!formErrors.Estim_Initi} type="number" name="Estim_Initi" value={formData.Estim_Initi} onChange={handleChange} size="sm" step="0.01" min="0" placeholder="Montant" /><Form.Control.Feedback type="invalid">{formErrors.Estim_Initi}</Form.Control.Feedback></Form.Group>
                     </Row>
-                     <Row className="mb-3 g-3">
-                        <Form.Group as={Col} md={12} controlId="formObservations"><Form.Label className="small mb-1 fw-medium">Observations</Form.Label><Form.Control className={textareaClass} as="textarea" rows={3} name="Observations" value={formData.Observations} onChange={handleChange} size="sm" isInvalid={!!formErrors.Observations}/><Form.Control.Feedback type="invalid">{formErrors.Observations}</Form.Control.Feedback></Form.Group>
+                    <Row className="mb-3 g-3">
+                        <Form.Group as={Col} md={12} controlId="formObservations"><Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Observations", "الملاحظات")}</Form.Label><Form.Control className={textareaClass} as="textarea" rows={3} name="Observations" value={formData.Observations} onChange={handleChange} size="sm" isInvalid={!!formErrors.Observations} /><Form.Control.Feedback type="invalid">{formErrors.Observations}</Form.Control.Feedback></Form.Group>
                     </Row>
 
                     <Row className={FORM_ACTIONS_ROW_CLASS}>
                         <Col xs="auto" className="pe-2"> <Button onClick={onClose} variant="danger" className={`${FORM_CANCEL_BUTTON_CLASS} bg-danger`} disabled={submissionStatus.loading}> Annuler </Button> </Col>
-                        <Col xs="auto" className="ps-2"> <Button type="submit" className={`${FORM_SUBMIT_BUTTON_CLASS} bg-primary`} disabled={isSubmitDisabled}> {submissionStatus.loading ? <><Spinner as="span" animation="border" size="sm" className="me-2"/>{isEditing ? 'Enregistrement...' : 'Création...'}</> : (isEditing ? 'Enregistrer' : 'Créer Sous-Projet')} </Button> </Col>
+                        <Col xs="auto" className="ps-2"> <Button type="submit" className={`${FORM_SUBMIT_BUTTON_CLASS} bg-primary`} disabled={isSubmitDisabled}> {submissionStatus.loading ? <><Spinner as="span" animation="border" size="sm" className="me-2" />{isEditing ? 'Enregistrement...' : 'Création...'}</> : (isEditing ? 'Enregistrer' : 'Créer Sous-Projet')} </Button> </Col>
                     </Row>
                 </Form>
             </div>

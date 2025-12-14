@@ -8,6 +8,19 @@ import Select from 'react-select';
 import { Form, Button, Row, Col, Alert, Spinner } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 // Styles for react-select (Copied for consistency)
 const selectStyles = {
     control: (provided, state) => ({
@@ -189,12 +202,12 @@ const EngagementForm = ({
                     {/* Row 1: Code_Engag, Rang */}
                     <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={6} controlId="formCodeEngag">
-                            <Form.Label className="small mb-1 fw-medium">Code Engagement <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Code Engagement", "رمز الالتزام", true)}</Form.Label>
                             <Form.Control className={FORM_CONTROL_CLASS} isInvalid={!!formErrors.Code_Engag} required type="text" name="Code_Engag" value={formData.Code_Engag} onChange={handleChange} size="sm"/>
                             <Form.Control.Feedback type="invalid">{formErrors.Code_Engag}</Form.Control.Feedback>
                         </Form.Group>
                          <Form.Group as={Col} md={6} controlId="formRang">
-                            <Form.Label className="small mb-1 fw-medium">Rang <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Rang", "الرتبة", true)}</Form.Label>
                             <Form.Control className={FORM_CONTROL_CLASS} isInvalid={!!formErrors.Rang} required type="text" name="Rang" value={formData.Rang} onChange={handleChange} size="sm"/>
                             <Form.Control.Feedback type="invalid">{formErrors.Rang}</Form.Control.Feedback>
                         </Form.Group>
@@ -202,7 +215,7 @@ const EngagementForm = ({
                     {/* Row 2: Programme */}
                      <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={12} controlId="formProgramme">
-                            <Form.Label className="small mb-1 fw-medium">Programme <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Programme", "البرنامج", true)}</Form.Label>
                             <Select name="Programme" menuPlacement="auto" options={programmeOptions} value={formData.Programme} onChange={handleProgrammeChange} styles={selectStyles} placeholder="- Sélectionner Programme -" isClearable isLoading={loadingOptions} className={formErrors.Programme ? 'is-invalid' : ''} />
                             {formErrors.Programme && <div className="invalid-feedback d-block small mt-1">{formErrors.Programme}</div>}
                             {formErrors.programmes && !loadingOptions && <div className="text-danger small mt-1">{formErrors.programmes}</div>}
@@ -211,7 +224,7 @@ const EngagementForm = ({
                      {/* Row 3: Description */}
                     <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={12} controlId="formDescription">
-                            <Form.Label className="small mb-1 fw-medium">Description <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Description", "الوصف", true)}</Form.Label>
                             <Form.Control className={FORM_TEXTAREA_CLASS} style={{borderRadius: '1rem'}} as="textarea" rows={3} isInvalid={!!formErrors.Description} required name="Description" value={formData.Description} onChange={handleChange} size="sm"/>
                             <Form.Control.Feedback type="invalid">{formErrors.Description}</Form.Control.Feedback>
                         </Form.Group>
@@ -219,17 +232,17 @@ const EngagementForm = ({
                      {/* Row 4: Costs */}
                      <Row className="mb-3 g-3">
                         <Form.Group as={Col} md={4} controlId="formCout">
-                            <Form.Label className="small mb-1 fw-medium">Coût <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Coût", "التكلفة", true)}</Form.Label>
                             <Form.Control className={FORM_CONTROL_CLASS} isInvalid={!!formErrors.Cout} required type="number" name="Cout" value={formData.Cout} onChange={handleChange} size="sm" step="0.01" min="0"/>
                             <Form.Control.Feedback type="invalid">{formErrors.Cout}</Form.Control.Feedback>
                         </Form.Group>
                          <Form.Group as={Col} md={4} controlId="formMontantCRO">
-                            <Form.Label className="small mb-1 fw-medium">Montant CRO <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Montant CRO", "مبلغ CRO", true)}</Form.Label>
                             <Form.Control className={FORM_CONTROL_CLASS} isInvalid={!!formErrors.Montant_CRO} required type="number" name="Montant_CRO" value={formData.Montant_CRO} onChange={handleChange} size="sm" step="0.01" min="0"/>
                             <Form.Control.Feedback type="invalid">{formErrors.Montant_CRO}</Form.Control.Feedback>
                         </Form.Group>
                          <Form.Group as={Col} md={4} controlId="formMontantHorsCRO">
-                            <Form.Label className="small mb-1 fw-medium">Montant Hors CRO <span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="small mb-1 fw-medium w-100">{bilingualLabel("Montant Hors CRO", "المبلغ خارج CRO", true)}</Form.Label>
                             <Form.Control className={FORM_CONTROL_CLASS} isInvalid={!!formErrors.Montant_Hors_CRO} required type="number" name="Montant_Hors_CRO" value={formData.Montant_Hors_CRO} onChange={handleChange} size="sm" step="0.01" min="0"/>
                             <Form.Control.Feedback type="invalid">{formErrors.Montant_Hors_CRO}</Form.Control.Feedback>
                         </Form.Group>

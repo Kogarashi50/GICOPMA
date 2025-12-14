@@ -11,6 +11,19 @@ import {
     faSave, faTimes, faPlus, faShieldAlt, faListCheck, faBell, faCog
 } from '@fortawesome/free-solid-svg-icons';
 
+const bilingualLabel = (fr, ar, required = false) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {fr}
+            {required && <span className="text-danger ms-1">*</span>}
+        </span>
+        <span className="text-muted" style={{ fontSize: '0.9em', marginRight: '8px' }}>
+            {required && <span className="text-danger me-1">*</span>}
+            {ar}
+        </span>
+    </div>
+);
+
 // --- (Constants and helpers remain the same) ---
 const GROUP_NAME_MAP = { 'Domaines': 'Axes Stratégiques' };
 const formatPermissionLabel = (permissionName) => permissionName.replace(/\bdomaines\b/g, 'axes stratégiques');
@@ -200,7 +213,7 @@ const RoleForm = ({ itemId = null, onClose, onItemCreated, onItemUpdated, baseAp
                     {submissionStatus.success && <Alert variant="success">{submissionStatus.success}</Alert>}
                     
                     <Form.Group as={Row} className="mb-4" controlId="roleName">
-                        <Form.Label column sm={2}>Nom du Rôle</Form.Label>
+                        <Form.Label column sm={2} className="w-100">{bilingualLabel("Nom du Rôle", "اسم الدور", true)}</Form.Label>
                         <Col sm={10}>
                             <Form.Control type="text" value={roleName} onChange={handleNameChange} isInvalid={!!formErrors.name} required placeholder="Nom unique" />
                             <Form.Control.Feedback type="invalid">{formErrors.name?.[0]}</Form.Control.Feedback>

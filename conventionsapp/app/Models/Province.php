@@ -28,4 +28,10 @@ class Province extends Model
 
             ->useLogName('province');
     }
+    
+    // Relationship: Province has many Communes
+    public function communes()
+    {
+        return $this->hasMany(Commune::class, 'province_id', 'Id');
+    }
 }

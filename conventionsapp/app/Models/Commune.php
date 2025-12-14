@@ -4,7 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;   // <--- MUST be imported
-use Spatie\Activitylog\LogOptions; 
+use Spatie\Activitylog\LogOptions;
+use App\Models\Province; 
 class Commune extends Model
 {
     use LogsActivity;
@@ -12,8 +13,15 @@ class Commune extends Model
     protected $table = 'commune';
     protected $fillable = [ 'Id','Code',             
     'Description',   
-    'Description_Arr'];
+    'Description_Arr',
+    'province_id'];
     public $timestamps=true;
+    
+    // Relationship: Commune belongs to Province
+    public function province()
+    {
+        return $this->belongsTo(Province::class, 'province_id', 'Id');
+    }
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

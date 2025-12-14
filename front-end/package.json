@@ -21,6 +21,7 @@
     "bootstrap": "^5.3.5",
     "chart.js": "^4.4.9",
     "date-fns": "^4.1.0",
+    "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "jquery": "^3.7.1",
     "react": "^19.1.0",

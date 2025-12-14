@@ -46,7 +46,9 @@ public function index()
                 'convParts.engagementType', // Eager-load the necessary relationships
                 'conventionCadre:id,code,intitule',
                 'maitresOuvrage:id,nom,description',
-                'maitresOuvrageDelegues:id,nom,description'
+                'maitresOuvrageDelegues:id,nom,description',
+                 'communes:Id,Description', // --- NEW: Eager-load communes
+
             ])
             ->latest()
             ->get();
@@ -189,6 +191,9 @@ public function index()
      */
     public function store(Request $request)
     {
+        
+    
+        
         if ($request->has('maitres_ouvrage_ids') && is_string($request->input('maitres_ouvrage_ids'))) {
             $request->merge(['maitres_ouvrage_ids' => json_decode($request->input('maitres_ouvrage_ids'), true)]);
         }
@@ -240,6 +245,7 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
                 'secteur_id' => 'nullable|integer|exists:secteurs,id',
                 'intitule' => 'required|string',                     // Required (*)
                 'reference' => 'nullable|string',  
+                'indicateur_suivi' => 'nullable|string',
                  'date_envoi_visa_mi' => [
             'nullable',
             'date',
@@ -253,12 +259,11 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
     ],
 
                 'objet' => 'nullable|string',   
-                'type' => ['required', Rule::in(['cadre', 'specifique', 'convention', 'maitrise d\'ouvrage delegue'])],
+                'type' => ['required', Rule::in(['cadre', 'specifique', 'convention'])],
                 'objectifs' => 'nullable|string',   
                 'sous_type' => 'nullable|string|max:255',
                 'requires_council_approval' => 'required|boolean',                 // Required (*)
                 'localisation' => 'nullable|string',                 // Required (*) (semicolon separated string)
-                'maitre_ouvrage' => 'nullable|string',               // Required (*)
                 'partenaire' => 'nullable|string',                   // Not Required (simple list)
                 'id_fonctionnaire' => 'nullable|string',             // Not Required
                 'cout_global' => 'nullable|numeric|min:0',           // Required (*)
@@ -266,10 +271,9 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
                 'date_visa' => 'nullable|date', // <-- ADD THIS LINE
                 'date_reception_vise' => ['nullable', 'date'],
                 'duree_convention' => 'nullable|integer|min:0',
-                'maitre_ouvrage_delegue' => 'nullable|string',
                 'operationalisation' => ['nullable', Rule::in(['Oui', 'Non'])],
-                'Id_Programme' => 'nullable|integer|exists:programme,Id', // Required (*)
-                'id_projet' => 'nullable|integer|exists:projet,ID_Projet', // *** CHANGED TO REQUIRED *** (*)
+               'Id_Programme' => ['nullable', 'integer', 'exists:programme,Id', Rule::requiredIf(fn() => in_array($request->input('type'), ['cadre', 'convention']))],
+                'id_projet' => ['nullable', 'integer', 'exists:projet,ID_Projet', Rule::requiredIf(fn() => in_array($request->input('type'), ['specifique', 'convention']))],
                 'convention_cadre_id' => [ // ADDED
                     'nullable',
                     'integer',
@@ -299,7 +303,12 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
                 'maitres_ouvrage_delegues_ids.*' => 'integer|exists:maitre_ouvrage_delegue,id',
                 'fichiers' => 'nullable|array',                      // Not Required
                 'fichiers.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,xls,xlsx|max:5120', // Max 5MB
-                'partner_commitments' => ['nullable', 'string'],     // Required on store (*) (JSON string)
+                'partner_commitments' => ['nullable', 'string'], 
+                'has_audit' => 'required|boolean',
+                'audit_text' => ['nullable', 'string', Rule::requiredIf($request->boolean('has_audit'))],
+                'cadence_reunion' => 'nullable|string|max:255',
+                'communes' => 'nullable|array',
+                'communes.*' => 'integer|exists:commune,Id',    // Required on store (*) (JSON string)
             ],
             [ // French Messages (Keep existing, add if needed)
                 'required' => 'Le champ :attribute est obligatoire.',
@@ -406,6 +415,10 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
                 $convention->maitresOuvrage()->attach($validatedData['maitres_ouvrage_ids']);
                 Log::info("Attaché " . count($validatedData['maitres_ouvrage_ids']) . " maître(s) d'ouvrage à la convention.");
             }
+             if (!empty($validatedData['communes'])) {
+                $convention->communes()->attach($validatedData['communes']);
+                Log::info("Attaché " . count($validatedData['communes']) . " commune(s) à la convention.");
+            }
 
             if (!empty($validatedData['maitres_ouvrage_delegues_ids'])) {
                 $convention->maitresOuvrageDelegues()->attach($validatedData['maitres_ouvrage_delegues_ids']);
@@ -471,7 +484,7 @@ if (!empty($partnerCommitmentsInput)) {
             Log::info('Transaction DB validée (store).');
 
             // --- Return Success Response ---
-            $convention->load(['programme', 'projet', 'documents', 'secteur','convParts.partenaire', 'convParts.engagementType', 'maitresOuvrage', 'maitresOuvrageDelegues']);
+            $convention->load(['programme', 'projet', 'documents', 'secteur','convParts.partenaire',  'communes', 'convParts.engagementType', 'maitresOuvrage', 'maitresOuvrageDelegues']);
             $appBaseUrl = rtrim(config('app.url', 'http://localhost'), '/');
             $responseData = $convention->toArray();
             $responseData['documents'] = $convention->documents->map(function ($doc) use ($appBaseUrl) { $d = $doc->toArray(); $d['url'] = $doc->file_path ? "{$appBaseUrl}/" . ltrim($doc->file_path, '/') : null; return $d; })->all();
@@ -526,6 +539,8 @@ if (!empty($partnerCommitmentsInput)) {
                 'conventionsSpecifiques.projet:ID_Projet,Nom_Projet',
                 'maitresOuvrage:id,nom,description,contact,email,telephone,adresse',
                 'maitresOuvrageDelegues:id,nom,description,contact,email,telephone,adresse',
+                'communes:Id,Description', // --- NEW: Eager-load communes ---
+
                'convParts' => function ($query) {
     // We add `autre_engagement` to the select list
     $query->with('partenaire:Id,Description,Description_Arr,Code')
@@ -666,6 +681,9 @@ if (!empty($partnerCommitmentsInput)) {
         if ($request->has('maitres_ouvrage_delegues_ids') && is_string($request->input('maitres_ouvrage_delegues_ids'))) {
             $request->merge(['maitres_ouvrage_delegues_ids' => json_decode($request->input('maitres_ouvrage_delegues_ids'), true)]);
         }
+         if ($request->has('communes') && is_string($request->input('communes'))) {
+            $request->merge(['communes' => json_decode($request->input('communes'), true)]);
+        }
         Log::info("Requête MAJ reçue pour Convention ID {$id}...");
         Log::debug('Données brutes MAJ (convention):', $request->all());
 
@@ -723,8 +741,9 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
             'objet' => 'nullable|string',
             'sous_type' => 'nullable|string|max:255',
         'requires_council_approval' => 'required|boolean',
-            'type' => ['required', Rule::in(['cadre', 'specifique', 'convention', 'maitrise d\'ouvrage delegue'])],
-            'objectifs' => 'nullable|string',                    // Required (*)
+            'type' => ['required', Rule::in(['cadre', 'specifique', 'convention'])],
+            'objectifs' => 'nullable|string',    
+            'indicateur_suivi' => 'nullable|string',                // Required (*)
             'localisation' => 'nullable|string',                 // Required (*)
             'maitre_ouvrage' => 'nullable|string',               // Required (*)
             'partenaire' => 'nullable|string',                   // Not Required (simple list)
@@ -738,23 +757,14 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
             'statut' => 'required|string',      
             'date_visa' => 'nullable|date', 
              'operationalisation' => ['nullable', Rule::in(['Oui', 'Non'])],
-            'Id_Programme' => 'nullable|integer|exists:programme,Id', // Required (*)
-            'id_projet' => 'nullable|integer|exists:projet,ID_Projet', // *** CHANGED TO REQUIRED *** (*)
+           'Id_Programme' => ['nullable', 'integer', 'exists:programme,Id'],
+            'id_projet' => ['nullable', 'integer', 'exists:projet,ID_Projet'], // *** CHANGED TO REQUIRED *** (*)
             'convention_cadre_id' => [ // ADDED
                 'nullable',
                 'integer',
                 'exists:convention,id',
                 Rule::notIn([$convention->id]), // Cannot be its own parent
-                Rule::requiredIf(fn () => $request->input('type') === 'specifique'),
-                function ($attribute, $value, $fail) {
-                    if ($value) {
-                        $parent = Convention::find($value);
-                        if ($parent && $parent->type !== 'cadre') {
-                            $fail('La convention de rattachement doit être de type "Cadre".');
-                        }
-                    }
-                },
-            ],
+               ],
             'groupe' => 'nullable|integer',                      // Required (*)
             'rang' => 'nullable|string',                         // Not Required
             'observations' => 'nullable|string|max:20000',       // Not Required
@@ -773,7 +783,11 @@ if ($request->has('membres_comite_pilotage') && is_string($request->input('membr
             'fichiers.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,xls,xlsx|max:5120',
             'partner_commitments' => ['nullable', 'string'],     // *** CHANGED TO NULLABLE *** (JSON string)
             'deleted_document_ids' => 'nullable|string',         // Keep as string
-
+            'has_audit' => 'required|boolean',
+            'audit_text' => ['nullable', 'string', Rule::requiredIf($request->boolean('has_audit'))],
+            'cadence_reunion' => 'nullable|string|max:255',
+            'communes' => 'nullable|array',
+            'communes.*' => 'integer|exists:commune,Id',
             'confirm_delete_commitments' => 'sometimes|boolean',
         ];
         $validationMessages = [ /* ... Keep messages ... */ 'convention_cadre_id.required' => 'La convention cadre est requise pour une convention spécifique.']; // ADDED
@@ -847,7 +861,7 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
         }
 
         // --- Prepare Data & Paths ---
-        $conventionUpdateData = Arr::except($validatedData, ['fichiers', 'deleted_document_ids', 'partner_commitments', 'confirm_delete_commitments', 'maitres_ouvrage_ids', 'maitres_ouvrage_delegues_ids']);
+        $conventionUpdateData = Arr::except($validatedData, ['fichiers', 'deleted_document_ids', 'partner_commitments', 'communes', 'confirm_delete_commitments', 'maitres_ouvrage_ids', 'maitres_ouvrage_delegues_ids']);
         $filesToDeletePhysicallyAbsolute = []; $newlyAddedDocumentInfo = [];
         $targetDirRelative = 'uploads/conventions'; $targetDirAbsolute = public_path($targetDirRelative);
 
@@ -916,6 +930,10 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
             if (isset($validatedData['maitres_ouvrage_delegues_ids'])) {
                 $convention->maitresOuvrageDelegues()->sync($validatedData['maitres_ouvrage_delegues_ids']);
                 Log::info("Synchronisé " . count($validatedData['maitres_ouvrage_delegues_ids']) . " maître(s) d'ouvrage délégué(s) avec la convention.");
+            }
+            if (isset($validatedData['communes'])) {
+                $convention->communes()->sync($validatedData['communes']);
+                Log::info("Synchronisé " . count($validatedData['communes']) . " commune(s) avec la convention.");
             }
 
             // --- START: Smart Sync Partner Commitments (ConvPart) ---
@@ -1000,7 +1018,7 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
             }
 
             // --- Return Success Response ---
-            $updatedConvention = $convention->fresh()->load(['secteur','programme', 'projet', 'documents', 'avenants', 'maitresOuvrage', 'maitresOuvrageDelegues', 'convParts' => function ($q) { $q->with('partenaire:Id,Description,Description_Arr,Code')->with('engagementType:id,nom,description')->withSum('versements as Montant_Verse', 'montant_verse'); }]);
+            $updatedConvention = $convention->fresh()->load(['secteur','programme', 'communes', 'projet', 'documents', 'avenants', 'maitresOuvrage', 'maitresOuvrageDelegues', 'convParts' => function ($q) { $q->with('partenaire:Id,Description,Description_Arr,Code')->with('engagementType:id,nom,description')->withSum('versements as Montant_Verse', 'montant_verse'); }]);
             $appBaseUrl = rtrim(config('app.url', 'http://localhost'), '/');
             $updatedConventionData = $updatedConvention->toArray();
             // Format documents
@@ -1055,8 +1073,155 @@ foreach ($partnerCommitmentsInput as $index => $commitment) {
          }
     }
 
+// --- START: ADD THIS ENTIRE METHOD ---
 
- 
+    /**
+     * Get a comprehensive financial summary for a specific convention.
+     * GET /api/conventions/{convention}/financial-summary
+     *
+     * @param  \App\Models\Convention $convention
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getFinancialSummary(Convention $convention): JsonResponse
+    {
+        $conventionId = $convention->id;
+        Log::info("API: Requête pour le résumé financier de la Convention ID: {$conventionId}");
+
+        try {
+            // 1. Eager load all necessary relationships efficiently in one go.
+            //    - convParts: The financial commitments.
+            //    - withSum: Calculates the total paid for EACH commitment directly in the DB.
+            //    - convParts.partenaire: Gets the partner's details for each commitment.
+            //    - convParts.versements: Gets the full list of payments for each commitment.
+            $convention->load([
+                'convParts' => function ($query) {
+                    $query->withSum('versements as total_verse', 'montant_verse')
+                          ->with(['partenaire:Id,Description,Description_Arr,Code', 'versements']);
+                },
+            ]);
+
+            // 2. Calculate the global financial summary.
+            $coutGlobal = (float) $convention->Cout_Global;
+            
+            // Sum the totals from each individual commitment that we calculated in the query.
+            $globalTotalVerse = $convention->convParts->sum('total_verse');
+
+            $resteAFinancer = $coutGlobal - $globalTotalVerse;
+            
+            // Calculate global progression, avoiding division by zero.
+            $progressionGlobale = $coutGlobal > 0 ? ($globalTotalVerse / $coutGlobal) * 100 : 0;
+            if ($globalTotalVerse > $coutGlobal) { // Cap progression at 100%
+                $progressionGlobale = 100;
+            }
+
+            // 3. Structure the final response.
+            $response = [
+                'global_summary' => [
+                    'cout_global' => $coutGlobal,
+                    'total_verse' => $globalTotalVerse,
+                    'reste_a_financer' => $resteAFinancer,
+                    'progression' => round($progressionGlobale, 2),
+                ],
+                // Map over the commitments to format them for the frontend.
+                'commitments' => $convention->convParts->map(function ($commitment) {
+                    $montantConvenu = (float) $commitment->Montant_Convenu;
+                    $totalVerse = (float) $commitment->total_verse; // This comes from withSum
+                    
+                    // Calculate progression for this specific commitment
+                    $progression = $montantConvenu > 0 ? ($totalVerse / $montantConvenu) * 100 : 0;
+                    if ($totalVerse > $montantConvenu) { // Cap progression
+                        $progression = 100;
+                    }
+
+                    $partenaire = $commitment->partenaire;
+                    $partnerName = $partenaire ? ($partenaire->Description ?: $partenaire->Description_Arr) : 'Partenaire Inconnu';
+
+                    return [
+                        'commitment_id' => $commitment->Id_CP,
+                        'montant_convenu' => $montantConvenu,
+                        'total_verse' => $totalVerse,
+                        'progression' => round($progression, 2),
+                        'partner' => [
+                            'id' => $partenaire ? $partenaire->Id : null,
+                            'name' => $partnerName,
+                        ],
+                        // Map over the loaded versements to format them.
+                        'versements' => $commitment->versements->map(function ($versement) {
+                            return [
+                                'id' => $versement->id,
+                                'date_versement' => $versement->date_versement->format('Y-m-d'),
+                                'montant_verse' => (float) $versement->montant_verse,
+                            ];
+                        })->sortByDesc('date_versement')->values()->all(), // Sort by most recent
+                    ];
+                })->filter(function ($commitment) {
+                    // Only return commitments that are financial (have a montant_convenu)
+                    return $commitment['montant_convenu'] > 0;
+                })->values()->all(),
+            ];
+
+            Log::info("API: Résumé financier généré avec succès pour la Convention ID: {$conventionId}");
+            return response()->json($response);
+
+        } catch (\Exception $e) {
+            Log::error("API: Erreur lors de la génération du résumé financier pour la Convention ID {$conventionId}:", [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['message' => 'Erreur serveur lors de la récupération du résumé financier.'], 500);
+        }
+    }
+
+    // --- END: ADD THIS ENTIRE METHOD ---
+
+    /**
+     * Get comprehensive export data for all conventions with all relationships.
+     * GET /api/conventions/export/data
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+// app/Http/Controllers/ConventionController.php
+
+public function getExportData(): JsonResponse
+{
+    Log::info('Récupération des données complètes pour export Excel...');
+    try {
+        $conventions = Convention::select('convention.*') // <-- ADD THIS LINE
+            ->with([
+                'programme:Id,Code_Programme,Description',
+                'projet:ID_Projet,Code_Projet,Nom_Projet',
+                'secteur:id,description_fr',
+                'documents:Id_Doc,Id_Conv,Intitule,file_name,file_type,file_path,file_size',
+                'conventionCadre:id,code,intitule',
+                'maitresOuvrage:id,nom,description,contact,email,telephone,adresse',
+                'maitresOuvrageDelegues:id,nom,description,contact,email,telephone,adresse',
+                'communes:Id,Description',
+                'convParts' => function ($query) {
+                    $query->with('partenaire:Id,Code,Description,Description_Arr')
+                          ->with('engagementType:id,nom,description')
+                          ->with('engagementsAnnuels:id,id_cp,annee,montant_prevu')
+                          ->with(['versements' => function ($vQuery) {
+                              $vQuery->select('id', 'id_CP', 'date_versement', 'montant_verse', 'moyen_paiement', 'reference_paiement', 'commentaire')
+                                     ->orderBy('date_versement', 'desc');
+                          }])
+                          ->select([
+                              'Id_CP', 'Id_Convention', 'Id_Partenaire', 'Montant_Convenu',
+                              'autre_engagement', 'engagement_description', 'engagement_type_id',
+                              'is_signatory', 'date_signature', 'details_signature'
+                          ]);
+                }
+            ])
+            ->orderBy('code', 'asc')
+            ->get();
+
+        Log::info('Récupération réussie de ' . $conventions->count() . ' conventions pour export.');
+        
+        return response()->json(['conventions' => $conventions], 200);
+    } catch (\Exception $e) {
+        Log::error('Erreur lors de la récupération des données export:', ['message' => $e->getMessage()]);
+        return response()->json(['message' => 'Erreur serveur lors de la récupération des données export.'], 500);
+    }
+}
      public function destroy(string $id): JsonResponse
     {
         Log::info("Tentative suppression Convention ID: {$id}...");
